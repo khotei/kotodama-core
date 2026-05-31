@@ -1,0 +1,19 @@
+{
+  "name": "@lexiai/app-worker",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "bun --watch ./src/main.ts",
+    "build": "bun build ./src/main.ts --outdir=./dist --target=bun",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "effect": "catalog:effect",
+    "@effect/platform-bun": "catalog:effect",
+    "@lexiai/config": "workspace:*",
+    "@lexiai/queue": "workspace:*",
+    "@lexiai/core-jobs": "workspace:*",
+    "@lexiai/observability": "workspace:*"
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(bun *)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git show*)",
+      "Bash(git add *)",
+      "Bash(git restore *)",
+      "Bash(git checkout -- *)",
+      "Bash(docker compose *)",
+      "Read(*)",
+      "Glob(*)",
+      "Grep(*)",
+      "Edit(*)",
+      "Write(*)",
+      "WebFetch(domain:bun.com)",
+      "WebFetch(domain:effect.website)",
+      "WebFetch(domain:orm.drizzle.team)",
+      "WebFetch(domain:code.claude.com)",
+      "WebFetch(domain:docs.claude.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:www.npmjs.com)"
+    ],
+    "ask": [
+      "Bash(git commit*)",
+      "Bash(git push*)",
+      "Bash(git checkout *)",
+      "Bash(git branch *)",
+      "Bash(git rebase*)",
+      "Bash(git reset *)",
+      "Bash(gh *)",
+      "WebFetch(*)",
+      "WebSearch(*)"
+    ],
+    "deny": [
+      "Bash(git push --force*)",
+      "Bash(git push -f*)",
+      "Bash(rm -rf *)",
+      "Bash(sudo *)",
+      "Bash(npm *)",
+      "Bash(yarn *)",
+      "Bash(pnpm *)"
+    ]
+  }
+}

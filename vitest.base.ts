@@ -1,0 +1,18 @@
+import { defineProject } from 'vitest/config'
+
+// Shared Vitest project settings. Every workspace's one-line vitest.config.ts
+// re-exports this, so test settings live in ONE place without a central package
+// list — the project set is still implied by package.json#workspaces, and each
+// workspace is run independently (see root `test` script + .claude/rules/tooling.md).
+//
+// Why per-package configs at all: on Bun 1.3.10 + Vitest 3.2.4 a single
+// `vitest run` over many `projects` is unreliable — it runs only ~9/16 and
+// exits 0 even on failure. Running each workspace as its own `vitest run` (via
+// `bun run --filter '*' test`) sidesteps that and yields correct per-package
+// exit codes, mirroring the `tsc` typecheck design.
+export default defineProject({
+  test: {
+    environment: 'node',
+    include: ['src/**/*.test.ts'],
+  },
+})

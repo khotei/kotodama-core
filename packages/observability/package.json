@@ -1,0 +1,27 @@
+{
+  "name": "@lexiai/observability",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "effect": "catalog:effect",
+    "@effect/opentelemetry": "catalog:effect",
+    "@opentelemetry/api": "catalog:otel",
+    "@opentelemetry/api-logs": "catalog:otel",
+    "@opentelemetry/resources": "catalog:otel",
+    "@opentelemetry/sdk-logs": "catalog:otel",
+    "@opentelemetry/sdk-metrics": "catalog:otel",
+    "@opentelemetry/sdk-trace-base": "catalog:otel",
+    "@opentelemetry/sdk-trace-node": "catalog:otel",
+    "@opentelemetry/semantic-conventions": "catalog:otel",
+    "@opentelemetry/exporter-trace-otlp-http": "catalog:otel"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  }
+}

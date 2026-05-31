@@ -1,0 +1,12 @@
+{
+  "name": "@lexiai/infra",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "local:up": "docker compose -f local/docker-compose.yml up -d --wait",
+    "local:down": "docker compose -f local/docker-compose.yml down -v",
+    "local:logs": "docker compose -f local/docker-compose.yml logs -f",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  }
+}

@@ -1,0 +1,185 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.4.16/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "ignoreUnknown": true,
+    "includes": ["**", "!repos", "!**/dist"]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100
+  },
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "semicolons": "asNeeded",
+      "trailingCommas": "all"
+    }
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "correctness": {
+        "noUnusedImports": "error"
+      },
+      "suspicious": {
+        "noExplicitAny": "error"
+      },
+      "style": {
+        "useImportType": "error",
+        "noRestrictedImports": {
+          "level": "error",
+          "options": {
+            "patterns": [
+              {
+                "group": ["**/repos/**"],
+                "message": "Do not import from repos/ — it is vendored, read-only reference material. Import the published package (effect, @effect/*) instead."
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["packages/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": [
+                      "@lexiai/core-*",
+                      "@lexiai/repositories-*",
+                      "@lexiai/apps-*",
+                      "@lexiai/database"
+                    ],
+                    "message": "Layer violation: packages/* are leaves and must not import core, repositories, database, or apps. See CLAUDE.md dependency hierarchy."
+                  },
+                  {
+                    "group": ["**/repos/**"],
+                    "message": "Do not import from repos/ — it is vendored, read-only reference material. Import the published package (effect, @effect/*) instead."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["database/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@lexiai/core-*", "@lexiai/repositories-*", "@lexiai/apps-*"],
+                    "message": "Layer violation: database/ may only import @lexiai/* packages, never core, repositories, or apps."
+                  },
+                  {
+                    "group": ["**/repos/**"],
+                    "message": "Do not import from repos/ — it is vendored, read-only reference material. Import the published package (effect, @effect/*) instead."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["repositories/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@lexiai/core-*", "@lexiai/apps-*"],
+                    "message": "Layer violation: repositories/* may depend on database and packages only, never core or apps."
+                  },
+                  {
+                    "group": ["**/repos/**"],
+                    "message": "Do not import from repos/ — it is vendored, read-only reference material. Import the published package (effect, @effect/*) instead."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["core/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@lexiai/apps-*"],
+                    "message": "Layer violation: core/* must not import apps."
+                  },
+                  {
+                    "group": ["**/repos/**"],
+                    "message": "Do not import from repos/ — it is vendored, read-only reference material. Import the published package (effect, @effect/*) instead."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["apps/web/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@lexiai/*", "!@lexiai/schemas", "!@lexiai/http"],
+                    "message": "Frontend lockdown: apps/web may import ONLY @lexiai/schemas and @lexiai/http from internal packages. No exceptions."
+                  },
+                  {
+                    "group": ["**/repos/**"],
+                    "message": "Do not import from repos/ — it is vendored, read-only reference material. Import the published package (effect, @effect/*) instead."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

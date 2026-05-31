@@ -1,0 +1,61 @@
+name: CI
+
+# Gate every pull request, on any base — stacked feature PRs (e.g.
+# F-PLAT-002 → F-PLAT-001) must still be checked. Direct pushes only trigger
+# CI on `main` (post-merge); feature branches are covered by their PR, so a
+# branch with an open PR runs the suite once (via pull_request), not twice.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Cancel superseded runs for the same ref.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    name: install · typecheck · lint · test (bun ${{ matrix.bun-version }})
+    runs-on: ubuntu-latest
+    # `latest` is informational (catches upcoming-Bun breakage early); the
+    # pinned job is the required gate. Spec §20.
+    continue-on-error: ${{ matrix.bun-version == 'latest' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # Pinned matches package.json#packageManager (bun@1.3.10).
+        bun-version: ['1.3.10', 'latest']
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ matrix.bun-version }}
+
+      - name: Cache Bun install
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ matrix.bun-version }}-${{ hashFiles('bun.lock') }}
+          restore-keys: ${{ runner.os }}-bun-${{ matrix.bun-version }}-
+
+      # --frozen-lockfile fails CI if bun.lock is out of date.
+      - name: Install
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck
+        run: bun run tsc
+
+      - name: Lint
+        run: bun run lint
+
+      # `bun run test` runs @effect/vitest (NOT `bun test`, the built-in runner).
+      - name: Test
+        run: bun run test
+
+# Deferred CI jobs (depend on downstream features, not the empty scaffold):
+#   - production build verification (no prod-build feature yet)
+#   - Lighthouse CI + dependency audit + deployed-staging smoke tests (spec §16.4)
+# Add these in a later CI iteration.

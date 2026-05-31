@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+.turbo/
+
+# Environment — keep .env.example, ignore everything else
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+
+# Editor config — local only, never shared
+.idea/
+.vscode/
+
+# Claude Code runtime — machine-local session state, never commit
+.claude/scheduled_tasks.lock
+
+# Note: bun.lock is committed (do NOT ignore it)

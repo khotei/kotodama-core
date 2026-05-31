@@ -1,0 +1,19 @@
+{
+  "name": "@lexiai/repositories-words",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "effect": "catalog:effect",
+    "@lexiai/database": "workspace:*",
+    "@effect/sql-pg": "catalog:effect"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  }
+}

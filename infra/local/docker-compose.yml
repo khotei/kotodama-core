@@ -1,0 +1,56 @@
+name: lexiai-local
+
+# Local dev infra: Postgres + LocalStack (SQS + S3) + Jaeger (tracing).
+# Bring up:   bun run --filter '@lexiai/infra' local:up
+# Tear down:  bun run --filter '@lexiai/infra' local:down
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      # Default DB; the test DB (lexiai_test) is created by ./init/01-databases.sql.
+      POSTGRES_DB: lexiai_dev
+    ports:
+      - '5432:5432'
+    volumes:
+      - ./init:/docker-entrypoint-initdb.d:ro
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d lexiai_dev']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  localstack:
+    image: localstack/localstack:latest
+    environment:
+      SERVICES: sqs,s3
+      DEBUG: '0'
+    ports:
+      - '4566:4566'
+    volumes:
+      - localstack-data:/var/lib/localstack
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -sf http://localhost:4566/_localstack/health || exit 1']
+      interval: 5s
+      timeout: 5s
+      retries: 15
+
+  # Jaeger all-in-one: receives OTLP spans from apps/{api,worker} and serves the
+  # trace UI. In-memory storage (traces reset on restart) — local dev only.
+  # Spans target http://localhost:4318 by default (see @lexiai/observability
+  # TracingLive); browse traces at http://localhost:16686.
+  # No healthcheck: the image ships no in-container HTTP client, so `--wait`
+  # treats this service as ready once it is running.
+  jaeger:
+    image: jaegertracing/all-in-one:1.62.0
+    environment:
+      COLLECTOR_OTLP_ENABLED: 'true'
+    ports:
+      - '16686:16686' # Jaeger UI
+      - '4318:4318' # OTLP/HTTP ingest (matches TracingLive default)
+
+volumes:
+  postgres-data:
+  localstack-data:
