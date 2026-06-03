@@ -52,6 +52,9 @@ jobs:
         run: bun run lint
 
       # `bun run test` runs @effect/vitest (NOT `bun test`, the built-in runner).
+      # DB tests start an ephemeral Postgres via Testcontainers — no `services:`
+      # block or DATABASE_URL needed: `ubuntu-latest` ships a running Docker
+      # daemon, and each container's URL is generated (see @lexiai/database/testing).
       - name: Test
         run: bun run test
 

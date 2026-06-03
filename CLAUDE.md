@@ -57,10 +57,12 @@ stripped), so the PR title/body follow the same `commits.md` format via
 @.claude/rules/tech-stack.md
 @.claude/rules/dependency-hierarchy.md
 @.claude/rules/naming.md
+@.claude/rules/comments.md
 @.claude/rules/tooling.md
 @.claude/rules/commits.md
 @.claude/rules/pull-requests.md
 @.claude/rules/effect-conventions.md
+@.claude/rules/config.md
 @.claude/rules/vendored-sources.md
 @.claude/rules/frontend-rules.md
 @.claude/rules/testing.md
@@ -72,6 +74,14 @@ stripped), so the PR title/body follow the same `commits.md` format via
 `repositories/{words,jobs}/CLAUDE.md` · `packages/*/CLAUDE.md` · `infra/CLAUDE.md`.
 Ancestor `CLAUDE.md` files (this one) always load; subdirectory ones load when you touch files
 in that folder.
+
+## Maintaining these docs
+
+`.claude/` files are context, not a changelog. **Don't rewrite a rule or `CLAUDE.md` on every
+edit** — much in-flight work is exploratory or wrong, and churning docs on each change is noise.
+Refresh the affected docs only when a change is real and about to land, as part of preparing the
+commit (then `bun run lint`). Keep them lean: record project-specific decisions, constraints, and
+gotchas — omit anything an agent already knows.
 
 ## Vendored repositories
 

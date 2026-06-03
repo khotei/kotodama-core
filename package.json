@@ -38,8 +38,12 @@
       "vitest": "^3.2.0"
     },
     "db": {
-      "drizzle-orm": "^0.38.0",
-      "drizzle-kit": "^0.30.0"
+      "drizzle-orm": "1.0.0-rc.3",
+      "drizzle-kit": "1.0.0-rc.3"
+    },
+    "test": {
+      "@testcontainers/postgresql": "^12.0.1",
+      "testcontainers": "^12.0.1"
     },
     "aws": {
       "@aws-sdk/client-sqs": "^3.700.0"
@@ -76,6 +80,8 @@
     "test": "bun run --filter '*' test",
     "check": "bun run lint && bun run tsc",
     "vendor:effect:add": "git subtree add --prefix=repos/effect-smol https://github.com/Effect-TS/effect-smol.git main --squash",
-    "vendor:effect:update": "git subtree pull --prefix=repos/effect-smol https://github.com/Effect-TS/effect-smol.git main --squash"
+    "vendor:effect:update": "git subtree pull --prefix=repos/effect-smol https://github.com/Effect-TS/effect-smol.git main --squash",
+    "vendor:drizzle:add": "git subtree add --prefix=repos/drizzle https://github.com/drizzle-team/drizzle-orm.git v1.0.0-rc.3 --squash",
+    "vendor:drizzle:update": "git subtree pull --prefix=repos/drizzle https://github.com/drizzle-team/drizzle-orm.git v1.0.0-rc.3 --squash"
   }
 }

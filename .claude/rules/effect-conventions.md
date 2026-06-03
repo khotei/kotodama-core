@@ -10,6 +10,7 @@
 - **In-beta APIs live under `effect/unstable/*`** — notably parts of `HttpApi`. Import from there, not a guessed stable path. See `.claude/agent-patterns/effect-httpapi.md`.
 - **Errors:** tag with `Data.TaggedError`; handle with `Effect.catchTag` / `Effect.catchTags`. See `.claude/agent-patterns/effect-errors.md`.
 - **Config:** build from `effect/Config` (`Config.string`, `Config.redacted` for secrets, `Config.all`). `@lexiai/config` owns `AppConfig`. Configs are yieldable in `Effect.gen`.
+- **SQL / DB:** go through Drizzle's two first-party Effect integrations — `drizzle-orm/effect-postgres` (`PgDrizzle` DB layer over `@effect/sql-pg`) + `drizzle-orm/effect-schema` (row-schema derivation). Mandated in `@.claude/rules/drizzle-effect.md`; cheat-sheet `.claude/agent-patterns/drizzle-effect.md`.
 - **Entrypoints:** `BunRuntime.runMain(program)` from `@effect/platform-bun`.
 
 ## Avoid

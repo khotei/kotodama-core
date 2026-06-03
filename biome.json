@@ -7,7 +7,7 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "includes": ["**", "!repos", "!**/dist"]
+    "includes": ["**", "!repos", "!**/dist", "!**/migrations"]
   },
   "formatter": {
     "enabled": true,

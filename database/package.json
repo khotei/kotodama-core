@@ -5,21 +5,27 @@
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./testing": "./src/testing.ts"
   },
   "scripts": {
-    "db:generate": "echo 'TODO(db:generate): drizzle-kit generate — wired in a downstream feature'",
-    "db:migrate": "echo 'TODO(db:migrate): drizzle-kit migrate'",
-    "db:push": "echo 'TODO(db:push): drizzle-kit push'",
-    "db:reset": "echo 'TODO(db:reset): drop + recreate + migrate'",
-    "db:seed": "echo 'TODO(db:seed): seed dev data'",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:reset": "echo 'TODO(db:reset): drop + recreate + migrate — wired with the deploy runner'",
+    "db:seed": "echo 'TODO(db:seed): seed dev data — wired when a feature needs it'",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "effect": "catalog:effect",
     "@effect/sql-pg": "catalog:effect",
+    "@lexiai/config": "workspace:*",
     "drizzle-orm": "catalog:db",
     "drizzle-kit": "catalog:db"
+  },
+  "devDependencies": {
+    "@testcontainers/postgresql": "catalog:test",
+    "testcontainers": "catalog:test"
   }
 }

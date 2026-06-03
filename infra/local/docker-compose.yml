@@ -9,12 +9,12 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      # Default DB; the test DB (lexiai_test) is created by ./init/01-databases.sql.
+      # Dev DB only. Tests use a throwaway Testcontainers Postgres, not this one
+      # (see @lexiai/database/testing) — no test DB is provisioned here.
       POSTGRES_DB: lexiai_dev
     ports:
       - '5432:5432'
     volumes:
-      - ./init:/docker-entrypoint-initdb.d:ro
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U postgres -d lexiai_dev']
@@ -23,7 +23,13 @@ services:
       retries: 10
 
   localstack:
-    image: localstack/localstack:latest
+    # Pinned to the last free community release. From v2026.3.0 (2026-03-23)
+    # LocalStack merged community + pro into one image, so `:latest` now demands
+    # a LOCALSTACK_AUTH_TOKEN and exits 55 ("License activation failed") without
+    # one; the LS_ACKNOWLEDGE_ACCOUNT_REQUIREMENT escape hatch expired 2026-04-06.
+    # 4.4.0 is the last pre-merge community image (SQS + S3, no token). Do not
+    # float back to `:latest` without wiring an auth token.
+    image: localstack/localstack:4.4.0
     environment:
       SERVICES: sqs,s3
       DEBUG: '0'

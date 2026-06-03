@@ -16,10 +16,19 @@
 
 ## Files
 
-- **Services / Layers / Schemas:** `PascalCase` file = the thing it exports (`WordsRepo.ts`, `AppConfig.ts`, `Word.ts`).
-- **Utilities / helpers:** `camelCase` (`mapRow.ts`).
+- **All source files are `kebab-case`** (lowercase, dash-separated) — regardless of what they
+  export. The filename describes the contents; the exported symbol keeps its own casing in code.
+  Examples: `config-provider-live.ts` exports `ConfigProviderLive`; `db.ts` exports
+  `DB` / `DatabaseLive`; `tracing.ts` exports `TracingLive`; `words.table.ts` exports `wordsTable`.
+  Single-word files stay single-word (`db.ts`, `tracing.ts`).
+- **Multi-file entities** group in a per-entity folder with a dotted role suffix —
+  `<entity>/<entity>.<role>.ts` (`words/words.table.ts`, `words/words.schemas.ts`).
 - **Tests:** `*.test.ts`, colocated under `src/`.
 - **Entrypoints:** `src/main.ts` (apps), `src/index.ts` (libraries — the package `exports` entry).
+
+> Filenames stay kebab-case even for `PascalCase` exports (Services/Layers/Schemas) and
+> `camelCase` helpers — so a `WordsRepo` service lives in `words-repo.ts`, a `mapRow` helper in
+> `map-row.ts`. The symbol names (not the files) carry the `PascalCase` / `camelCase` distinction.
 
 ## Effect
 

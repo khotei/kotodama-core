@@ -91,10 +91,9 @@ bun bootstrap                                   # = bun install
 bun run --filter '@lexiai/infra' local:up    # Jaeger UI → http://localhost:16686
 
 # 3. Environment:
-cp .env.example .env
-cp .env.example .env.test                       # point DATABASE_URL at lexiai_test
+cp .env.example .env                            # tests need no .env.test (see Testing)
 
-# 4. Migrate the DB (prints TODO until a downstream feature wires Drizzle):
+# 4. Migrate the dev DB:
 bun run --filter '@lexiai/database' db:migrate
 
 # 5. Run the apps:
@@ -119,8 +118,9 @@ bun run --filter '@lexiai/schemas' test         # one workspace
 ```
 
 Use `bun run test`, **not** `bun test` (the latter is Bun's built-in runner). Tests that
-touch the DB use `.env.test` → a separate `lexiai_test` database, and reset state between
-tests (Drizzle migration reset, per Tech spec §18). The project list is single-sourced from
+touch the DB spin up an **ephemeral Testcontainers Postgres** (needs Docker), migrate it at
+layer build, and reset state between tests — never the dev DB, so there is no `.env.test`
+(per Tech spec §18; see `.claude/rules/testing.md`). The project list is single-sourced from
 `package.json#workspaces`: each workspace has a one-line `vitest.config.ts` (re-exporting the
 root `vitest.base.ts`) and `bun run test` fans out per workspace via
 `bun run --filter '*' test`. See `.claude/rules/tooling.md`.
@@ -158,9 +158,9 @@ codified later if repo settings-as-code is adopted.)
 
 ## Infrastructure
 
-Local: `infra/local/docker-compose.yml` (Postgres `lexiai_dev` + `lexiai_test`, LocalStack
-SQS + S3, Jaeger) via `local:up` / `local:down` / `local:logs`. Production Pulumi stack is a
-later feature.
+Local: `infra/local/docker-compose.yml` (dev Postgres `lexiai_dev`, LocalStack SQS + S3,
+Jaeger) via `local:up` / `local:down` / `local:logs`. DB tests use a throwaway Testcontainers
+Postgres, so no test DB is provisioned here. Production Pulumi stack is a later feature.
 
 ## Observability
 

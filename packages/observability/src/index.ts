@@ -1,1 +1,1 @@
-export { TracingLive } from './Tracing'
+export { TracingLive } from './tracing'

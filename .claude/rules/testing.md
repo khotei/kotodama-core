@@ -8,9 +8,20 @@
 
 ## Test database (per Tech spec §18)
 
-- Tests that touch the DB use `.env.test` → a **separate** database (`lexiai_test`), never the dev DB.
-- Reset state between tests (e.g. `DrizzleMigration.reset()` / truncate) so tests are isolated and order-independent.
-- Local infra: `bun run --filter '@lexiai/infra' local:up` brings up Postgres (`lexiai_dev` + `lexiai_test`) and LocalStack.
+- Tests that touch the DB run against an **ephemeral Postgres started by Testcontainers** (`@testcontainers/postgresql`), never the dev DB or any shared/long-lived DB. The connection URL is **generated per container**, so a test run *structurally cannot* hit the dev DB — there is **no `.env.test`** and no test-mode config precedence. Requires a **Docker daemon** (local + CI). Mirrors Effect's own pg tests (`repos/effect-smol/packages/sql/pg/test/utils.ts`).
+- The test surface is **`@lexiai/database/testing`** (`database/src/testing.ts`): **`TestDatabaseLive`** — a `DB` layer over a fresh container with **migrations applied at layer build** (programmatic `migrate` from `drizzle-orm/effect-postgres/migrator`, reading the rc folder format). The **suite migrates itself** — no out-of-band `db:migrate`, no manual step to forget.
+- Isolate state with the shared **`resetDb`** helper (same file) — an **Effect that consumes `DB`**. It `TRUNCATE`s **every** `public` table (`RESTART IDENTITY CASCADE`, enumerated dynamically from `pg_tables` — new tables need no per-table list; the migration record in the `drizzle` schema is untouched). Use **one container per test file** via `it.layer(TestDatabaseLive)` and call `resetDb` at the **start of each test**:
+  ```ts
+  it.layer(TestDatabaseLive, { timeout: '120 seconds' })((it) => {
+    it.effect('…', () => Effect.gen(function* () {
+      yield* resetDb
+      const db = yield* DB
+      // …
+    }))
+  })
+  ```
+  Reset runs **in-test**, not in an `afterEach`: the `it.layer` container is shared across the file, so a hook providing its own layer would spin up a **second container**. The build timeout covers a first-time image pull.
+- Local infra (`bun run --filter '@lexiai/infra' local:up`) brings up the **dev** Postgres (`lexiai_dev`) + LocalStack; it does **not** provision a test DB — Testcontainers owns that.
 
 ## Effect tests
 
