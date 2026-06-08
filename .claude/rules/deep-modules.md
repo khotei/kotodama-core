@@ -3,8 +3,8 @@
 **Always-loaded rule.** This encodes the design philosophy from John Ousterhout's *A Philosophy of
 Software Design*, with SOLID/GRASP as **lenses, not laws**. Apply it whenever writing, reviewing, or
 refactoring code here. It describes **how to decompose** code — it sits on top of, not instead of,
-the project's style/lint conventions. Same family as `@.claude/rules/comments.md` (code says *what*,
-prose says *why*) and `@.claude/rules/claude-md.md` (docs cache what code can't).
+the project's style/lint conventions. Same family as `.claude/rules/comments.md` (code says *what*,
+prose says *why*) and `.claude/rules/claude-md.md` (docs cache what code can't).
 
 **The single goal: reduce complexity.** Complexity is anything about the structure that makes the
 system hard to understand or change. It shows up as (1) *change amplification* — one logical change
@@ -94,13 +94,20 @@ impossible states; capture deps at `Layer` build so a service's `R` channel is `
 
 Capture the *why*, invariants, units, the contract a caller relies on — never restate the code. An
 interface comment must let someone use the symbol **without reading the body**; if you can't write
-one, the interface is too complex — redesign it. Full discipline: `@.claude/rules/comments.md`.
+one, the interface is too complex — redesign it. Full discipline: `.claude/rules/comments.md`.
 
 ## 8. Design it twice
 
 For anything non-trivial, sketch two genuinely different interface designs before committing —
 comparing is the fastest route to a deeper one. For a refactor: state the current interface's cost,
 then propose the deeper alternative (new signature/usage first, implementation second).
+
+## Examples
+
+Worked BAD → GOOD examples — a shallow→deep gallery (Ousterhout + Clojure, each tagged to a principle
+and pointing at the repo's real code) and one full move-by-move refactoring — live in
+`.claude/agent-patterns/deep-modules-examples.md` (on-demand; read it when designing or reworking an
+interface).
 
 ---
 

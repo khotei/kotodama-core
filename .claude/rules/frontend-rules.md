@@ -1,6 +1,13 @@
+---
+paths:
+  - "apps/web/**"
+---
+
 # Frontend rules (apps/web)
 
-**Lockdown:** Only `@lexiai/schemas` and `@lexiai/http` can be imported from internal packages — no exceptions. Enforced by Biome and tsconfig references.
+**Lockdown** (the canonical rule is `.claude/rules/dependency-hierarchy.md` — this only restates the
+FE edge): `apps/web` imports **only** `@lexiai/schemas` and `@lexiai/http`. Enforced by Biome
+`noRestrictedImports` alone — the per-package `tsconfig` `references` were removed in F-PLAT-002.
 
 - **React 19** with the **React Compiler** on (via `@vitejs/plugin-react` babel plugin). Do not hand-write `useMemo`/`useCallback` for things the compiler memoises — let it work. The bundle should contain `react-compiler-runtime`.
 - **TanStack Router** (file-based routing) — plugin is deferred until the first route lands; `@tanstack/react-router` is already a dependency.

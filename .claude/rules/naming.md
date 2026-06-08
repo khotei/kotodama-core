@@ -36,7 +36,7 @@
   `<entity>.content-types.ts` for its jsonb `$type` shapes) — as `async-word-jobs/` does for
   `wordJobStage`/`asyncJobStatus` and its `StageResult`/`JobError` shapes. The barrel
   `schema/index.ts` re-exports every group + the `relations`.
-- **Tests:** `*.test.ts` in the workspace's `test/` folder (sibling of `src/`, mirroring its structure) — not colocated with source. See `@.claude/rules/testing.md`.
+- **Tests:** `*.test.ts` in the workspace's `test/` folder (sibling of `src/`, mirroring its structure) — not colocated with source. See `.claude/rules/testing.md`.
 - **Entrypoints:** `src/main.ts` (apps), `src/index.ts` (libraries — the package `exports` entry).
 
 > Filenames stay kebab-case even for `PascalCase` exports (Services/Layers/Schemas) and

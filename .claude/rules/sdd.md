@@ -1,3 +1,10 @@
+---
+paths:
+  - ".claude/commands/**"
+  - ".claude/agents/**"
+  - ".claude/sdd/**"
+---
+
 # SDD command & agent toolkit — conventions
 
 The `/sdd:*` slash commands + their subagents are the **compiled, runnable form** of the

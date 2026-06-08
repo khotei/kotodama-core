@@ -1,8 +1,14 @@
+---
+paths:
+  - "packages/observability/**"
+  - "apps/**"
+---
+
 # Observability (tracing)
 
-**Always-loaded rule.** How LexiAI emits and views traces. Tooling choice is in
-`@.claude/rules/tech-stack.md` (`@effect/opentelemetry`); this file is the working
-convention for *using* it.
+**Path-scoped rule** (loads under `packages/observability/**` and `apps/**`). How LexiAI emits and
+views traces. Tooling choice is in `.claude/rules/tech-stack.md` (`@effect/opentelemetry`); this file
+is the working convention for *using* it.
 
 ## The pipeline
 
@@ -47,6 +53,6 @@ IDE is JetBrains, so we don't wire it; use OTel→Jaeger above instead.
 
 ## See also
 
-- `@.claude/rules/tech-stack.md` — tool choice and versions.
-- `@.claude/rules/effect-conventions.md` — `Effect.withSpan`, layer composition.
+- `.claude/rules/tech-stack.md` — tool choice and versions.
+- `.claude/rules/effect-conventions.md` — `Effect.withSpan`, layer composition.
 - `packages/observability/` — the `TracingLive` layer.

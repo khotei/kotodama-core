@@ -1,3 +1,9 @@
+---
+paths:
+  - "database/**"
+  - "repositories/**"
+---
+
 # Drizzle ⇄ Effect (the mandated pattern)
 
 How LexiAI talks to Postgres. **Always use Drizzle's two first-party Effect integrations** —
@@ -5,7 +11,7 @@ both are subpath exports of `drizzle-orm` (no extra npm package). **Source of tr
 vendored `rc` source**, not the `orm.drizzle.team` docs (those still show the **Effect v3**
 shapes — `@effect/sql-drizzle`, `Context.Tag`, `@effect/sql/SqlError`). Cheat-sheet with worked
 snippets: `.claude/agent-patterns/drizzle-effect.md`. Vendored: `repos/drizzle/` (read-only —
-never import; see `@.claude/rules/vendored-sources.md`).
+never import; see `.claude/rules/vendored-sources.md`).
 
 ## DB layer — `drizzle-orm/effect-postgres`
 
@@ -20,9 +26,9 @@ first; the snippets below and the cheat-sheet mirror it).
   `PgClient.layerConfig({ url: DatabaseUrl })` (the redacted `DatabaseUrl` export). Reading the
   whole `AppConfig` bundle here would force every unrelated key to resolve — take the one config
   you need. The env itself is loaded by `@lexiai/config`'s `ConfigProviderLive` (repo-root
-  `.env`), provided at the app entrypoint — see `@.claude/rules/config.md`. (DB **tests** bypass
+  `.env`), provided at the app entrypoint — see `.claude/rules/config.md`. (DB **tests** bypass
   this layer entirely: they use an ephemeral Testcontainers Postgres — see `@lexiai/database/testing`
-  and `@.claude/rules/testing.md`.)
+  and `.claude/rules/testing.md`.)
 - Expose **layers only** (`PgClientLive`, `DBLive`, `DatabaseLive`); `apps/*` compose them with
   **`Layer.provideMerge`**. `repositories/*` `yield*` the `DB` service — **never** a bare
   `drizzle(...)` / `drizzle-orm/node-postgres` driver, and **never** a hand-rolled `PgClient`.
@@ -83,7 +89,7 @@ moved to **Effect v4 beta in `rc.1`**, and v4 settled on `Context.Service` (not 
 
 `effect-schema`-generated schemas `import 'drizzle-orm'`, so they live in **`database/`
 (backend-only)**. `@lexiai/schemas` is **isomorphic — `effect` only** (per
-`packages/schemas/CLAUDE.md` + `@.claude/rules/dependency-hierarchy.md`): **never** import
+`packages/schemas/CLAUDE.md` + `.claude/rules/dependency-hierarchy.md`): **never** import
 `drizzle-orm` there. If the frontend needs a shape, **hand-author a plain `effect/Schema`** in
 `@lexiai/schemas`, decoupled from the Drizzle table.
 

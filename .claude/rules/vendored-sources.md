@@ -1,3 +1,8 @@
+---
+paths:
+  - "**/*.ts"
+---
+
 # Vendored sources (`repos/`)
 
 This project vendors external library source under `repos/` so Claude Code (Desktop & CLI) can read real implementation patterns the same way it reads application code — instead of guessing from training memory or fragmented web docs. This is the **single rule surface** for vendored repos (Claude-Code-specific; there is no `AGENTS.md`).

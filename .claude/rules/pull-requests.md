@@ -6,7 +6,7 @@ whose **subject = PR title** and **body = PR description** — verbatim, except 
 **HTML comments (`<!-- … -->`) are stripped**. The PR description therefore *is* the
 permanent git history a future developer or Claude Code session reads via `git log -p`.
 
-**Format source of truth is `@.claude/rules/commits.md`.** This file only adapts it to the
+**Format source of truth is `.claude/rules/commits.md`.** This file only adapts it to the
 PR surface — it does **not** restate the gitmoji table or type list. If the two drift, the
 squashed history stops matching per-commit history.
 

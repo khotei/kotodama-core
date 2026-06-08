@@ -5,13 +5,13 @@ entries (definitions, examples, images) via AI background jobs, and surfaces the
 spaced-repetition review. **This repo is the foundational Bun monorepo scaffolding** — strict
 layering so every later feature ships cheaply. Authoritative product/architecture detail lives
 in the [Tech spec](https://www.notion.so/36dfb28bd5f181988f16de6ab423eb3e); this file + the
-`.claude/rules/` it imports are the working context.
+`.claude/rules/` Claude Code auto-loads are the working context.
 
 ## Runtime
 
 **Bun 1.3** (pinned via `packageManager`, runs `.ts` directly) · **TypeScript strict** ·
 **Effect v4 (beta)** — `Context.Service`/`Context.Tag`, in-beta APIs under `effect/unstable/*`.
-Full table in `@.claude/rules/tech-stack.md`.
+Full table in `.claude/rules/tech-stack.md`.
 
 ## Dependency hierarchy (the rule the scaffolding protects)
 
@@ -27,7 +27,7 @@ apps/{api,worker} ─► core/* ─► repositories/* ─► database/
 Frontend (`apps/web`) is constrained to consume **only** `@lexiai/schemas` and `@lexiai/http`.
 It never imports `core/`, `database/`, `repositories/`, or backend-only packages (`ai`,
 `queue`, `storage`). This is the single most important rule the scaffolding must protect.
-Enforced by Biome `noRestrictedImports`. Details: `@.claude/rules/dependency-hierarchy.md`.
+Enforced by Biome `noRestrictedImports`. Details: `.claude/rules/dependency-hierarchy.md`.
 
 ## Root scripts
 
@@ -44,31 +44,33 @@ Enforced by Biome `noRestrictedImports`. Details: `@.claude/rules/dependency-hie
 
 ## Commits & the pre-commit gate
 
-Every commit follows `@.claude/rules/commits.md` (gitmoji + Conventional Commits +
+Every commit follows `.claude/rules/commits.md` (gitmoji + Conventional Commits +
 decision-rich body + `Refs:` footer). Husky runs `biome check --staged` + `bun run tsc` on
 commit; `git commit --no-verify` bypasses it — emergencies only, never on `main`.
 
 PRs squash-merge into one such commit (title → subject, description → body, HTML comments
 stripped), so the PR title/body follow the same `commits.md` format via
-`@.claude/rules/pull-requests.md` and `.github/PULL_REQUEST_TEMPLATE.md`.
+`.claude/rules/pull-requests.md` and `.github/PULL_REQUEST_TEMPLATE.md`.
 
-## Rules (always loaded)
+## Rules (`.claude/rules/`)
 
-@.claude/rules/tech-stack.md
-@.claude/rules/dependency-hierarchy.md
-@.claude/rules/naming.md
-@.claude/rules/deep-modules.md
-@.claude/rules/comments.md
-@.claude/rules/tooling.md
-@.claude/rules/commits.md
-@.claude/rules/pull-requests.md
-@.claude/rules/effect-conventions.md
-@.claude/rules/config.md
-@.claude/rules/vendored-sources.md
-@.claude/rules/frontend-rules.md
-@.claude/rules/testing.md
-@.claude/rules/observability.md
-@.claude/rules/claude-md.md
+Claude Code **auto-discovers** every `.claude/rules/*.md` — no `@`-import needed (an `@`-import
+would re-load the file on top of discovery and force-load it every session, defeating path-scoping).
+Cross-cutting rules load **always**; the rest are **path-scoped** via `paths:` frontmatter and load
+only when you touch a matching file, keeping the always-on context lean (Claude Code guidance:
+target < 200 lines of always-loaded context per file; bloat reduces adherence).
+
+- **Always:** `tech-stack` · `dependency-hierarchy` · `naming` · `deep-modules` · `comments` ·
+  `tooling` · `commits` · `pull-requests` · `claude-md`.
+- **Path-scoped (load on match):** `effect-conventions`, `vendored-sources` → `**/*.ts` ·
+  `drizzle-effect` → `database/**`, `repositories/**` · `config` → `packages/config/**`,
+  `**/main.ts` · `testing` → `**/test/**`, `**/*.test.ts` · `observability` →
+  `packages/observability/**`, `apps/**` · `frontend-rules` → `apps/web/**` · `sdd` →
+  `.claude/{commands,agents,sdd}/**`.
+- **On-demand reference (pointer-loaded, NOT auto-loaded):** `.claude/agent-patterns/*.md` —
+  Effect/Drizzle cheat-sheets, `deep-modules-examples.md` (shallow→deep gallery + worked refactoring),
+  and `commit-examples.md`. Linked from the rules that need them; never put on-demand depth in
+  `.claude/rules/` (it would auto-load).
 
 ## Per-layer context (loaded lazily when editing that subtree)
 
@@ -84,14 +86,14 @@ edit** — much in-flight work is exploratory or wrong, and churning docs on eac
 Refresh the affected docs only when a change is real and about to land, as part of preparing the
 commit (then `bun run lint`). Keep them lean: record project-specific decisions, constraints, and
 gotchas — omit anything an agent already knows. The *content* rule — why-not-what, never restate the
-code surface — is `@.claude/rules/claude-md.md`.
+code surface — is `.claude/rules/claude-md.md`.
 
 ## Vendored repositories
 
 `repos/effect-smol/` holds the **Effect v4 beta source** as read-only reference material so
 coding agents read real patterns instead of guessing. **Never import from `repos/` in
 application code; never edit it.** Before writing Effect code, consult `.claude/agent-patterns/*.md`
-and the vendored source. Full rules: `@.claude/rules/vendored-sources.md`. Update via
+and the vendored source. Full rules: `.claude/rules/vendored-sources.md`. Update via
 `bun run vendor:effect:update`.
 
 ## Slash commands
@@ -103,4 +105,4 @@ spec-driven loop (research → spec → plan → kanban tasks → TDD implement 
 reading/writing the live feature in Notion. They are **compiled from** the
 [SDD playbook](https://www.notion.so/36dfb28bd5f181238a86d26457bc24e7) §6/§7/§8 (the authored
 source — edit it, then regenerate the command) and `@`-reference the shared contract bundle in
-`.claude/sdd/`. Quickstart: `.claude/commands/README.md`. Conventions: `@.claude/rules/sdd.md`.
+`.claude/sdd/`. Quickstart: `.claude/commands/README.md`. Conventions: `.claude/rules/sdd.md`.

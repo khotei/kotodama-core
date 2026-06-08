@@ -10,7 +10,7 @@ The authoritative source is the [Tech spec](https://www.notion.so/36dfb28bd5f181
 | Server | `@effect/platform-bun` | `BunRuntime.runMain` entrypoints; deployed to AWS Lambda via the Lambda Web Adapter. |
 | SQL | `@effect/sql-pg` + **Drizzle** | Drizzle owns schema/migrations; repositories wrap it in `Context.Service`s. |
 | AI | `@effect/ai-openai` | text + image generation. |
-| Observability | `@effect/opentelemetry` | `TracingLive` layer factory in `@lexiai/observability`; OTLP→Jaeger locally (`infra`), any OTLP backend in prod. See `@.claude/rules/observability.md`. |
+| Observability | `@effect/opentelemetry` | `TracingLive` layer factory in `@lexiai/observability`; OTLP→Jaeger locally (`infra`), any OTLP backend in prod. See `.claude/rules/observability.md`. |
 | Frontend | **React 19** + **Vite 6** | React Compiler on (babel plugin), TanStack Router (file-based, deferred), Tailwind v4, `@effect/atom-react`. |
 | AWS | SQS + S3 (LocalStack locally) | `@aws-sdk/client-sqs`; storage uses `Bun.S3Client` (a Bun global). |
 | Lint/format | **Biome** | single tool; encodes the layer rule (see dependency-hierarchy). |

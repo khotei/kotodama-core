@@ -3,7 +3,7 @@
 **Always-loaded rule.** The default is **no comment**. Code is read far more than written, it is the
 source of truth, and every comment is read-cost the reader pays whether or not it pays off — and an
 agent acts on a stale comment with full confidence, so a bad comment is worse than none. Earn each
-one. Comment the **WHY**; let the code state the WHAT. (Same family as `@.claude/rules/claude-md.md`:
+one. Comment the **WHY**; let the code state the WHAT. (Same family as `.claude/rules/claude-md.md`:
 code says *what*, prose says *why*.)
 
 This rule has two gates: **(A)** should this comment exist at all (be strict — most shouldn't); and
@@ -26,11 +26,33 @@ keep a comment:
 - **An INVARIANT the type can't express** — "`pending` rows legitimately have null content."
 - **A usage CONSTRAINT on an exported symbol** — "provide `ConfigProviderLive` first."
 
-If it isn't one of these four, delete it. Common offenders to cut: restating the code/a symbol name
-(`/** Postgres connection string */` over `DatabaseUrl`); step narration (`// then fetch it`);
-anything a rule/`CLAUDE.md`/test-name already says (link instead); a provenance tag
-(`(Feature §14 #5)` / `(T0N)` — traceability lives in the commit `Refs:` footer, not each line;
-keep a `§`-ref *only* when the reader must open it to act).
+If it isn't one of these four, **delete it.**
+
+## Delete-on-sight gallery (the obvious comment)
+
+The comments most often written and least often earned — each **restates the line it sits on.** This is
+the single biggest source of comment noise; write none of them. (The idiom is this repo's; the pattern
+is universal.)
+
+```ts
+import { wordsTable } from '@lexiai/database'    // import the words table        ← the import says it
+const running = status === enumAsyncJobStatus.running // true when it's running   ← reads identically
+attempts: sql`${table.attempts} + 1`             // increment attempts by one     ← the expression IS the sentence
+if (!row) return yield* Effect.die(err)          // if there's no row, die         ← narration
+return rows.map(toWord)                           // map each row to a domain word  ← narration
+yield* repo.create(content)                       // create the word               ← the call says it
+for (const stage of stages) { … }                 // loop over the stages          ← `for` already means "loop"
+```
+
+Same offense, other forms: a `/** … */` block that only re-says the function name; a `@param word The
+word` that restates the type; step narration (`// then fetch it`, `// now validate the input`); a
+provenance tag (`(T0N)`, `(Feature §14 #5)` — traceability lives in the commit `Refs:` footer, not each
+line; keep a `§`-ref *only* when the reader must open it to act); anything a rule/`CLAUDE.md`/test name
+already states — **link to it, don't restate.**
+
+> **Pre-write test (do this every time):** write the comment, then delete it and re-read the code. If
+> the code still tells you the same thing, keep it deleted. A comment earns its place *only* by saying
+> what the code **cannot** — Gate A's four: decision, gotcha, invariant, usage-constraint.
 
 ## Gate B — write the survivor as documentation
 
@@ -55,7 +77,7 @@ single-line `//` for a pinpoint gotcha *inside* a body, at the exact line it war
  * ```ts
  * const stages = yield* AsyncWordJobsRepo.initializeStages(enumLanguage.en, 'lacuna')
  * ```
- * @see `@.claude/rules/drizzle-effect.md`
+ * @see `.claude/rules/drizzle-effect.md`
  */
 ```
 
