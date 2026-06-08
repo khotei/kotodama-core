@@ -97,3 +97,10 @@ and the vendored source. Full rules: `@.claude/rules/vendored-sources.md`. Updat
 ## Slash commands
 
 `/check` (lint+tsc+test) · `/scan-deps` (verify layer rule) · `/new-package` (scaffold a workspace).
+
+**SDD toolkit** — `/sdd:{research,specify,clarify,plan,tasks,implement,verify}` drive the
+spec-driven loop (research → spec → plan → kanban tasks → TDD implement → fresh-context verify),
+reading/writing the live feature in Notion. They are **compiled from** the
+[SDD playbook](https://www.notion.so/36dfb28bd5f181238a86d26457bc24e7) §6/§7/§8 (the authored
+source — edit it, then regenerate the command) and `@`-reference the shared contract bundle in
+`.claude/sdd/`. Quickstart: `.claude/commands/README.md`. Conventions: `@.claude/rules/sdd.md`.
