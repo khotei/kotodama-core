@@ -42,6 +42,7 @@
       "drizzle-kit": "1.0.0-rc.3"
     },
     "test": {
+      "@faker-js/faker": "^9.4.0",
       "@testcontainers/postgresql": "^12.0.1",
       "testcontainers": "^12.0.1"
     },

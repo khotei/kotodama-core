@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "effect": "catalog:effect",
-    "@lexiai/repositories-jobs": "workspace:*",
+    "@lexiai/repositories-async-word-jobs": "workspace:*",
     "@lexiai/schemas": "workspace:*"
   },
   "scripts": {

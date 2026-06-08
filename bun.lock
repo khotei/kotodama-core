@@ -62,7 +62,7 @@
       "name": "@lexiai/core-jobs",
       "version": "0.0.0",
       "dependencies": {
-        "@lexiai/repositories-jobs": "workspace:*",
+        "@lexiai/repositories-async-word-jobs": "workspace:*",
         "@lexiai/schemas": "workspace:*",
         "effect": "catalog:effect",
       },
@@ -80,6 +80,7 @@
       "name": "@lexiai/database",
       "version": "0.0.0",
       "dependencies": {
+        "@effect/platform-bun": "catalog:effect",
         "@effect/sql-pg": "catalog:effect",
         "@lexiai/config": "workspace:*",
         "drizzle-kit": "catalog:db",
@@ -87,6 +88,7 @@
         "effect": "catalog:effect",
       },
       "devDependencies": {
+        "@faker-js/faker": "catalog:test",
         "@testcontainers/postgresql": "catalog:test",
         "testcontainers": "catalog:test",
       },
@@ -157,13 +159,24 @@
         "effect": "catalog:effect",
       },
     },
-    "repositories/jobs": {
-      "name": "@lexiai/repositories-jobs",
+    "packages/utils": {
+      "name": "@lexiai/utils",
+      "version": "0.0.0",
+    },
+    "repositories/async-word-jobs": {
+      "name": "@lexiai/repositories-async-word-jobs",
       "version": "0.0.0",
       "dependencies": {
         "@effect/sql-pg": "catalog:effect",
         "@lexiai/database": "workspace:*",
+        "@lexiai/utils": "workspace:*",
+        "drizzle-orm": "catalog:db",
         "effect": "catalog:effect",
+      },
+      "devDependencies": {
+        "@faker-js/faker": "catalog:test",
+        "@testcontainers/postgresql": "catalog:test",
+        "testcontainers": "catalog:test",
       },
     },
     "repositories/words": {
@@ -172,7 +185,14 @@
       "dependencies": {
         "@effect/sql-pg": "catalog:effect",
         "@lexiai/database": "workspace:*",
+        "@lexiai/utils": "workspace:*",
+        "drizzle-orm": "catalog:db",
         "effect": "catalog:effect",
+      },
+      "devDependencies": {
+        "@faker-js/faker": "catalog:test",
+        "@testcontainers/postgresql": "catalog:test",
+        "testcontainers": "catalog:test",
       },
     },
   },
@@ -224,6 +244,7 @@
       "typescript": "^5.7.0",
     },
     "test": {
+      "@faker-js/faker": "^9.4.0",
       "@testcontainers/postgresql": "^12.0.1",
       "testcontainers": "^12.0.1",
     },
@@ -335,21 +356,21 @@
 
     "@drizzle-team/brocli": ["@drizzle-team/brocli@0.11.0", "", {}, "sha512-hD3pekGiPg0WPCCGAZmusBBJsDqGUR66Y452YgQsZOnkdQ7ViEPKuyP4huUGEZQefp8g34RRodXYmJ2TbCH+tg=="],
 
-    "@effect/ai-openai": ["@effect/ai-openai@4.0.0-beta.74", "", { "peerDependencies": { "effect": "^4.0.0-beta.74" } }, "sha512-cCreNxM2OaFe38DjplTn7f6xi/LqZeEOUymyMa3dTJdi1YUvMg5riq65OlMfhj0CIqWPPFLmURJdIFj2s+gUCA=="],
+    "@effect/ai-openai": ["@effect/ai-openai@4.0.0-beta.78", "", { "peerDependencies": { "effect": "^4.0.0-beta.78" } }, "sha512-tx953rRkLqW2BeEkWK12/nRBPO0b1eS6pI+2YyWI0nQvX2JTTijrGlBv/qDVa5kxDkLm63+tA04xnxgZMlA8NA=="],
 
     "@effect/atom-react": ["@effect/atom-react@4.0.0-beta.0", "", { "peerDependencies": { "effect": "^4.0.0-beta.0", "react": "^19.2.4", "scheduler": "*" } }, "sha512-4xdCYVv3i1p26MHJVBgOXCwhpUB1DN/TEDcwhJfOI6TqeLyvl09A4bYMgf0lAO0N6uBmoq6hV97zCPiwhTzcZQ=="],
 
     "@effect/language-service": ["@effect/language-service@0.85.1", "", { "bin": { "effect-language-service": "cli.js" } }, "sha512-EXnJjIy6zQ3nUO/MZ+ynWUb8B895KZPotd1++oTs9JjDkplwM7cb6zo8Zq2zU6piwq+KflO7amXbEfj1UMpHkw=="],
 
-    "@effect/opentelemetry": ["@effect/opentelemetry@4.0.0-beta.74", "", { "peerDependencies": { "@opentelemetry/api": "^1.9", "@opentelemetry/api-logs": ">=0.203.0 <0.300.0", "@opentelemetry/resources": "^2.0.0", "@opentelemetry/sdk-logs": ">=0.203.0 <0.300.0", "@opentelemetry/sdk-metrics": "^2.0.0", "@opentelemetry/sdk-trace-base": "^2.0.0", "@opentelemetry/sdk-trace-node": "^2.0.0", "@opentelemetry/sdk-trace-web": "^2.0.0", "@opentelemetry/semantic-conventions": "^1.33.0", "effect": "^4.0.0-beta.74" }, "optionalPeers": ["@opentelemetry/api", "@opentelemetry/api-logs", "@opentelemetry/resources", "@opentelemetry/sdk-logs", "@opentelemetry/sdk-metrics", "@opentelemetry/sdk-trace-base", "@opentelemetry/sdk-trace-node", "@opentelemetry/sdk-trace-web"] }, "sha512-flpyqLPyr+THSe6ZCGRZl6hi+FqxbIXNSkslKGiRJAjbPabam9mSp7R3aC8biIMt6xE4Fd0LNfo4p2GplUkm2Q=="],
+    "@effect/opentelemetry": ["@effect/opentelemetry@4.0.0-beta.78", "", { "peerDependencies": { "@opentelemetry/api": "^1.9", "@opentelemetry/api-logs": ">=0.203.0 <0.300.0", "@opentelemetry/resources": "^2.0.0", "@opentelemetry/sdk-logs": ">=0.203.0 <0.300.0", "@opentelemetry/sdk-metrics": "^2.0.0", "@opentelemetry/sdk-trace-base": "^2.0.0", "@opentelemetry/sdk-trace-node": "^2.0.0", "@opentelemetry/sdk-trace-web": "^2.0.0", "@opentelemetry/semantic-conventions": "^1.33.0", "effect": "^4.0.0-beta.78" }, "optionalPeers": ["@opentelemetry/api", "@opentelemetry/api-logs", "@opentelemetry/resources", "@opentelemetry/sdk-logs", "@opentelemetry/sdk-metrics", "@opentelemetry/sdk-trace-base", "@opentelemetry/sdk-trace-node", "@opentelemetry/sdk-trace-web"] }, "sha512-OJGnlNkxfhUmZ/8aLIfQly8ic2tntcnwidAP0BdrTUKa1/sbZjq5xTrhVUjvmehFra2Thsef0k4UPTgsOrBG1A=="],
 
-    "@effect/platform-bun": ["@effect/platform-bun@4.0.0-beta.74", "", { "dependencies": { "@effect/platform-node-shared": "^4.0.0-beta.74" }, "peerDependencies": { "effect": "^4.0.0-beta.74" } }, "sha512-HPozsTKom3v8uGITYX+blua0wVSk/I7ak802FoX13t4zWhHfprT8I/A8VBO4SxmcDYb/izABtHBXBgEmp612MA=="],
+    "@effect/platform-bun": ["@effect/platform-bun@4.0.0-beta.78", "", { "dependencies": { "@effect/platform-node-shared": "^4.0.0-beta.78" }, "peerDependencies": { "effect": "^4.0.0-beta.78" } }, "sha512-lmPCL1G7SlkCWCguX3rDPS7kKuvJ/AN4pjS7IXb/5SoauHPd67iUdc1ZbB7o6lwTChJaIfWNNPkUWygiaUeJiA=="],
 
-    "@effect/platform-node-shared": ["@effect/platform-node-shared@4.0.0-beta.74", "", { "dependencies": { "@types/ws": "^8.18.1", "ws": "^8.20.0" }, "peerDependencies": { "effect": "^4.0.0-beta.74" } }, "sha512-C6C2hXixNcZXLaFF2u7B/FtOsqpdY7luaPuiGFBJza0P7EnYDkwaT3kB6lv7l/qctmkADc24qOsSCWIKRbC4jg=="],
+    "@effect/platform-node-shared": ["@effect/platform-node-shared@4.0.0-beta.78", "", { "dependencies": { "@types/ws": "^8.18.1", "ws": "^8.20.0" }, "peerDependencies": { "effect": "^4.0.0-beta.78" } }, "sha512-mo0ddTPATyCMyqzQasYDL7+NI29vozoMplom+qu9f/onDTd4xG5hvEEfGxfL0Ljygui6keG/YE/E9OZVf2z5WA=="],
 
-    "@effect/sql-pg": ["@effect/sql-pg@4.0.0-beta.74", "", { "dependencies": { "pg": "^8.20.0", "pg-connection-string": "2.12.0", "pg-cursor": "^2.19.0", "pg-pool": "^3.13.0", "pg-types": "^4.1.0" }, "peerDependencies": { "effect": "^4.0.0-beta.74" } }, "sha512-F1keL+vtp+d2HG7LQQ/WhJx4ezCrNy29T0HLbGPPvTeJTIi5/8fe2frh4WF55p6K3oi8jhkfe3fSH2Lcx0RjRw=="],
+    "@effect/sql-pg": ["@effect/sql-pg@4.0.0-beta.78", "", { "dependencies": { "pg": "^8.20.0", "pg-connection-string": "2.12.0", "pg-cursor": "^2.19.0", "pg-pool": "^3.13.0", "pg-types": "^4.1.0" }, "peerDependencies": { "effect": "^4.0.0-beta.78" } }, "sha512-G7OZhImyPyHsmN7+bpIfl+llrxQz4qUOCDAHWBXafzyE1AntL5Syi0/NZLyE8X1LzGKasCNl4FTCjxKSEOdiBQ=="],
 
-    "@effect/vitest": ["@effect/vitest@4.0.0-beta.74", "", { "peerDependencies": { "effect": "^4.0.0-beta.74", "vitest": "^3.0.0 || ^4.0.0" } }, "sha512-+SFcjtbboJdWA+cP7JFW7Gp1PL7vj7uqvBnh9xY7JFU8VMsrHN5mblsqE7l7+ZFGpJvBGLgjGrhfe8QZ7f5vgg=="],
+    "@effect/vitest": ["@effect/vitest@4.0.0-beta.78", "", { "peerDependencies": { "effect": "^4.0.0-beta.78", "vitest": "^3.0.0 || ^4.0.0" } }, "sha512-5KQsQYrQ/o7mfOVAxRtNnfD9M0W4OI6yQd0n/m2N7OOLxTdX4FwN4s/X4obykBC7ZEwH+bzMrFJiB4pq9lrQKQ=="],
 
     "@esbuild/aix-ppc64": ["@esbuild/aix-ppc64@0.25.12", "", { "os": "aix", "cpu": "ppc64" }, "sha512-Hhmwd6CInZ3dwpuGTF8fJG6yoWmsToE+vYgD4nytZVxcu1ulHpUQRAB1UJ8+N1Am3Mz4+xOByoQoSZf4D+CpkA=="],
 
@@ -403,6 +424,8 @@
 
     "@esbuild/win32-x64": ["@esbuild/win32-x64@0.25.12", "", { "os": "win32", "cpu": "x64" }, "sha512-alJC0uCZpTFrSL0CCDjcgleBXPnCrEAhTBILpeAp7M/OFgoqtAetfBzX0xM00MUsVVPpVjlPuMbREqnZCXaTnA=="],
 
+    "@faker-js/faker": ["@faker-js/faker@9.9.0", "", {}, "sha512-OEl393iCOoo/z8bMezRlJu+GlRGlsKbUAN7jKB6LhnKoqKve5DXRpalbItIIcwnCjs1k/FOPjFzcA6Qn+H+YbA=="],
+
     "@grpc/grpc-js": ["@grpc/grpc-js@1.14.4", "", { "dependencies": { "@grpc/proto-loader": "^0.8.0", "@js-sdsl/ordered-map": "^4.4.2" } }, "sha512-k9Dj3DV/itK9D06Y8f190Qgop7/Ui+D0njFV3LHMPwPT75DpXLQohE9Wmz0QElrJnzsjB7KPWiKJbOl7IPDArQ=="],
 
     "@grpc/proto-loader": ["@grpc/proto-loader@0.7.15", "", { "dependencies": { "lodash.camelcase": "^4.3.0", "long": "^5.0.0", "protobufjs": "^7.2.5", "yargs": "^17.7.2" }, "bin": { "proto-loader-gen-types": "build/bin/proto-loader-gen-types.js" } }, "sha512-tMXdRCfYVixjuFK+Hk0Q1s38gV9zDiDJfWL3h1rv4Qc39oILCu1TRTDt7+fGUI8K4G1Fj125Hx/ru3azECWTyQ=="],
@@ -449,13 +472,15 @@
 
     "@lexiai/queue": ["@lexiai/queue@workspace:packages/queue"],
 
-    "@lexiai/repositories-jobs": ["@lexiai/repositories-jobs@workspace:repositories/jobs"],
+    "@lexiai/repositories-async-word-jobs": ["@lexiai/repositories-async-word-jobs@workspace:repositories/async-word-jobs"],
 
     "@lexiai/repositories-words": ["@lexiai/repositories-words@workspace:repositories/words"],
 
     "@lexiai/schemas": ["@lexiai/schemas@workspace:packages/schemas"],
 
     "@lexiai/storage": ["@lexiai/storage@workspace:packages/storage"],
+
+    "@lexiai/utils": ["@lexiai/utils@workspace:packages/utils"],
 
     "@msgpackr-extract/msgpackr-extract-darwin-arm64": ["@msgpackr-extract/msgpackr-extract-darwin-arm64@3.0.4", "", { "os": "darwin", "cpu": "arm64" }, "sha512-LCkGo6JDfaBhgST7UpPWgNgLINpcpabaHfyz5OBx75nUYxBsaEPxjnyNjWpeb/xBup/682QnBfRBy2/LvPutZQ=="],
 
@@ -791,7 +816,7 @@
 
     "eastasianwidth": ["eastasianwidth@0.2.0", "", {}, "sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA=="],
 
-    "effect": ["effect@4.0.0-beta.74", "", { "dependencies": { "@standard-schema/spec": "^1.1.0", "fast-check": "^4.8.0", "find-my-way-ts": "^0.1.6", "ini": "^7.0.0", "kubernetes-types": "^1.30.0", "msgpackr": "^2.0.1", "multipasta": "^0.2.7", "toml": "^4.1.1", "uuid": "^14.0.0", "yaml": "^2.9.0" } }, "sha512-Yx+Kh12U+i2FmjwEfKs+ePFmpMd43RPD1oGqc/VraSS9bYzvF0Ff3PojwEFEVEewp8xc92Uxu28gTspU4qyvHA=="],
+    "effect": ["effect@4.0.0-beta.78", "", { "dependencies": { "@standard-schema/spec": "^1.1.0", "fast-check": "^4.8.0", "find-my-way-ts": "^0.1.6", "ini": "^7.0.0", "kubernetes-types": "^1.30.0", "msgpackr": "^2.0.1", "multipasta": "^0.2.7", "toml": "^4.1.1", "uuid": "^14.0.0", "yaml": "^2.9.0" } }, "sha512-j79Rl9QpHwMz/ZJWLNpZoiVj9N7zHqiLKN5EcYd/A8J1oqejILWQLfc4HPlvqHqKC8SK55LJ+X4gy4ONJ+JpfQ=="],
 
     "electron-to-chromium": ["electron-to-chromium@1.5.364", "", {}, "sha512-G/dYE3+AYhyHwzTwg8UbnXf7zqMERYh7l2jJ3QujhFsH8agSYwtnGAR2aZ7f0AakIKJXd5En/Hre4igIUrdlYw=="],
 

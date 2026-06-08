@@ -4,5 +4,5 @@
   "compilerOptions": {
     "outDir": "dist"
   },
-  "include": ["src/**/*", "schema/**/*", "index.ts", "*.config.ts"]
+  "include": ["src/**/*", "test/**/*", "schema/**/*", "index.ts", "*.config.ts"]
 }

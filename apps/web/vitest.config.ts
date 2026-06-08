@@ -1,7 +1,7 @@
-// app-web runs its tests under the shared node project, NOT its vite.config.ts.
-// Vitest prefers vitest.config.ts over vite.config.ts, so the React-compiler
-// babel plugin (a browser build concern) is not loaded for unit tests — they
-// run in the same plain node environment as every other workspace. UI tests
-// that genuinely need the Vite/React pipeline can add their own browser/jsdom
-// project later; the smoke test does not.
+/**
+ * Present so Vitest picks this over vite.config.ts — unit tests run in the shared
+ * node env, not the React-compiler/Vite pipeline.
+ *
+ * @see @.claude/rules/testing.md
+ */
 export { default } from '../../vitest.base'

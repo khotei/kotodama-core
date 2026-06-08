@@ -1,38 +1,35 @@
 # database — `@lexiai/database`
 
-Drizzle schema, relations, migrations, seed. Owns the SQL layer.
+Drizzle schema, relations, migrations, seed, and the `DB` layer. Owns the SQL layer. The schema
+*mechanics* (the `…Table` suffix, `snakeCase.table`, `<Entity>Row` = `$inferSelect`, the derived
+`*Schema`s) live in `@.claude/rules/naming.md` + `drizzle-effect.md` — this file is the constraints
+and pointers those can't localize.
 
-- **May import:** `@lexiai/*` packages only (`effect`, `@effect/sql-pg`, drizzle, `@lexiai/config`).
-- **MUST NOT import:** `core/*`, `repositories/*`, `apps/*`. No HTTP code here.
-- **Schema (`schema/<entity>/{<entity>.table.ts, <entity>.schemas.ts}`):** tables via
-  `snakeCase.table` exported as `…Table` (`wordsTable`); derived `effect/Schema` row-schemas
-  `<Entity>Row` / `<Entity>RowInsert` (they `import 'drizzle-orm'`, so they stay here, never in
-  `@lexiai/schemas`). `schema/index.ts` is the barrel (tables + row-schemas + `relations`).
-- **Layers (`src/db.ts`):** `DB` (`Context.Service`), `DBLive` (needs a `PgClient`),
-  `PgClientLive` (`layerConfig` ← `@lexiai/config`'s `DatabaseUrl`), and `DatabaseLive`
-  (self-contained). This package only *exposes* layers — `apps/*` compose them.
-- **`db:*` scripts:** `db:generate` / `db:migrate` / `db:push` invoke real `drizzle-kit`, which
-  reads `drizzle.config.ts` — and that resolves `DATABASE_URL` through `@lexiai/config`
-  (`ConfigProviderLive` + `DatabaseUrl`), so the target DB is config-driven (default → `lexiai_dev`
-  from the root `.env`; override per command with an exported `DATABASE_URL`) — no bespoke
-  migrator, no hardcoded URLs. These migrate the **dev** DB; tests migrate themselves (below).
-  `db:reset` / `db:seed` remain `echo` placeholders until a feature needs them.
-- **Migrations** live in `migrations/` (drizzle-kit rc format: one timestamped folder per
-  migration with `migration.sql` + `snapshot.json`, chained via `prevIds` — no central
-  `_journal.json`). `drizzle.config.ts` points `schema` at the single `./schema/index.ts`
-  barrel (a directory glob would double-count tables the barrel re-exports).
-- **Tests** run against an **ephemeral Testcontainers Postgres** (needs Docker), never the dev DB —
-  the generated URL can't be the dev one, so there's no `.env.test` / safety belt. The test surface
-  is **`@lexiai/database/testing`** (`src/testing.ts`): **`TestDatabaseLive`** (a `DB` layer over a
-  fresh container with **migrations applied at layer build** via `drizzle-orm/effect-postgres/migrator`
-  — the suite migrates itself) and **`resetDb`** (an **Effect consuming `DB`** that `TRUNCATE`s every
-  `public` table dynamically, leaving the `drizzle`-schema migration record intact). Use
-  `it.layer(TestDatabaseLive)` (one container per file) and call `resetDb` at the **start of each
-  test** — reset must run in the shared `it.layer` runtime, not an `afterEach` (which would start a
-  second container). See `@.claude/rules/testing.md`.
+- **May import:** `@lexiai/*` packages, `effect`, `@effect/sql-pg`, drizzle, `@lexiai/config`.
+  **Never** `core/*`, `repositories/*`, `apps/*`. No HTTP code.
+- **Schema is grouped by aggregate/domain, not per table** — one folder per repo boundary
+  (`schema/words/`, `schema/async-word-jobs/`; a word's generation is **one `async_word_jobs` row per
+  `(word, language, stage)`** — `StageState` flattened into columns, not a `payload` jsonb), re-exported
+  by the single `schema/index.ts` barrel that `drizzle.config.ts` points at (a directory glob would
+  double-count the barrel's re-exports).
+- **Schema-boundary rule (hard):** the derived `effect/Schema`s `import 'drizzle-orm'`, so they stay
+  **here** — never in the isomorphic `@lexiai/schemas`. A frontend shape is hand-authored as a plain
+  `effect/Schema` there instead.
+- **Layers (`src/db.ts`):** this package *exposes* layers only — `apps/*` compose them; `DatabaseLive`
+  is the self-contained one. Wiring details: `drizzle-effect.md`.
+- **`db:*` scripts are config-driven** through `@lexiai/config` (`ConfigProviderLive` + `DatabaseUrl`)
+  — no hardcoded URLs. They target the **dev** DB (`lexiai_dev` by default; override with an exported
+  `DATABASE_URL`). `db:reset` / `db:seed` are `echo` placeholders until a feature needs them.
+- **Migrations** (`migrations/`) use the drizzle-kit rc format: one timestamped folder per migration
+  (`migration.sql` + `snapshot.json`, chained via `prevIds` — no central `_journal.json`).
+- **Tests** run against an ephemeral Testcontainers Postgres (needs Docker), never the dev DB — so
+  there's no `.env.test`. Surface: `@lexiai/database/testing` — `TestDatabaseLive` (migrates itself at
+  layer build) + `resetDb`. One container per file; `resetDb` at the top of each test. See
+  `@.claude/rules/testing.md`.
 
-## How LexiAI uses Drizzle
+## How LexiAI uses Drizzle (pointers)
 
-- **Mandate:** `@.claude/rules/drizzle-effect.md` — the *how* (the two first-party Effect integrations `drizzle-orm/effect-schema` + `drizzle-orm/effect-postgres`, the `Context.Service` idiom adaptation, and the schema-boundary rule: generated row-schemas live here in `database/`, never in the isomorphic `@lexiai/schemas`).
-- **Cheat-sheet:** `.claude/agent-patterns/drizzle-effect.md` — worked `pgTable → createSelectSchema` and `PgDrizzle` + `Layer` snippets adapted to LexiAI idioms. This is the entry point (there is no Drizzle `LLMS.md`).
-- **Vendored source (read-only, never import):** `repos/drizzle/` — pinned to `v1.0.0-rc.3` (native Effect v4). Grep it for `pgTable`, `createSelectSchema`, `PgDrizzle.make`, relations, and migration patterns. See `@.claude/rules/vendored-sources.md`.
+- **Mandate** (the *how*): `@.claude/rules/drizzle-effect.md` — the two first-party Effect integrations
+  (`effect-schema` + `effect-postgres`), the `Context.Service` idiom, the schema-boundary rule.
+- **Cheat-sheet:** `.claude/agent-patterns/drizzle-effect.md` (the entry point — there is no Drizzle `LLMS.md`).
+- **Vendored source** (read-only, never import): `repos/drizzle/` @ `v1.0.0-rc.3`. See `@.claude/rules/vendored-sources.md`.

@@ -41,9 +41,26 @@ moved to **Effect v4 beta in `rc.1`**, and v4 settled on `Context.Service` (not 
   re-exported by `schema/index.ts` (the single `drizzle.config` `schema` entry — a directory
   glob would double-count the barrel's re-exports).
 - **Table export suffixed `…Table`** (`wordsTable`), declared with `snakeCase.table` (table-level
-  casing; never also set `transformQueryNames`). Derived row-schemas are **`<Entity>Row`** /
-  **`<Entity>RowInsert`**. `relations = defineRelations({ wordsTable })` in the barrel feeds
-  `PgDrizzle.make`.
+  casing; never also set `transformQueryNames`). Each `<entity>.schemas.ts` exports the **row type
+  `<Entity>Row`** (`typeof <table>.$inferSelect` — what repos return; preserves jsonb `$type`) and
+  the **derived effect/Schemas `<Entity>Schema` / `<Entity>SchemaInsert`** (`createSelectSchema` /
+  `createInsertSchema`, for runtime decode). `relations = defineRelations({ wordsTable })` in the
+  barrel feeds `PgDrizzle.make`.
+- **Enums: never hardcode the value strings.** A `pgEnum` (`asyncJobStatus`) is the single source;
+  derive its union type (`type AsyncJobStatus = (typeof asyncJobStatus.enumValues)[number]`) AND a
+  native named map (`export const enumAsyncJobStatus = toEnum(asyncJobStatus.enumValues)`, the shared
+  helper in `schema/enums.ts`). Reference values by name everywhere — `enumAsyncJobStatus.pending`,
+  `enumWordJobStage.fetch_source`, `enumLanguage.en` (in column `.default(…)`, repos, factories,
+  seed, and tests) — and use `<enum>.enumValues` for all-values arrays. Keys are derived from the
+  pgEnum, never hand-listed; `toEnum` builds the map eagerly at module load (sidestepping the
+  `enumValues`-mutates-to-objects runtime quirk, drizzle #2753). The same value-first idiom applies to
+  closed string unions nested in jsonb content (`Source.type`, `Frequency.band`, `Visual.kind`): an
+  `as const` array is the single source — derive the union from it and feed it to `toEnum` — never a
+  `pgEnum` (these aren't columns, so a `CREATE TYPE` would back nothing) and never a re-listed array in
+  a factory. `async_word_jobs.stage` IS a column, so it's the `word_job_stage` `pgEnum` (like
+  `async_job_status`): `enumWordJobStage.fetch_source` by name, `wordJobStage.enumValues` for arrays.
+  Its declaration order is load-bearing — display/pipeline order AND the Postgres sort order
+  (`ORDER BY stage` = pipeline order), so reorder it only when reordering the UX stepper.
 
 ## Schema derivation — `drizzle-orm/effect-schema`
 
@@ -51,6 +68,16 @@ moved to **Effect v4 beta in `rc.1`**, and v4 settled on `Context.Service` (not 
   from a table; refine/override columns with `effect/Schema` (pass a column map, or
   `(schema) => schema.check(...)` to refine before nullable/optional is applied). **effect v4 uses
   `.check(Schema.isMinLength(1))`** — not the v3 `.pipe(Schema.minLength(1))`.
+- **`$type<T>`**** does NOT survive into the derived effect/Schema** (verified, F-PLAT-005 #11 spike).
+  `effect-schema`'s `GetEffectSchemaType` keys off the column's SQL dataType (`json`), not `$type`,
+  so a `jsonb().$type<Tiers>()` column becomes the generic `Json` union on `createSelectSchema`
+  (`string | number | boolean | null | {} | []`), regardless of `$type`. (Source:
+  `repos/drizzle/drizzle-orm/src/effect-schema/column.types.ts` — `'json' → jsonSchema`.) So
+  `<Entity>Schema` hands consumers **opaque jsonb**. This is exactly why the naming splits: **(a)**
+  the **`<Entity>Row`** type (`typeof <table>.$inferSelect`) **does** carry `$type`, so repos return
+  it for compile-time-typed columns with no runtime decode; **(b)** for runtime validation of
+  untrusted JSON (e.g. LLM output at a write boundary), hand-author an `effect/Schema` for that
+  column — neither `<Entity>Schema` nor `<Entity>Row` enforces the jsonb shape at runtime.
 
 ## Schema-boundary rule (hard constraint)
 
@@ -79,15 +106,19 @@ storage permissiveness from contract precision** in two layers:
    `Schema.optional` / `Schema.optionalKey`; assert cross-field rules with
    `.check(Schema.makeFilter(...))`. Cheat-sheet has the worked snippet.
 
-**Stronger storage variant (preferred when a feature builds the real model):** split the
-heavy lifecycle content into a **1:1 detail table** (`word_details`) that exists *only when
-ready*, leaving the parent (`words`) lean and all-`NOT NULL`; then `ready ⇔ detail row
-exists`, with no nullable content columns at all (Tech spec §6.2).
+**Strongest storage variant (as-built for `words`, F-PLAT-005 §v7):** push the lifecycle
+*out* of the entity entirely. `words` is **pristine** — all generation content merged in
+`NOT NULL` (except a nullable `frequency`), no `status`, so **a `words` row exists ⇔ the word
+is ready**. There is no detail table and no nullable content: transient partial state lives in
+`async_word_jobs.result` (jsonb, one row per stage) during generation and is **assembled + decoded
+through a real `effect/Schema`** before the promotion upsert. So `words` never holds half a word, and the
+permissive-row → strict-union dance above is unnecessary for it (it remains the right tool for a
+table that genuinely *must* store a pre-ready row).
 
-> **Decision (F-PLAT-004):** the foundation ships only the permissive `words` row
-> (`WordRow`/`WordRowInsert`); the union + decoder and the `word_details` split are deferred to
-> the word-generation feature, which owns the domain contract. Captured here so it builds
-> them this way rather than exposing the nullable row.
+> **Decision (F-PLAT-005 §v7, supersedes the F-PLAT-004 plan):** `WordsRepo` hands back the
+> plain `WordRow` (`$inferSelect`) — already complete, no union/decoder needed — and `create`
+> is the single promotion **upsert** on `UNIQUE(word, language)` (first-gen inserts, regen replaces).
+> The earlier plan's 1:1 `word_details` split (and the nullable-row union) was dropped in favour of this merge.
 
 ## Version floor
 

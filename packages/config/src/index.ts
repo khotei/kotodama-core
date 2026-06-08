@@ -2,13 +2,6 @@ import { Config } from 'effect'
 
 export { ConfigProviderLive } from './config-provider-live'
 
-/**
- * Env config (Tech spec §2.5). Each setting is an individual `Config` so a
- * consumer resolves only what it needs — `AppConfig` requires every key, so
- * prefer one export when you need one. Secrets use `Redacted`. Provide
- * `ConfigProviderLive` at the entrypoint to source the repo-root `.env`; see
- * `@.claude/rules/config.md`.
- */
 export const DatabaseUrl = Config.redacted('DATABASE_URL')
 export const ImagesBucket = Config.string('IMAGES_BUCKET')
 export const JobsQueueUrl = Config.string('JOBS_QUEUE_URL')

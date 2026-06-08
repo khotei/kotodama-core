@@ -1,20 +1,24 @@
 /**
- * Schema barrel for `@lexiai/database`. `drizzle.config.ts` points `drizzle-kit`
- * at this single `./schema/index.ts` file (not the `./schema` directory — a
- * directory glob would load each table twice, here and via this barrel's
- * re-export). The DB layer (`src/db.ts`) feeds `relations` into
- * `PgDrizzle.make({ relations })`. Each entity lives in its own folder:
- * `words/{words.table,words.schemas}`.
+ * `drizzle.config.ts` points `drizzle-kit` at this single barrel, NOT the `./schema` directory — a
+ * dir glob would load each table twice (here and via the re-export). `columns.ts` is intentionally
+ * NOT re-exported (internal helper); `enums.ts` IS, so `drizzle-kit` emits the `CREATE TYPE`s.
  */
 import { defineRelations } from 'drizzle-orm'
+import { asyncWordJobsTable } from './async-word-jobs/async-word-jobs.table'
 import { wordsTable } from './words/words.table'
 
+export * from './async-word-jobs/async-word-jobs.content-types'
+export * from './async-word-jobs/async-word-jobs.enums'
+export * from './async-word-jobs/async-word-jobs.schemas'
+export * from './async-word-jobs/async-word-jobs.table'
+export * from './enums'
+export * from './words/words.content-types'
 export * from './words/words.schemas'
 export * from './words/words.table'
 
 /**
- * Relational config for RQB v2 (`db.query.*`). Single table with no foreign
- * keys yet, so this is the empty single-arg form; relations land as new tables
- * with FKs arrive in their own features.
+ * Neither table carries relations: a word's generation is N `async_word_jobs` rows (one per stage,
+ * keyed by `(word, language, stage)`), and `words` is pristine (a row exists ⇔ ready). Both stay in
+ * the schema map so `db.query.{wordsTable,asyncWordJobsTable}` exist.
  */
-export const relations = defineRelations({ wordsTable })
+export const relations = defineRelations({ wordsTable, asyncWordJobsTable }, () => ({}))

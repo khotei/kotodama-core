@@ -10,6 +10,13 @@
       "Bash(git add *)",
       "Bash(git restore *)",
       "Bash(git checkout -- *)",
+      "Bash(git commit*)",
+      "Bash(git push*)",
+      "Bash(gh pr create*)",
+      "Bash(gh pr view*)",
+      "Bash(gh pr checks*)",
+      "Bash(gh pr diff*)",
+      "Bash(gh pr status*)",
       "Bash(docker compose *)",
       "Read(*)",
       "Glob(*)",
@@ -25,13 +32,10 @@
       "WebFetch(domain:www.npmjs.com)"
     ],
     "ask": [
-      "Bash(git commit*)",
-      "Bash(git push*)",
       "Bash(git checkout *)",
       "Bash(git branch *)",
       "Bash(git rebase*)",
       "Bash(git reset *)",
-      "Bash(gh *)",
       "WebFetch(*)",
       "WebSearch(*)"
     ],

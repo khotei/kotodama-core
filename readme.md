@@ -40,7 +40,7 @@ lexiai/
 ├── database/                # Drizzle schema, relations, migrations, seed
 ├── repositories/
 │   ├── words/               # WordsRepo (Context.Service over Drizzle)
-│   └── jobs/                # JobsRepo
+│   └── async-word-jobs/     # AsyncWordJobsRepo (per-stage word-gen rows)
 ├── packages/
 │   ├── schemas/             # SHARED — Effect Schemas (FE + BE)
 │   ├── http/                # SHARED — HttpApi definition + error mappings
@@ -48,7 +48,8 @@ lexiai/
 │   ├── queue/               # QueueService (SQS Layer)
 │   ├── storage/             # StorageService (Bun.S3Client Layer)
 │   ├── config/              # AppConfig from effect/Config
-│   └── observability/       # OpenTelemetry Layer factory
+│   ├── observability/       # OpenTelemetry Layer factory
+│   └── utils/               # dependency-free generic TS helpers
 ├── infra/                   # Pulumi (later) + Docker Compose for local
 ├── repos/                   # vendored read-only library source (effect-smol)
 ├── .claude/                 # Claude Code context: CLAUDE.md, rules, commands,

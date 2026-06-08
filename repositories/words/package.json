@@ -10,7 +10,14 @@
   "dependencies": {
     "effect": "catalog:effect",
     "@lexiai/database": "workspace:*",
-    "@effect/sql-pg": "catalog:effect"
+    "@lexiai/utils": "workspace:*",
+    "@effect/sql-pg": "catalog:effect",
+    "drizzle-orm": "catalog:db"
+  },
+  "devDependencies": {
+    "@faker-js/faker": "catalog:test",
+    "@testcontainers/postgresql": "catalog:test",
+    "testcontainers": "catalog:test"
   },
   "scripts": {
     "test": "vitest run",

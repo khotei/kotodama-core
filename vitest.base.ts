@@ -13,6 +13,9 @@ import { defineProject } from 'vitest/config'
 export default defineProject({
   test: {
     environment: 'node',
-    include: ['src/**/*.test.ts'],
+    // Tests live in each workspace's `test/` folder (mirroring `src/`), separate
+    // from source — matches the vendored effect-smol/drizzle layout. See
+    // `@.claude/rules/testing.md`.
+    include: ['test/**/*.test.ts'],
   },
 })

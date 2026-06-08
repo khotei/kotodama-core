@@ -22,7 +22,10 @@ There is **no Drizzle `LLMS.md`** — this file is the entry point. The *mandate
 ```ts
 // database/ only — generated schemas import 'drizzle-orm'. One folder per
 // entity: schema/words/{words.table.ts, words.schemas.ts}. Table export is
-// suffixed `…Table`; row-schemas are `<Entity>Row` / `<Entity>RowInsert`.
+// suffixed `…Table`. Each schema file exports the row TYPE as `<Entity>Row`
+// (`typeof table.$inferSelect` — repos return this; preserves jsonb `$type`) and
+// the effect/Schemas as `<Entity>Schema` / `<Entity>SchemaInsert` (runtime
+// decode; jsonb is opaque `Json` regardless of `$type` — see below).
 import { pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core'
 import { createSelectSchema, createInsertSchema } from 'drizzle-orm/effect-schema'
 import { Schema } from 'effect'
@@ -33,10 +36,11 @@ export const wordsTable = pgTable('words', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
 })
 
-export const WordRow = createSelectSchema(wordsTable)
+export type WordRow = typeof wordsTable.$inferSelect // typed row — repo return type
+export const WordSchema = createSelectSchema(wordsTable)
 // Refine BEFORE columns become nullable/optional; or override outright with an effect/Schema.
 // effect v4 refines via `.check(Schema.isMinLength(1))` — NOT the v3 `.pipe(Schema.minLength(1))`.
-export const WordRowInsert = createInsertSchema(wordsTable, {
+export const WordSchemaInsert = createInsertSchema(wordsTable, {
   text: (schema) => schema.check(Schema.isMinLength(1)),
 })
 ```
@@ -87,7 +91,7 @@ not exposed as optional fields. (All names verified in `repos/effect-smol` `Sche
 
 ```ts
 import { Effect, Schema } from 'effect'
-import { WordRow } from './words/words.schemas' // permissive, drizzle-derived (nullable content)
+import { WordSchema } from './words/words.schemas' // permissive, drizzle-derived (nullable content)
 
 // Public contract: matchable union; the Ready variant's fields are REQUIRED.
 const Word = Schema.TaggedUnion({
@@ -97,7 +101,7 @@ const Word = Schema.TaggedUnion({
 })
 
 // Bridge row → union; decode FAILS a `ready` row missing its content.
-export const WordFromRow = WordRow.pipe(
+export const WordFromRow = WordSchema.pipe(
   Schema.decodeTo(
     Word,
     Schema.transformOrFail({

@@ -57,6 +57,7 @@ stripped), so the PR title/body follow the same `commits.md` format via
 @.claude/rules/tech-stack.md
 @.claude/rules/dependency-hierarchy.md
 @.claude/rules/naming.md
+@.claude/rules/deep-modules.md
 @.claude/rules/comments.md
 @.claude/rules/tooling.md
 @.claude/rules/commits.md
@@ -67,11 +68,12 @@ stripped), so the PR title/body follow the same `commits.md` format via
 @.claude/rules/frontend-rules.md
 @.claude/rules/testing.md
 @.claude/rules/observability.md
+@.claude/rules/claude-md.md
 
 ## Per-layer context (loaded lazily when editing that subtree)
 
 `apps/{api,worker,web}/CLAUDE.md` · `core/{words,jobs}/CLAUDE.md` · `database/CLAUDE.md` ·
-`repositories/{words,jobs}/CLAUDE.md` · `packages/*/CLAUDE.md` · `infra/CLAUDE.md`.
+`repositories/{words,async-word-jobs}/CLAUDE.md` · `packages/*/CLAUDE.md` · `infra/CLAUDE.md`.
 Ancestor `CLAUDE.md` files (this one) always load; subdirectory ones load when you touch files
 in that folder.
 
@@ -81,7 +83,8 @@ in that folder.
 edit** — much in-flight work is exploratory or wrong, and churning docs on each change is noise.
 Refresh the affected docs only when a change is real and about to land, as part of preparing the
 commit (then `bun run lint`). Keep them lean: record project-specific decisions, constraints, and
-gotchas — omit anything an agent already knows.
+gotchas — omit anything an agent already knows. The *content* rule — why-not-what, never restate the
+code surface — is `@.claude/rules/claude-md.md`.
 
 ## Vendored repositories
 
