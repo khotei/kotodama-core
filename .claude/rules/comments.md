@@ -75,7 +75,7 @@ single-line `//` for a pinpoint gotcha *inside* a body, at the exact line it war
  *
  * @example
  * ```ts
- * const stages = yield* AsyncWordJobsRepo.initializeStages(enumLanguage.en, 'lacuna')
+ * const stages = yield* AsyncWordJobsRepo.findStages({ language: enumLanguage.en, word: 'lacuna' })
  * ```
  * @see `.claude/rules/drizzle-effect.md`
  */

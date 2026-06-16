@@ -9,13 +9,13 @@ paths:
 
 ## Core idioms
 
-- **Schema, not Zod.** Use `effect/Schema` for all domain types. Shared schemas live in `@lexiai/schemas`. See `.claude/agent-patterns/effect-schema.md`.
+- **Schema, not Zod.** Use `effect/Schema` for all domain types. Word shapes are authored in `database/` (content schemas + `WordEntity`, via `createSelectSchema` + jsonb overrides); `core/` consumes them directly and authors only computed read models (`WordStateModel`). See `.claude/rules/drizzle-effect.md`.
 - **`Context.Service` / `Context.Tag`** for dependency injection (v4 renamed these back from `ServiceMap` during the beta). See `.claude/agent-patterns/effect-context-and-layer.md`.
 - **`Layer`** for wiring services. Compose at the app entrypoint; never construct dependencies inside use cases.
 - **In-beta APIs live under `effect/unstable/*`** — notably parts of `HttpApi`. Import from there, not a guessed stable path. See `.claude/agent-patterns/effect-httpapi.md`.
 - **Errors:** tag with `Data.TaggedError`; handle with `Effect.catchTag` / `Effect.catchTags`. See `.claude/agent-patterns/effect-errors.md`.
 - **Config:** build from `effect/Config` (`Config.string`, `Config.redacted` for secrets, `Config.all`). `@lexiai/config` owns `AppConfig`. Configs are yieldable in `Effect.gen`.
-- **SQL / DB:** go through Drizzle's two first-party Effect integrations — `drizzle-orm/effect-postgres` (`PgDrizzle` DB layer over `@effect/sql-pg`) + `drizzle-orm/effect-schema` (row-schema derivation). Mandated in `.claude/rules/drizzle-effect.md`; cheat-sheet `.claude/agent-patterns/drizzle-effect.md`.
+- **SQL / DB:** go through Drizzle's first-party Effect integration `drizzle-orm/effect-postgres` (`PgDrizzle` DB layer over `@effect/sql-pg`). The `effect-schema` row derivation is retired here — repos return `$inferSelect` rows; runtime validation of untrusted writes decodes through the database **entity** schemas (`WordEntityInsert`, `createSelectSchema` + jsonb overrides — see `.claude/rules/drizzle-effect.md`). Cheat-sheet `.claude/agent-patterns/drizzle-effect.md`.
 - **Entrypoints:** `BunRuntime.runMain(program)` from `@effect/platform-bun`.
 
 ## Avoid

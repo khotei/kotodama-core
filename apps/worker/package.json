@@ -9,11 +9,19 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "effect": "catalog:effect",
     "@effect/platform-bun": "catalog:effect",
     "@lexiai/config": "workspace:*",
+    "@lexiai/core-async-word-jobs": "workspace:*",
+    "@lexiai/core-content": "workspace:*",
+    "@lexiai/core-words": "workspace:*",
+    "@lexiai/database": "workspace:*",
+    "@lexiai/observability": "workspace:*",
     "@lexiai/queue": "workspace:*",
-    "@lexiai/core-jobs": "workspace:*",
-    "@lexiai/observability": "workspace:*"
+    "@lexiai/repositories-async-word-jobs": "workspace:*",
+    "@lexiai/repositories-words": "workspace:*",
+    "effect": "catalog:effect"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "catalog:types"
   }
 }

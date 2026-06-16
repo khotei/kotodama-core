@@ -1,12 +1,10 @@
 import { faker } from '@faker-js/faker'
+import type { AsyncWordJobInsert } from '../../schema/async-word-jobs/async-word-jobs.table'
 import {
   enumAsyncJobStatus,
   enumWordJobStage,
-} from '../../schema/async-word-jobs/async-word-jobs.enums'
-import type { asyncWordJobsTable } from '../../schema/async-word-jobs/async-word-jobs.table'
-import { enumLanguage } from '../../schema/enums'
-
-type AsyncWordJobInsert = typeof asyncWordJobsTable.$inferInsert
+} from '../../schema/async-word-jobs/async-word-jobs.values'
+import { enumLanguage } from '../../schema/language'
 
 /**
  * One `async_word_jobs` stage row, seeded `pending`. Pass `{ stage }` to pick the stage and

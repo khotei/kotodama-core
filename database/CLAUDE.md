@@ -1,9 +1,9 @@
 # database — `@lexiai/database`
 
 Drizzle schema, relations, migrations, seed, and the `DB` layer. Owns the SQL layer. The schema
-*mechanics* (the `…Table` suffix, `snakeCase.table`, `<Entity>Row` = `$inferSelect`, the derived
-`*Schema`s) live in `@.claude/rules/naming.md` + `drizzle-effect.md` — this file is the constraints
-and pointers those can't localize.
+*mechanics* (the `…Table` suffix, `snakeCase.table`, `<Entity>Row` = `$inferSelect`) live in
+`@.claude/rules/naming.md` + `drizzle-effect.md` — this file is the constraints and pointers those
+can't localize.
 
 - **May import:** `@lexiai/*` packages, `effect`, `@effect/sql-pg`, drizzle, `@lexiai/config`.
   **Never** `core/*`, `repositories/*`, `apps/*`. No HTTP code.
@@ -12,9 +12,14 @@ and pointers those can't localize.
   `(word, language, stage)`** — `StageState` flattened into columns, not a `payload` jsonb), re-exported
   by the single `schema/index.ts` barrel that `drizzle.config.ts` points at (a directory glob would
   double-count the barrel's re-exports).
-- **Schema-boundary rule (hard):** the derived `effect/Schema`s `import 'drizzle-orm'`, so they stay
-  **here** — never in the isomorphic `@lexiai/schemas`. A frontend shape is hand-authored as a plain
-  `effect/Schema` there instead.
+- **Schema authority (this is the bottom of the chain):** `database/` authors the word vocabulary
+  and persistence schemas — content effect-schemas (`<entity>.content.ts`), value tuples + `pgEnum`s
+  (`<entity>.values.ts`/`enums.ts`), and the `<Name>Entity` row schemas (`<entity>.entity.ts`,
+  `createSelectSchema` + jsonb overrides so columns are typed, not opaque `Json`). **Both tables
+  (`words`, `async_word_jobs`) follow this identically** — content schemas → entity. Consumers use the
+  rows/entities directly (the API contracts compose `WordEntity`); `core/` authors only computed read
+  models whose leaves derive from the entities (`WordStateModel`). One author per shape, no cycle. The
+  `<Name>EntityInsert` schemas validate untrusted writes (`WordBuilder.promote`). See `drizzle-effect.md`.
 - **Layers (`src/db.ts`):** this package *exposes* layers only — `apps/*` compose them; `DatabaseLive`
   is the self-contained one. Wiring details: `drizzle-effect.md`.
 - **`db:*` scripts are config-driven** through `@lexiai/config` (`ConfigProviderLive` + `DatabaseUrl`)

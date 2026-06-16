@@ -1,5 +1,5 @@
 import { expect, it } from '@effect/vitest'
-import { isReadonlyArray, toArray } from '../src/index'
+import { isArray, toArray } from '../src/index'
 
 it('toArray normalizes single / array / undefined', () => {
   expect(toArray(undefined)).toEqual([])
@@ -8,6 +8,6 @@ it('toArray normalizes single / array / undefined', () => {
 })
 
 it('isReadonlyArray narrows the single-vs-array forms', () => {
-  expect(isReadonlyArray(['a'])).toBe(true)
-  expect(isReadonlyArray('a')).toBe(false)
+  expect(isArray(['a'])).toBe(true)
+  expect(isArray('a')).toBe(false)
 })

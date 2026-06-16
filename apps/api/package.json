@@ -12,7 +12,12 @@
     "effect": "catalog:effect",
     "@effect/platform-bun": "catalog:effect",
     "@lexiai/config": "workspace:*",
-    "@lexiai/http": "workspace:*",
-    "@lexiai/observability": "workspace:*"
+    "@lexiai/core-async-word-jobs": "workspace:*",
+    "@lexiai/core-words": "workspace:*",
+    "@lexiai/database": "workspace:*",
+    "@lexiai/observability": "workspace:*",
+    "@lexiai/queue": "workspace:*",
+    "@lexiai/repositories-words": "workspace:*",
+    "@lexiai/repositories-async-word-jobs": "workspace:*"
   }
 }

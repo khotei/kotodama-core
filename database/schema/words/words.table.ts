@@ -1,6 +1,7 @@
 import { jsonb, snakeCase, text, unique } from 'drizzle-orm/pg-core'
+import type { SetRequired } from 'type-fest'
 import { identifierColumn, timestampColumns } from '../columns'
-import { enumLanguage, languageEnum } from '../enums'
+import { enumLanguage, languageEnum } from '../language'
 import type {
   AuthorExample,
   CulturalGuide,
@@ -14,7 +15,7 @@ import type {
   Tiers,
   Translation,
   Visuals,
-} from './words.content-types'
+} from './words.content'
 
 /**
  * Pristine: a `words` row exists ⇔ the word is ready — all generation content is merged in NOT
@@ -49,3 +50,18 @@ export const wordsTable = snakeCase.table(
   },
   (t) => [unique().on(t.word, t.language)],
 )
+
+/** What repos return — `$inferSelect` preserves each jsonb `$type` (a derived schema would erase them to `Json`). */
+export type WordRow = typeof wordsTable.$inferSelect
+
+/**
+ * The write shape — `$inferInsert` with the defaulted content columns made required, so every
+ * creation states its values instead of silently inheriting a column default the reader would have
+ * to look up in the table. Omission is also ambiguous, not just opaque: under the patch upsert an
+ * omitted column inserts the default on first generation but keeps the stored value on regen — two
+ * outcomes for one write shape. Only the DB-generated envelope (`id`, timestamps) stays optional.
+ */
+export type WordInsert = SetRequired<
+  typeof wordsTable.$inferInsert,
+  'authorExamples' | 'language' | 'sources' | 'translations'
+>

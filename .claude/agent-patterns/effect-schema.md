@@ -7,7 +7,7 @@ read it before writing Schema code.
   `SchemaTransformation.ts`, `SchemaGetter.ts`, `SchemaIssue.ts`.
 - Tests/examples: `repos/effect-smol/packages/effect/test/schema/Schema.test.ts`,
   `toCodec.test.ts`, `toArbitrary.test.ts`.
-- Use `effect/Schema` — **never Zod**. Shared schemas live in `@lexiai/schemas`.
+- Use `effect/Schema` — **never Zod**. Word shapes are authored in `database/` (content schemas + `WordEntity`); consumers use them directly, and `core/` authors only computed read models (`WordStateModel`).
 
 ## Common constructors
 
@@ -51,6 +51,6 @@ transformations in the vendored source over hand-rolling parsers.
 ## Avoid
 
 - Zod, `io-ts`, or ad-hoc validators — one schema lib (`effect/Schema`) only.
-- Backend-only types in `@lexiai/schemas` — it is isomorphic (FE + BE).
+- (`packages/schemas` was deprecated; there is no isomorphic FE schema package right now — the FE contract surface is re-established with the UI.)
 - Guessing v4 method names from v3 memory; the Schema API was consolidated during the beta —
   grep `Schema.ts` exports.

@@ -1,30 +1,8 @@
 import { pgEnum } from 'drizzle-orm/pg-core'
-import { toEnum } from '../enums'
+import { ASYNC_JOB_STATUSES, WORD_JOB_STAGES } from './async-word-jobs.values'
 
-/**
- * The word-generation pipeline, one value per `async_word_jobs` row. Declaration order is the
- * display/pipeline order — the "being written" screen renders a "Step N of 6" stepper from it (the
- * middle four are independent, so their relative order is UX-only). No query sorts by `stage`;
- * consumers that need stepper order use this declared order. A real `pgEnum` — it backs the `stage`
- * column, not a jsonb key.
- */
-export const wordJobStage = pgEnum('word_job_stage', [
-  'fetch_source',
-  'enrich_etymology',
-  'enrich_tiers',
-  'enrich_authors',
-  'enrich_visuals',
-  'final_review',
-])
-export type WordJobStage = (typeof wordJobStage.enumValues)[number]
-export const enumWordJobStage = toEnum(wordJobStage.enumValues)
+/** `async_word_jobs.stage` — one value per pipeline pass; values derive from {@link WORD_JOB_STAGES}. */
+export const wordJobStage = pgEnum('word_job_stage', WORD_JOB_STAGES)
 
-/** `async_word_jobs.status` — the per-stage execution state. Word readiness is NOT derived from it (a `words` row exists ⇔ ready). */
-export const asyncJobStatus = pgEnum('async_job_status', [
-  'pending',
-  'running',
-  'succeeded',
-  'failed',
-])
-export type AsyncJobStatus = (typeof asyncJobStatus.enumValues)[number]
-export const enumAsyncJobStatus = toEnum(asyncJobStatus.enumValues)
+/** `async_word_jobs.status` — the per-stage execution state; values derive from {@link ASYNC_JOB_STATUSES}. */
+export const asyncJobStatus = pgEnum('async_job_status', ASYNC_JOB_STATUSES)

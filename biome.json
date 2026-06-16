@@ -47,7 +47,7 @@
             "patterns": [
               {
                 "group": ["**/repos/**"],
-                "message": "Do not import from repos/ — it is vendored, read-only reference material. Import the published package (effect, @effect/*) instead."
+                "message": "Do not import from repos/ \u2014 it is vendored, read-only reference material. Import the published package (effect, @effect/*) instead."
               }
             ]
           }
@@ -77,7 +77,7 @@
                   },
                   {
                     "group": ["**/repos/**"],
-                    "message": "Do not import from repos/ — it is vendored, read-only reference material. Import the published package (effect, @effect/*) instead."
+                    "message": "Do not import from repos/ \u2014 it is vendored, read-only reference material. Import the published package (effect, @effect/*) instead."
                   }
                 ]
               }
@@ -101,7 +101,7 @@
                   },
                   {
                     "group": ["**/repos/**"],
-                    "message": "Do not import from repos/ — it is vendored, read-only reference material. Import the published package (effect, @effect/*) instead."
+                    "message": "Do not import from repos/ \u2014 it is vendored, read-only reference material. Import the published package (effect, @effect/*) instead."
                   }
                 ]
               }
@@ -125,35 +125,7 @@
                   },
                   {
                     "group": ["**/repos/**"],
-                    "message": "Do not import from repos/ — it is vendored, read-only reference material. Import the published package (effect, @effect/*) instead."
-                  }
-                ]
-              }
-            }
-          }
-        }
-      }
-    },
-    {
-      "includes": ["repositories/**/src/**"],
-      "linter": {
-        "rules": {
-          "style": {
-            "noRestrictedImports": {
-              "level": "error",
-              "options": {
-                "patterns": [
-                  {
-                    "group": ["@lexiai/core-*", "@lexiai/apps-*"],
-                    "message": "Layer violation: repositories/* may depend on database and packages only, never core or apps."
-                  },
-                  {
-                    "group": ["**/repos/**"],
-                    "message": "Do not import from repos/ — it is vendored, read-only reference material. Import the published package (effect, @effect/*) instead."
-                  },
-                  {
-                    "group": ["@lexiai/database/factories"],
-                    "message": "Test/dev only: @lexiai/database/factories pulls @faker-js/faker (a devDependency) and must never reach a prod bundle. Import it only from database/ and *.test.ts (Feature §13)."
+                    "message": "Do not import from repos/ \u2014 it is vendored, read-only reference material. Import the published package (effect, @effect/*) instead."
                   }
                 ]
               }
@@ -176,12 +148,8 @@
                     "message": "Layer violation: core/* must not import apps."
                   },
                   {
-                    "group": ["@lexiai/database/factories"],
-                    "message": "Test/dev only: @lexiai/database/factories pulls @faker-js/faker (a devDependency) and must never reach a prod bundle. Import it only from database/ and *.test.ts (Feature §13)."
-                  },
-                  {
                     "group": ["**/repos/**"],
-                    "message": "Do not import from repos/ — it is vendored, read-only reference material. Import the published package (effect, @effect/*) instead."
+                    "message": "Do not import from repos/ \u2014 it is vendored, read-only reference material. Import the published package (effect, @effect/*) instead."
                   }
                 ]
               }
@@ -200,36 +168,12 @@
               "options": {
                 "patterns": [
                   {
-                    "group": ["@lexiai/*", "!@lexiai/schemas", "!@lexiai/http"],
-                    "message": "Frontend lockdown: apps/web may import ONLY @lexiai/schemas and @lexiai/http from internal packages. No exceptions."
+                    "group": ["@lexiai/*", "@lexiai/*/**"],
+                    "message": "Frontend lockdown: apps/web must not import any internal @lexiai/* package. The domain/contract surface for the FE is to be re-established when the UI returns (packages/schemas was deprecated)."
                   },
                   {
                     "group": ["**/repos/**"],
-                    "message": "Do not import from repos/ — it is vendored, read-only reference material. Import the published package (effect, @effect/*) instead."
-                  }
-                ]
-              }
-            }
-          }
-        }
-      }
-    },
-    {
-      "includes": ["apps/api/**", "apps/worker/**"],
-      "linter": {
-        "rules": {
-          "style": {
-            "noRestrictedImports": {
-              "level": "error",
-              "options": {
-                "patterns": [
-                  {
-                    "group": ["@lexiai/database/factories"],
-                    "message": "Test/dev only: @lexiai/database/factories pulls @faker-js/faker (a devDependency) and must never reach a prod bundle. Import it only from database/ and *.test.ts (Feature §13)."
-                  },
-                  {
-                    "group": ["**/repos/**"],
-                    "message": "Do not import from repos/ — it is vendored, read-only reference material. Import the published package (effect, @effect/*) instead."
+                    "message": "Do not import from repos/ \u2014 it is vendored, read-only reference material. Import the published package (effect, @effect/*) instead."
                   }
                 ]
               }

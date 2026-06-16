@@ -15,19 +15,75 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  ci:
-    name: install · typecheck · lint · test (bun ${{ matrix.bun-version }})
+  # Fast, Docker-free gate. Split from `test` so the container suite (the long
+  # pole) runs in parallel with typecheck+lint instead of behind them.
+  static:
+    name: typecheck · lint (bun ${{ matrix.bun-version }})
     runs-on: ubuntu-latest
-    # `latest` is informational (catches upcoming-Bun breakage early); the
-    # pinned job is the required gate. Spec §20.
     continue-on-error: ${{ matrix.bun-version == 'latest' }}
     strategy:
       fail-fast: false
       matrix:
-        # Pinned matches package.json#packageManager (bun@1.3.10).
         bun-version: ['1.3.10', 'latest']
     steps:
       - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ matrix.bun-version }}
+
+      - name: Cache Bun install
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ matrix.bun-version }}-${{ hashFiles('bun.lock') }}
+          restore-keys: ${{ runner.os }}-bun-${{ matrix.bun-version }}-
+
+      - name: Install
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck
+        run: bun run tsc
+
+      - name: Lint
+        run: bun run lint
+
+  test:
+    name: test (bun ${{ matrix.bun-version }})
+    runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.bun-version == 'latest' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        bun-version: ['1.3.10', 'latest']
+    env:
+      # Ephemeral runner — skip the Testcontainers Ryuk reaper container (the runner is
+      # torn down whole), saving one container start per job.
+      TESTCONTAINERS_RYUK_DISABLED: 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      # Cache the pinned Testcontainers images (Postgres + LocalStack) across runs so each
+      # run loads them from disk instead of re-pulling from the registry. Tags are pinned
+      # (4.4.0 / 16-alpine), so a static key is safe; bump the suffix to invalidate.
+      - name: Cache container images
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/docker-images
+          key: docker-images-pg16alpine-localstack440-v1
+
+      - name: Load or pull container images
+        run: |
+          DIR=~/.cache/docker-images
+          if [ -f "$DIR/images.tar" ]; then
+            docker load -i "$DIR/images.tar"
+          else
+            docker pull postgres:16-alpine
+            docker pull localstack/localstack:4.4.0
+            mkdir -p "$DIR"
+            docker save postgres:16-alpine localstack/localstack:4.4.0 -o "$DIR/images.tar"
+          fi
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -45,16 +101,10 @@ jobs:
       - name: Install
         run: bun install --frozen-lockfile
 
-      - name: Typecheck
-        run: bun run tsc
-
-      - name: Lint
-        run: bun run lint
-
-      # `bun run test` runs @effect/vitest (NOT `bun test`, the built-in runner).
-      # DB tests start an ephemeral Postgres via Testcontainers — no `services:`
-      # block or DATABASE_URL needed: `ubuntu-latest` ships a running Docker
-      # daemon, and each container's URL is generated (see @lexiai/database/testing).
+      # `bun run test` runs @effect/vitest (NOT `bun test`, the built-in runner). DB + queue
+      # tests start ephemeral Postgres / LocalStack containers via Testcontainers — no
+      # `services:` block needed: `ubuntu-latest` ships a running Docker daemon, and each
+      # container's URL/endpoint is generated (see @lexiai/{database,queue}/testing).
       - name: Test
         run: bun run test
 

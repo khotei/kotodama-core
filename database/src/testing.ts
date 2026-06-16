@@ -22,6 +22,9 @@ class PgContainer extends Context.Service<PgContainer>()('@lexiai/database/testi
       try: () =>
         new PostgreSqlContainer('postgres:16-alpine')
           .withWaitStrategy(Wait.forHealthCheck())
+          // Data dir on tmpfs (RAM): migrate + per-test TRUNCATE never hit real disk, so fsync
+          // durability costs nothing. The container is ephemeral, so losing it on stop is the point.
+          .withTmpFs({ '/var/lib/postgresql/data': 'rw' })
           .start(),
       catch: (cause) => new ContainerError({ cause }),
     }),

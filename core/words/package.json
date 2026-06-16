@@ -9,8 +9,8 @@
   },
   "dependencies": {
     "effect": "catalog:effect",
-    "@lexiai/repositories-words": "workspace:*",
-    "@lexiai/schemas": "workspace:*"
+    "@lexiai/database": "workspace:*",
+    "@lexiai/repositories-words": "workspace:*"
   },
   "scripts": {
     "test": "vitest run",

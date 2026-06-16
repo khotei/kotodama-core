@@ -1,29 +1,25 @@
 import { faker } from '@faker-js/faker'
-import { languageEnum } from '../../schema/enums'
-import {
-  type AuthorExample,
-  type CulturalGuide,
-  type Etymology,
-  type EtymologyStage,
-  enumVisualKind,
-  FREQUENCY_BANDS,
-  type Frequency,
-  type Lexical,
-  type Pronunciation,
-  type Relations,
-  SOURCE_TYPES,
-  type Source,
-  type SourceVersions,
-  type StorageKey,
-  type Tier,
-  type Tiers,
-  type Translation,
-  type Visual,
-  type Visuals,
-} from '../../schema/words/words.content-types'
-import type { wordsTable } from '../../schema/words/words.table'
-
-type WordInsert = typeof wordsTable.$inferInsert
+import { LANGUAGES } from '../../schema/language'
+import type {
+  AuthorExample,
+  CulturalGuide,
+  Etymology,
+  EtymologyStage,
+  Frequency,
+  Lexical,
+  Pronunciation,
+  Relations,
+  Source,
+  SourceVersions,
+  StorageKey,
+  Tier,
+  Tiers,
+  Translation,
+  Visual,
+  Visuals,
+} from '../../schema/words/words.content'
+import type { WordInsert } from '../../schema/words/words.table'
+import { enumVisualKind, FREQUENCY_BANDS, SOURCE_TYPES } from '../../schema/words/words.values'
 
 const makeStorageKey = (prefix: string): StorageKey => `${prefix}/${faker.string.uuid()}.bin`
 
@@ -83,7 +79,7 @@ const makeAuthorExample = (): AuthorExample => ({
   author: faker.person.fullName(),
   authorImageUrl: makeStorageKey('authors'),
   work: faker.lorem.words(3),
-  language: faker.helpers.arrayElement(languageEnum.enumValues),
+  language: faker.helpers.arrayElement(LANGUAGES),
   isGenerated: faker.datatype.boolean(),
   quote: faker.lorem.sentence(),
 })
@@ -153,7 +149,7 @@ export const makeWordInsert = (overrides: Partial<WordInsert> = {}): WordInsert 
   const sources = makeSources()
   return {
     word: faker.lorem.word(),
-    language: faker.helpers.arrayElement(languageEnum.enumValues),
+    language: faker.helpers.arrayElement(LANGUAGES),
     coreDefinition: faker.lorem.sentence(),
     lexical: makeLexical(),
     pronunciation: makePronunciation(),

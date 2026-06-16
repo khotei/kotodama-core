@@ -10,18 +10,19 @@ vendored source before writing endpoints.
 - HTTP primitives: `repos/effect-smol/packages/effect/src/unstable/http/` (`HttpRouter.ts`,
   `HttpServer.ts`, `HttpClient.ts`, …).
 
-This contract lives in `@lexiai/http` and is consumed by both `apps/api` (server) and
-`apps/web` (client) — keep it isomorphic.
+The contract lives with its server — `apps/api/src/words/words.api.ts` beside
+`words.handler.ts` (one folder per resource group). The FE consumption surface is re-decided
+when the first web feature lands.
 
 ## Shape
 
 ```ts
 import { HttpApi, HttpApiEndpoint, HttpApiGroup } from 'effect/unstable/httpapi'
 import { Schema } from 'effect'
-import { Word } from '@lexiai/schemas'
+import { WordEntity } from '@lexiai/database'
 
 const getWord = HttpApiEndpoint.get('getWord', '/words/:id')
-  .setSuccess(Word)
+  .setSuccess(WordEntity)
 
 const words = HttpApiGroup.make('words').add(getWord)
 

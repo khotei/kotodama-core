@@ -1,1 +1,1 @@
-export * from './words-repo'
+export * from './words.repo'

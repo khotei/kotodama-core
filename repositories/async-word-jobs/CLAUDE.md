@@ -2,30 +2,31 @@
 
 `AsyncWordJobsRepo` — one `Context.Service` over the `DB` layer that owns the **`async_word_jobs`** table
 (the schema lives in `database/`). The method surface and types are the contract — read
-`src/async-word-jobs-repo.ts`. This file is only the *why* and the cross-file constraints those files can't
-state.
+`src/async-word-jobs.repo.ts` + `src/stage-patch.ts`. This file is only the *why* and the cross-file
+constraints those files can't state.
 
-## The model (why it's one repo, three methods)
+## The model (why it's one repo, two methods)
 
 `async_word_jobs` is **flat: one row per `(word, language, stage)`** — `StageState` flattened out of
-jsonb into columns. A word's generation is its set of stage rows; there is no separate run row, no
-`payload`, no `kind`. Three deep methods cover the whole lifecycle:
+jsonb into columns (status, result, error, started/finished). A word's generation is its set of stage
+rows; there is no separate run row, no `payload`, no `kind`, no `attempts` (dropped 2026-06-12 —
+unused; re-add to the table if retry accounting ever lands). Two **purely functional** methods —
+no domain checks, no domain errors; absence is a value:
 
-- **`initializeStages(language, word, stages?)`** — seed one `pending` row per planned stage (the first
-  step of a run), defaulting to the full pipeline. Idempotent **and** the regen path: an existing word's
-  rows are **reset in place** to `pending` via the `UNIQUE(word, language, stage)` upsert.
 - **`findStages(query)`** — the single flexible read. Always scoped to `(language, word)`, optionally
   narrowed by `stage` and/or `status` (**each a single value or an array**). Rows come back
   **unordered** (no `ORDER BY`); a caller needing stepper order sorts by the `wordJobStage` declaration
-  order. Every API/core question is one shape of it: full progress, "is it active?"
-  (`status: [pending, running]`), "next stage" (`status: pending`), "did `final_review` pass?"
-  (`stage` + `status`).
-- **`patchStages(language, word, patch | patch[])`** — advance one stage or a batch. The `stage` rides
-  inside each `StagePatch`; the lifecycle columns are derived from `patch.status` *inside* the method
-  (`running` ⇒ `startedAt` + `attempts`; terminal ⇒ `finishedAt`), so the caller supplies only the
-  outcome. **Return is input-inferred** (overloaded): a single patch → one row; an array → a row per
-  patch, applied **atomically** in a `db.transaction` (a mid-batch failure rolls all back — hence the
-  array overload also carries `SqlError`).
+  order. Every API/core question is one shape of it.
+- **`saveStages(language, word, stagePatch | stagePatch[])`** — the only write: each `StagePatch`
+  names its row (`stage`) and carries its own payload, upserted on `UNIQUE(word, language, stage)`
+  with **merge-patch semantics** (`patchOnConflict`): a carried field lands verbatim — an explicit
+  `null` **clears** the column — an absent field leaves it untouched (so a `succeeded` patch can't
+  erase `running`'s `startedAt`: it doesn't carry the key). Seeding/reset is not a separate method: a
+  run starts (and a regen restarts) by saving **`stagePatch.pending`** patches, whose explicit nulls
+  reset the same rows in place. An array runs **one `INSERT … ON CONFLICT DO UPDATE` per patch** (a
+  plain per-patch loop — a single statement's one shared SET can't carry differently-shaped patches);
+  **no transaction**, so a batch is not atomic across patches. A never-initialized stage is
+  **created** by the save (upsert semantics — no existence checks, no `Option`).
 
 > **Decision (this branch — supersedes the generic-engine model):** the previous `async_jobs` +
 > `payload {lang, word, stages}` runner and its generic `AsyncJobsRepo` were dropped. There is one job
@@ -35,30 +36,48 @@ jsonb into columns. A word's generation is its set of stage rows; there is no se
 
 > **Decision — reset-in-place, no history.** `UNIQUE(word, language, stage)` means structurally one row
 > per stage, so the old "one active run per word" partial-unique dedup disappears. Rejected: a
-> `runId`/`generation` column to retain past runs — out of scope; regen re-runs `initializeStages` on the same rows.
+> `runId`/`generation` column to retain past runs — out of scope; regen re-saves `pending` patches over the same rows.
 
-> **Decision — one flexible `patchStages`, not `start`/`succeed`/`fail` verbs.** This is the
-> `mark(status,…)` shape `@.claude/rules/deep-modules.md` lists as *rejected*; chosen deliberately for
-> fewer/flexible methods. The footgun it warns about (caller pairing status + result + error +
-> timestamps) is contained by keeping the timestamp/attempt mechanics inside the method — the caller
-> passes only `{stage, status, result?, error?}`. It takes one patch or an array (input-inferred return);
-> the array form is atomic via `db.transaction`.
+> **Decision — saving rules live in `stage-patch.ts`; checks live nowhere in this repo (2026-06-12,
+> user-driven).** The status ⇄ `startedAt`/`finishedAt` pairing is **persistence vocabulary, not
+> business logic**: it is authored once in the blessed pure constructors
+> **`stagePatch.{pending,running,succeeded,failed}(stage, …)`** (same package — reusable by core,
+> worker, and tests); the repo writes the payload verbatim. Conversely, *checks* ("must this stage
+> exist?") are **not** the repo's job — `WordStageNotFoundError`, then an `Option` return, were both
+> retired when `saveStages` became a true upsert: a missing row is *created*, the case is defined out
+> of existence (a guard service remains the plan if real check logic ever appears). `saveStages`
+> loops a plain `INSERT … ON CONFLICT` per patch — no `db.transaction` (a batch is not atomic across
+> patches; accepted, since the only multi-patch caller is the homogeneous `pending` reset).
+
+> **Decision — `initializeStages` folded into `saveStages` (2026-06-12, user-driven).** The COALESCE
+> merge could not express "clear", so seeding/reset needed its own method with its own conflict set.
+> `patchOnConflict` (merge-patch: the conflict set derives from the keys the values actually carry,
+> `null` included) made the reset expressible as ordinary patches — `stagePatch.pending` is a patch
+> of explicit nulls — so the separate method (and the repo's knowledge of the default pipeline) was
+> deleted: *when* and *which* stages to seed is core's call (`WordBuildRequester` maps
+> `WORD_JOB_STAGES`); *what a reset writes* stays here in `stagePatch.pending`.
 
 ## Constraints & gotchas (not visible from this repo's own code)
 
 - **Pipeline/display order = `wordJobStage` pgEnum declaration order** — the single source of stepper
-  order. The repo does **no** sorting (DB or JS): `findStages` and `initializeStages` return rows
-  unordered; a consumer that needs stepper order sorts by this declared order. Never reorder the enum
-  without intending to reorder the UX stepper.
-- **`patchStages` on an un-initialized stage ⇒ `WordStageNotFoundError`** (tagged) — `initializeStages`
-  is the sole owner of "which stages exist"; a missing row is a real bug (a forgotten
-  `initializeStages`), surfaced
-  rather than silently upserted.
+  order. The repo does **no** sorting (DB or JS): every method returns rows unordered; a consumer that
+  needs stepper order sorts by this declared order. Never reorder the enum without intending to
+  reorder the UX stepper.
+- **One saving rule — merge-patch — decided per key in JS, not in SQL.** SQL can't distinguish
+  "absent" from "explicit NULL" inside `excluded`, so `patchOnConflict(table, row)` derives the
+  conflict set from the keys the row carries (in JS, where `undefined` ≠ `null`). The producer must mean its
+  `null`s: `undefined`/absent = keep, `null` = clear. A single SET can't carry differently-shaped
+  rows, so an array saves one statement **per patch** (not one multi-row statement) — no cross-patch
+  atomicity, traded for a flat per-patch loop instead of shape-grouping. (`WordsRepo.save` keeps the
+  single multi-row statement: its content is homogeneous — one shape — so one SET fits all rows and
+  the batch stays atomic.)
+- **`saveStages` with the same stage twice in one batch is last-write-wins**, not an error — each
+  patch is its own statement, so the second simply updates the row the first wrote. Returned rows are
+  in input order, one per patch.
 - **Return `AsyncWordJobRow` (`$inferSelect`), not the derived `*Schema`** — `effect-schema` erases the
   jsonb `$type` to opaque `Json` (Feature §11 spike); the Row preserves it. Same call as `WordsRepo`.
-- **Error channel is `EffectDrizzleQueryError`** on every query (the rc `effect-postgres` integration);
-  `patchStages` adds `WordStageNotFoundError`, and its **array** overload also `SqlError` (it wraps the
-  batch in `db.transaction`). The single-patch overload has no `SqlError` — one statement, no transaction.
+- **Error channel is `EffectDrizzleQueryError` only.** No method opens a transaction or fails with a
+  domain error.
 
 ## Boundaries
 

@@ -13,18 +13,19 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
-    "db:reset": "echo 'TODO(db:reset): drop + recreate + migrate — wired with the deploy runner'",
+    "db:reset": "echo 'TODO(db:reset): drop + recreate + migrate \u2014 wired with the deploy runner'",
     "db:seed": "bun run src/seed.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "effect": "catalog:effect",
     "@effect/platform-bun": "catalog:effect",
     "@effect/sql-pg": "catalog:effect",
     "@lexiai/config": "workspace:*",
+    "drizzle-kit": "catalog:db",
     "drizzle-orm": "catalog:db",
-    "drizzle-kit": "catalog:db"
+    "effect": "catalog:effect",
+    "type-fest": "catalog:types"
   },
   "devDependencies": {
     "@faker-js/faker": "catalog:test",

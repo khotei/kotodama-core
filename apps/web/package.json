@@ -15,9 +15,7 @@
     "react-dom": "catalog:client",
     "@tanstack/react-router": "catalog:client",
     "@effect/atom-react": "catalog:client",
-    "tailwindcss": "catalog:client",
-    "@lexiai/schemas": "workspace:*",
-    "@lexiai/http": "workspace:*"
+    "tailwindcss": "catalog:client"
   },
   "devDependencies": {
     "vite": "^6.3.5",

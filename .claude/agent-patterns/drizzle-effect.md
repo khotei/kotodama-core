@@ -17,15 +17,15 @@ There is **no Drizzle `LLMS.md`** — this file is the entry point. The *mandate
 - Use `effect/Schema` for refinements — **never Zod**. Generated schemas stay in `database/`
   (they `import 'drizzle-orm'`), never in the isomorphic `@lexiai/schemas`.
 
-## Schema derivation — `drizzle-orm/effect-schema`
+## Schema derivation — `drizzle-orm/effect-schema` (NOT used in this repo)
+
+LexiAI deleted its derived `<Entity>Schema`s — `createSelectSchema` erases jsonb `$type` to opaque
+`Json`, so repos return `$inferSelect` rows and runtime validation decodes through the
+hand-authored `@lexiai/schemas` structs (`.claude/rules/drizzle-effect.md` § "Why there are NO
+derived row schemas"). The upstream API, for reading the vendored source / a future genuine need:
 
 ```ts
-// database/ only — generated schemas import 'drizzle-orm'. One folder per
-// entity: schema/words/{words.table.ts, words.schemas.ts}. Table export is
-// suffixed `…Table`. Each schema file exports the row TYPE as `<Entity>Row`
-// (`typeof table.$inferSelect` — repos return this; preserves jsonb `$type`) and
-// the effect/Schemas as `<Entity>Schema` / `<Entity>SchemaInsert` (runtime
-// decode; jsonb is opaque `Json` regardless of `$type` — see below).
+// Generated schemas import 'drizzle-orm' — backend-only if ever reintroduced.
 import { pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core'
 import { createSelectSchema, createInsertSchema } from 'drizzle-orm/effect-schema'
 import { Schema } from 'effect'

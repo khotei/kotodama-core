@@ -31,19 +31,17 @@ later. Versions are pinned centrally via Bun **catalogs** in `package.json`.
 ```
 lexiai/
 ├── apps/
-│   ├── api/                 # HttpApi server (Lambda + local Bun.serve)
+│   ├── api/                 # HttpApi server (Lambda + local Bun.serve); owns the words contract
 │   ├── worker/              # SQS consumer (Lambda + local long-poll)
 │   └── web/                 # React 19 SPA (Vite)
 ├── core/
-│   ├── words/               # use cases: GetWord, EnqueueGenerateWord, ApplyJobResult
-│   └── jobs/                # job state machine
+│   ├── words/               # WordModel + WordFinder (read use cases)
+│   └── async-word-jobs/     # build orchestration + WordState/BuildOutcome use-case schemas
 ├── database/                # Drizzle schema, relations, migrations, seed
 ├── repositories/
 │   ├── words/               # WordsRepo (Context.Service over Drizzle)
 │   └── async-word-jobs/     # AsyncWordJobsRepo (per-stage word-gen rows)
 ├── packages/
-│   ├── schemas/             # SHARED — Effect Schemas (FE + BE)
-│   ├── http/                # SHARED — HttpApi definition + error mappings
 │   ├── ai/                  # AiService (OpenAI text + image)
 │   ├── queue/               # QueueService (SQS Layer)
 │   ├── storage/             # StorageService (Bun.S3Client Layer)
@@ -63,24 +61,24 @@ lexiai/
 A word lookup hits the DB (`repositories/words`) if present. On a miss, `core/words`
 enqueues a generate-word job to SQS (`packages/queue`); `apps/worker` consumes it, calls
 OpenAI (`packages/ai`) + stores images (`packages/storage`), and writes the entry back.
-`apps/api` exposes the `HttpApi` contract (`packages/http`); `apps/web` consumes only that
-contract. See the Tech spec §1 for the full topology.
+`apps/api` owns the `HttpApi` contract (`apps/api/src/words/words.api.ts`); `apps/web` imports
+no internal package yet (its contract surface is re-established with the UI). See the Tech spec §1
+for the full topology.
 
 ## Dependency flow
 
 ```
-apps/web ─────────► packages/{schemas,http}      (FE ↔ contract only)
-apps/{api,worker} ─► core/* ─► repositories/* ─► database/
-                              │       │
-                              ▼       ▼
-                          packages/{schemas,ai,queue,storage,config,http,observability}
-                          (everything → packages, packages → nothing internal)
+apps/{api,worker} ─► core/* ─► repositories/* ─► database/   (database authors vocabulary + WordEntity)
+                       │  ▲ core derives WordModel from WordEntity
+                       ▼
+                   packages/{ai,queue,storage,config,observability}
+                   (everything → packages, packages → nothing internal)
 ```
 
 Allowed direction only: **apps → core → repositories → database**, and **everything →
-packages**. The frontend (`apps/web`) may import **only** `@lexiai/schemas` and
-`@lexiai/http` — no exceptions. This is enforced by Biome (`noRestrictedImports`) and
-tsconfig project references, not just documented.
+packages**. `database/` is the bottom and authors the word vocabulary + `WordEntity`; `core/`
+builds `WordModel` from it. The frontend (`apps/web`) may import **no** internal package (there is
+no vocabulary package — `packages/schemas` was deprecated). Enforced by Biome (`noRestrictedImports`).
 
 ## Quick start
 
@@ -115,7 +113,7 @@ already present at HEAD.
 
 ```bash
 bun run test                                    # all workspaces (@effect/vitest)
-bun run --filter '@lexiai/schemas' test         # one workspace
+bun run --filter '@lexiai/database' test         # one workspace
 ```
 
 Use `bun run test`, **not** `bun test` (the latter is Bun's built-in runner). Tests that

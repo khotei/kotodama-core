@@ -43,55 +43,68 @@ moved to **Effect v4 beta in `rc.1`**, and v4 settled on `Context.Service` (not 
 
 ## Schema layout & naming
 
-- **One folder per entity:** `database/schema/<entity>/{<entity>.table.ts, <entity>.schemas.ts}`,
-  re-exported by `schema/index.ts` (the single `drizzle.config` `schema` entry — a directory
-  glob would double-count the barrel's re-exports).
+- **One folder per entity:** `database/schema/<entity>/` (`<entity>.table.ts`, plus role files —
+  see `naming.md`), re-exported by `schema/index.ts` (the single `drizzle.config` `schema` entry —
+  a directory glob would double-count the barrel's re-exports).
 - **Table export suffixed `…Table`** (`wordsTable`), declared with `snakeCase.table` (table-level
-  casing; never also set `transformQueryNames`). Each `<entity>.schemas.ts` exports the **row type
-  `<Entity>Row`** (`typeof <table>.$inferSelect` — what repos return; preserves jsonb `$type`) and
-  the **derived effect/Schemas `<Entity>Schema` / `<Entity>SchemaInsert`** (`createSelectSchema` /
-  `createInsertSchema`, for runtime decode). `relations = defineRelations({ wordsTable })` in the
-  barrel feeds `PgDrizzle.make`.
-- **Enums: never hardcode the value strings.** A `pgEnum` (`asyncJobStatus`) is the single source;
-  derive its union type (`type AsyncJobStatus = (typeof asyncJobStatus.enumValues)[number]`) AND a
-  native named map (`export const enumAsyncJobStatus = toEnum(asyncJobStatus.enumValues)`, the shared
-  helper in `schema/enums.ts`). Reference values by name everywhere — `enumAsyncJobStatus.pending`,
-  `enumWordJobStage.fetch_source`, `enumLanguage.en` (in column `.default(…)`, repos, factories,
-  seed, and tests) — and use `<enum>.enumValues` for all-values arrays. Keys are derived from the
-  pgEnum, never hand-listed; `toEnum` builds the map eagerly at module load (sidestepping the
-  `enumValues`-mutates-to-objects runtime quirk, drizzle #2753). The same value-first idiom applies to
-  closed string unions nested in jsonb content (`Source.type`, `Frequency.band`, `Visual.kind`): an
-  `as const` array is the single source — derive the union from it and feed it to `toEnum` — never a
-  `pgEnum` (these aren't columns, so a `CREATE TYPE` would back nothing) and never a re-listed array in
-  a factory. `async_word_jobs.stage` IS a column, so it's the `word_job_stage` `pgEnum` (like
-  `async_job_status`): `enumWordJobStage.fetch_source` by name, `wordJobStage.enumValues` for arrays.
-  Its declaration order is load-bearing — display/pipeline order AND the Postgres sort order
+  casing; never also set `transformQueryNames`). The table file also exports the **row type
+  `<Entity>Row`** (`typeof <table>.$inferSelect` — what repos return; preserves jsonb `$type`).
+  `relations = defineRelations({ wordsTable })` in the barrel feeds `PgDrizzle.make`.
+- **Enums & value lists: never hardcode the value strings — a value tuple is the single source.**
+  An `as const` tuple defines the values once; everything derives from it: the union type
+  (`type AsyncJobStatus = (typeof ASYNC_JOB_STATUSES)[number]`), the named map
+  (`enumAsyncJobStatus = toEnum(ASYNC_JOB_STATUSES)` — `toEnum` lives in `@lexiai/schemas`), the
+  `pgEnum` when a column backs it (`pgEnum('async_job_status', ASYNC_JOB_STATUSES)`), and any
+  `Schema.Literals(TUPLE)`. **All vocabulary is authored in `database/`** (`toEnum` is the shared
+  helper at `schema/to-enum.ts`): content-language `LANGUAGES` in `schema/language.ts`, word value lists
+  (`VISUAL_KINDS`, `SOURCE_TYPES`, `FREQUENCY_BANDS`) in `schema/words/words.values.ts`,
+  build-machinery (`WORD_JOB_STAGES`, `ASYNC_JOB_STATUSES`, `JOB_ERROR_TYPES`) in
+  `schema/async-word-jobs/async-word-jobs.values.ts`. `core/` derives its literal schemas from these
+  tuples (e.g. `WordState`). Reference values by name everywhere —
+  `enumAsyncJobStatus.pending`, `enumLanguage.en` (in column `.default(…)`, repos, factories, seed,
+  and tests) — and use the tuple for all-values arrays. `toEnum` builds the map eagerly at module
+  load (sidestepping the `enumValues`-mutates-to-objects runtime quirk, drizzle #2753); derive from
+  the tuple, never from a `pgEnum` object. A jsonb-nested union (`Source.type`, `JobError.type`)
+  gets NO `pgEnum` (no column backs it — a `CREATE TYPE` would back nothing). `WORD_JOB_STAGES`'
+  declaration order is load-bearing — display/pipeline order AND the Postgres sort order
   (`ORDER BY stage` = pipeline order), so reorder it only when reordering the UX stepper.
 
-## Schema derivation — `drizzle-orm/effect-schema`
+## Entities: `createSelectSchema` WITH jsonb overrides (`<Name>Entity`)
 
-- Derive row schemas with **`createSelectSchema`** / **`createInsertSchema`** / **`createUpdateSchema`**
-  from a table; refine/override columns with `effect/Schema` (pass a column map, or
-  `(schema) => schema.check(...)` to refine before nullable/optional is applied). **effect v4 uses
-  `.check(Schema.isMinLength(1))`** — not the v3 `.pipe(Schema.minLength(1))`.
-- **`$type<T>`**** does NOT survive into the derived effect/Schema** (verified, F-PLAT-005 #11 spike).
-  `effect-schema`'s `GetEffectSchemaType` keys off the column's SQL dataType (`json`), not `$type`,
-  so a `jsonb().$type<Tiers>()` column becomes the generic `Json` union on `createSelectSchema`
-  (`string | number | boolean | null | {} | []`), regardless of `$type`. (Source:
-  `repos/drizzle/drizzle-orm/src/effect-schema/column.types.ts` — `'json' → jsonSchema`.) So
-  `<Entity>Schema` hands consumers **opaque jsonb**. This is exactly why the naming splits: **(a)**
-  the **`<Entity>Row`** type (`typeof <table>.$inferSelect`) **does** carry `$type`, so repos return
-  it for compile-time-typed columns with no runtime decode; **(b)** for runtime validation of
-  untrusted JSON (e.g. LLM output at a write boundary), hand-author an `effect/Schema` for that
-  column — neither `<Entity>Schema` nor `<Entity>Row` enforces the jsonb shape at runtime.
+A **bare** `createSelectSchema(table)` is unfit: `$type<T>` does NOT survive derivation (verified,
+F-PLAT-005 #11 spike) — `GetEffectSchemaType` keys off the column's SQL dataType (`json`), not
+`$type`, so `jsonb().$type<Tiers>()` becomes the opaque `Json` union (source:
+`repos/drizzle/drizzle-orm/src/effect-schema/column.types.ts` — `'json' → jsonSchema`). That is why
+the old un-refined `<Entity>Schema`/`<Entity>SchemaInsert` exports were deleted.
+
+The fix is the **refine map**: pass the authored content schema for each jsonb column, and
+`createSelectSchema` *replaces* the column schema with it (runtime: `effect-schema/schema.ts`;
+types: `BuildSchema` → `HandleRefinement`). So `WordEntity = createSelectSchema(wordsTable, { tiers:
+Tiers, …, frequency: Schema.NullOr(Frequency) })` is a fully-typed runtime row schema. A bare-schema
+override owns its own nullability (column nullability is *not* auto-applied — wrap nullable columns
+in `Schema.NullOr` yourself); a function refinement (`word: (s) => s.check(Schema.isMinLength(1))`)
+*does* get the column's nullability. Author the content effect-schemas in `<entity>.content.ts`; the
+table reads each `$type` from `typeof X.Type` and the entity overrides the same columns with `X`.
+
+Reads still use the **`<Entity>Row`** type (`$inferSelect`, trusted DB data, no decode); the `Entity`
+schema earns its keep as (a) the per-row payload the API contracts compose (and the derivation source
+for core's read-model leaves) and (b) the validated shape at write/untrusted boundaries
+(`WordBuilder.promote` decodes assembled LLM output through `WordEntityInsert`). **Every entity is
+authored the same way** — `words` and `async_word_jobs` both have a
+`<entity>.content.ts` (authored content schemas) + `<entity>.entity.ts` (`<Name>Entity` +
+`<Name>EntityInsert`). `async_word_jobs`' `result` is an
+open `Schema.Record(String, Unknown)` (heterogeneous per stage, decoded to a concrete subshape only when
+the worker assembles the `words` row); `error` is the typed `JobError`. The row type
+(`AsyncWordJobRow`) is still what the repo returns on trusted reads.
 
 ## Schema-boundary rule (hard constraint)
 
-`effect-schema`-generated schemas `import 'drizzle-orm'`, so they live in **`database/`
-(backend-only)**. `@lexiai/schemas` is **isomorphic — `effect` only** (per
-`packages/schemas/CLAUDE.md` + `.claude/rules/dependency-hierarchy.md`): **never** import
-`drizzle-orm` there. If the frontend needs a shape, **hand-author a plain `effect/Schema`** in
-`@lexiai/schemas`, decoupled from the Drizzle table.
+Shape knowledge is authored at the **bottom** and flows up: `database/` authors the content
+effect-schemas, value tuples/`pgEnum`s, and `WordEntity`; `core/` consumes them directly
+(`core → database`, a legal downward edge) and authors only computed read models (`WordStateModel`);
+the API contract composes both. There is **one author per shape** and no cycle.
+`database/` may import `drizzle-orm` (it is backend persistence); the FE has no vocabulary package
+(`packages/schemas` was deprecated) — its contract surface is re-established when the UI returns.
 
 ## Lifecycle entities — permissive row → strict contract
 
@@ -110,7 +123,11 @@ storage permissiveness from contract precision** in two layers:
    `.match` / `.guards`; bridge the row→union with `Schema.decodeTo(Union,
    Schema.transformOrFail({ decode, encode }))`; distinguish `Schema.NullOr` vs
    `Schema.optional` / `Schema.optionalKey`; assert cross-field rules with
-   `.check(Schema.makeFilter(...))`. Cheat-sheet has the worked snippet.
+   `.check(Schema.makeFilter(...))`. Cheat-sheet has the worked snippet. Under the
+   `patchOnConflict` upsert (`database/src/on-conflict.ts`) the choice is load-bearing:
+   `Schema.NullOr` always carries its key, so "no data" decodes to an explicit `null` and
+   **clears** the stored column — express "absent = keep" with `Schema.optionalKey`, never
+   by passing `null`.
 
 **Strongest storage variant (as-built for `words`, F-PLAT-005 §v7):** push the lifecycle
 *out* of the entity entirely. `words` is **pristine** — all generation content merged in

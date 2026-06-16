@@ -16,18 +16,19 @@ Full table in `.claude/rules/tech-stack.md`.
 ## Dependency hierarchy (the rule the scaffolding protects)
 
 ```
-apps/web ─────────► packages/{schemas,http}      (FE ↔ contract only)
-apps/{api,worker} ─► core/* ─► repositories/* ─► database/
-                              │       │
-                              ▼       ▼
-                          packages/{schemas,ai,queue,storage,config,http,observability}
-                          (everything → packages, packages → nothing internal)
+apps/{api,worker} ─► core/* ─► repositories/* ─► database/   (database authors vocabulary + WordEntity)
+                       │  ▲ core/apps consume WordEntity/WordRow directly
+                       ▼
+                   packages/{ai,queue,storage,config,observability}
+                   (everything → packages, packages → nothing internal)
 ```
 
-Frontend (`apps/web`) is constrained to consume **only** `@lexiai/schemas` and `@lexiai/http`.
-It never imports `core/`, `database/`, `repositories/`, or backend-only packages (`ai`,
-`queue`, `storage`). This is the single most important rule the scaffolding must protect.
-Enforced by Biome `noRestrictedImports`. Details: `.claude/rules/dependency-hierarchy.md`.
+Frontend (`apps/web`) must **not** import any internal `@lexiai/*` package — `core/`, `database/`,
+`repositories/`, the backend-only packages (`ai`, `queue`, `storage`), nor a vocabulary package
+(none exists — `packages/schemas` was deprecated). This is the single most important rule the
+scaffolding must protect. The HTTP contract lives with its server (`apps/api/src/words/`); the FE's
+domain/contract surface is re-established when the UI returns. Enforced by Biome `noRestrictedImports`.
+Details: `.claude/rules/dependency-hierarchy.md`.
 
 ## Root scripts
 

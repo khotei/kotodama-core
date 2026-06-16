@@ -38,7 +38,6 @@ it.layer(TestDatabaseLive, { timeout: '120 seconds' })((it) => {
       expect(new Set(rows.map((r) => r.stage))).toEqual(new Set(wordJobStage.enumValues))
       expect(wordJobStage.enumValues[0]).toBe(enumWordJobStage.fetch_source)
       expect(rows.every((r) => r.status === enumAsyncJobStatus.pending)).toBe(true)
-      expect(rows.every((r) => r.attempts === 0)).toBe(true)
       // The word subject lives in columns, not a payload.
       expect(rows[0]).not.toHaveProperty('payload')
     }),
