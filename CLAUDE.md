@@ -16,12 +16,15 @@ Full table in `.claude/rules/tech-stack.md`.
 ## Dependency hierarchy (the rule the scaffolding protects)
 
 ```
-apps/{api,worker} ─► core/* ─► repositories/* ─► database/   (database authors vocabulary + WordEntity)
-                       │  ▲ core/apps consume WordEntity/WordRow directly
-                       ▼
-                   packages/{ai,queue,storage,config,observability}
-                   (everything → packages, packages → nothing internal)
+apps/{api,worker} ─► use-cases/* ─► core/* ─► repositories/* ─► database/   (database authors vocabulary + WordEntity)
+                                      │  ▲ use-cases/core/apps consume WordEntity/WordRow directly
+                                      ▼
+                                  packages/{ai,queue,storage,config,observability}
+                                  (everything → packages, packages → nothing internal)
 ```
+
+`use-cases/*` is the top application tier below `apps/*`: user-flow composer functions (`requestWordBuild`,
+`buildWord`) that aggregate `core/*` functions + the repo functions into one end-to-end flow an app binds.
 
 Frontend (`apps/web`) must **not** import any internal `@lexiai/*` package — `core/`, `database/`,
 `repositories/`, the backend-only packages (`ai`, `queue`, `storage`), nor a vocabulary package
@@ -67,7 +70,7 @@ target < 200 lines of always-loaded context per file; bloat reduces adherence).
   `drizzle-effect` → `database/**`, `repositories/**` · `config` → `packages/config/**`,
   `**/main.ts` · `testing` → `**/test/**`, `**/*.test.ts` · `observability` →
   `packages/observability/**`, `apps/**` · `frontend-rules` → `apps/web/**` · `sdd` →
-  `.claude/{commands,agents,sdd}/**`.
+  `.claude/{commands,agents,sdd}/**` · `human-docs` → `readme.md`, `docs/**`.
 - **On-demand reference (pointer-loaded, NOT auto-loaded):** `.claude/agent-patterns/*.md` —
   Effect/Drizzle cheat-sheets, `deep-modules-examples.md` (shallow→deep gallery + worked refactoring),
   and `commit-examples.md`. Linked from the rules that need them; never put on-demand depth in
@@ -75,8 +78,9 @@ target < 200 lines of always-loaded context per file; bloat reduces adherence).
 
 ## Per-layer context (loaded lazily when editing that subtree)
 
-`apps/{api,worker,web}/CLAUDE.md` · `core/{words,jobs}/CLAUDE.md` · `database/CLAUDE.md` ·
-`repositories/{words,async-word-jobs}/CLAUDE.md` · `packages/*/CLAUDE.md` · `infra/CLAUDE.md`.
+`apps/{api,worker,web}/CLAUDE.md` · `use-cases/CLAUDE.md` · `core/{words,jobs}/CLAUDE.md` ·
+`database/CLAUDE.md` · `repositories/{words,async-word-jobs}/CLAUDE.md` · `packages/*/CLAUDE.md` ·
+`infra/CLAUDE.md`.
 Ancestor `CLAUDE.md` files (this one) always load; subdirectory ones load when you touch files
 in that folder.
 

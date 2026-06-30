@@ -2,11 +2,23 @@ import {
   enumJobErrorType,
   enumWordJobStage,
   type JobErrorType,
+  type SourceVersions,
   type WordJobStage,
 } from '@lexiai/database'
 import { Duration, Effect, Layer } from 'effect'
 import { ContentEngine, ContentEngineError } from './content-engine.service'
 import { mockStageContent } from './mock-content'
+
+/**
+ * The mock engine's build provenance — honest placeholder values (never the real model/hash), so a
+ * mock-built `words` row truthfully records that the mock made it. Mirrors the real engine's
+ * `sourceVersions`, which `buildWord` passes to `assembleWord` at promotion.
+ */
+const MOCK_SOURCE_VERSIONS: SourceVersions = {
+  model: 'mock-content-engine',
+  promptHash: 'mock',
+  pipeline: 'mock-content-engine@0.1',
+}
 
 /**
  * What the mock engine should do for one `(word, stage)` pass: `produce` content (optionally after a
@@ -62,6 +74,7 @@ const makeService = (policy: ContentPolicy) =>
         }
         return mockStageContent(stage, word, language)
       }),
+    sourceVersions: MOCK_SOURCE_VERSIONS,
   })
 
 /** A `ContentEngine` layer over an injectable {@link ContentPolicy} (defaults to {@link defaultContentPolicy}). */

@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "effect": "catalog:effect",
+    "@lexiai/core-content": "workspace:*",
     "@lexiai/database": "workspace:*",
     "@lexiai/repositories-words": "workspace:*"
   },

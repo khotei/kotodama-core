@@ -17,7 +17,7 @@ new ObjectInputStream(new BufferedInputStream(new FileInputStream(name))) // BAD
 Unix `open/read/write/lseek/close` hides disk layout, block allocation, caching, scheduling, and
 permissions behind five signatures that have outlived decades of filesystem rewrites. The *deepest*
 module has **no** interface at all — a garbage collector, a TCP retransmit timer.
-→ `WordsRepo.save(content)` is one call hiding insert-vs-replace, the `UNIQUE(word, language)`
+→ `upsertWords(content)` is one call hiding insert-vs-replace, the `UNIQUE(word, language)`
 conflict target, and the atomic batch path — `repositories/words/src/words.repo.ts`.
 
 **A pile of special-purpose methods vs one general read (§4).**
@@ -32,7 +32,7 @@ Removes cognitive load + change amplification. The gold standard is Clojure's **
 with `get`/`assoc`/`conj` uniform across map, vector, set — depth is in the *generality*. **Opposite
 trap, still real:** a `find(opts)` so configurable it warps its own return type is shallow again —
 general ≠ infinitely parameterised.
-→ `WordsRepo.find`, `AsyncWordJobsRepo.findStages` — one flexible query type, no slice-explosion.
+→ `selectWords`, `selectWordJobStages` — one flexible query type, no slice-explosion.
 
 **Special cases the caller must handle vs errors defined away (§6).**
 
@@ -49,7 +49,7 @@ ready yet?" branch anywhere downstream. Canonical kin: Clojure **nil-punning** �
 for empty, so `(when (seq coll) …)` needs no empty-check. *Taste note:* Hickey himself calls this
 *complecting* (nil conflates absent/false/empty) — defining-away is powerful, but each conflation it
 introduces is a cost to weigh (the taste gate).
-→ absence-as-value reads, the `save`/`saveStages` upserts, `wordsTable` — `database/schema/words/words.table.ts`.
+→ absence-as-value reads, the `upsertWords`/`upsertWordJobStages` upserts, `wordsTable` — `database/schema/words/words.table.ts`.
 
 **Structure by execution-order vs by knowledge (§3).** Splitting an HTTP handler into `Reader → Parser
 → Writer` classes that *each* know the message format means a format change edits all three (leakage +
@@ -66,10 +66,10 @@ class WordsService { save = (c) => this.repo.save(c) }     // BAD: same signatur
 ```
 
 A real layer *changes vocabulary*: `DBLive` turns a `PgClient` + relations into the `DB` service repos
-consume; `WordsRepo` turns the whole Drizzle query builder into two domain methods.
+consume; the words repo (`selectWords`/`upsertWords`) turns the whole Drizzle query builder into two functions.
 → `database/src/db.ts`.
 
-**The taste gate, embodied.** `AsyncWordJobsRepo.saveStages(language, word, stagePatch)` is exactly
+**The taste gate, embodied.** `upsertWordJobStages(language, word, stagePatch)` is exactly
 the `mark(status, …)` shape the rule flags as a footgun (a caller juggling status + result + error +
 timestamps). Chosen anyway — because the footgun is *contained*: the status ⇄ timestamps
 pairing is authored once, in the blessed `stagePatch.{running,succeeded,failed}` constructors the
@@ -82,7 +82,7 @@ than it adds ⇒ it wins; that weighing, not the default, is the rule.
 ## A worked refactoring — status verbs → one general method
 
 The same lesson end to end: the naive "a-method-per-transition" repo a first draft reaches for → the
-deep `findStages` / `saveStages` shape `AsyncWordJobsRepo` actually ships. The
+deep `selectWordJobStages` / `upsertWordJobStages` shape the async-word-jobs repo actually ships. The
 canonical parallel is Ousterhout's text-editor refactor (special-purpose `backspace` / `delete` /
 `insertChar` → general `insert(pos, text)` / `delete(range)`).
 
@@ -171,7 +171,7 @@ so the interface is large relative to the work it does. Concretely:
 
 ### The refactor, in four moves
 
-**Move 1 — collapse the transition verbs into one `saveStages(patch | patch[])`.** They differ only in
+**Move 1 — collapse the transition verbs into one `upsertWordJobStages(patch | patch[])`.** They differ only in
 *(status, which extra fields)*. Make the variation the *argument* — one payload object naming the row
 (`stage`) plus the columns to set. Five verbs become one method; `retry` vanishes — it's just `running`
 again, and idempotency (Move 4) makes the re-run safe.
@@ -189,14 +189,14 @@ export const stagePatch = {
 }
 ```
 
-The repo write is then **verbatim** — `saveStages` upserts each patch as a row (single or array, one
+The repo write is then **verbatim** — `upsertWordJobStages` upserts each patch as a row (single or array, one
 multi-row `INSERT … ON CONFLICT DO UPDATE`), deriving nothing; the conflict set merges
 (`COALESCE(excluded.col, col)`), so an absent patch field keeps the stored value. "Clear `error` on `running`" is a one-line, one-place change; core decides
 *when* to transition, the repo package owns *what columns* that writes. (The first cut derived the
 pairing *inside* the method from `patch.status`; pulling it out to constructors kept the single author
 while making each batch payload self-contained — which is what let the per-patch transaction die.)
 
-**Move 3 — collapse the read explosion into one `findStages(query)` (§4).** `getProgress` /
+**Move 3 — collapse the read explosion into one `selectWordJobStages(query)` (§4).** `getProgress` /
 `getActiveStages` / `getNextPending` / `didStagePass` are one `SELECT` with different `WHERE`s. Make the
 filter the argument (each field single-or-array):
 
@@ -207,10 +207,10 @@ type AsyncWordJobsQuery = {
   readonly stage?:   WordJobStage   | readonly WordJobStage[]
   readonly status?:  AsyncJobStatus | readonly AsyncJobStatus[]
 }
-// full progress    → findStages({ language, word })
-// "is it active?"  → findStages({ language, word, status: [pending, running] })
-// next pending     → findStages({ language, word, status: pending })   // sort by enum order, take first
-// did final pass?  → findStages({ language, word, stage: final_review, status: succeeded })
+// full progress    → selectWordJobStages({ language, word })
+// "is it active?"  → selectWordJobStages({ language, word, status: [pending, running] })
+// next pending     → selectWordJobStages({ language, word, status: pending })   // sort by enum order, take first
+// did final pass?  → selectWordJobStages({ language, word, stage: final_review, status: succeeded })
 ```
 
 Four getters → one query type. A new question is a new *filter*, not a new *method*.
@@ -225,22 +225,25 @@ defined out of existence repo-wide.
 
 ### GOOD — the resulting interface
 
+The repo ships as **two bare functions** (not a `Context.Service` or namespace object — it owns no
+resource; each op `yield*`s `DB` inside, so `DB` rides the caller's `R`; the `select`/`upsert` verb
+marks the layer). The depth lesson here — two deep operations, one query shape — is **orthogonal** to
+that DI choice (see `.claude/rules/effect-conventions.md`):
+
 ```ts
-export class AsyncWordJobsRepo extends Context.Service<AsyncWordJobsRepo, {
-  readonly findStages: (query: AsyncWordJobsQuery)
-    => Effect.Effect<AsyncWordJobRow[], EffectDrizzleQueryError>           // every read question, one shape
-  readonly saveStages: (language: Language, word: string, patch: StagePatch | readonly StagePatch[])
-    => Effect.Effect<AsyncWordJobRow | readonly AsyncWordJobRow[], EffectDrizzleQueryError>
-}>()('@lexiai/repositories-async-word-jobs/AsyncWordJobsRepo') {}
+// every read question, one shape
+export const selectWordJobStages = (query: AsyncWordJobsQuery): Effect.Effect<AsyncWordJobRow[], EffectDrizzleQueryError, DB> => …
+export const upsertWordJobStages = (language: Language, word: string, patch: StagePatch | readonly StagePatch[]):
+  Effect.Effect<AsyncWordJobRow | readonly AsyncWordJobRow[], EffectDrizzleQueryError, DB> => …
 ```
 
-Two deep methods. The worker's stage loop, after:
+Two deep operations. The worker's stage loop, after:
 
 ```ts
 const stage = enumWordJobStage.enrich_tiers
-yield* repo.saveStages(enumLanguage.en, 'lacuna', stagePatch.running(stage))
+yield* upsertWordJobStages(enumLanguage.en, 'lacuna', stagePatch.running(stage))
 const out = yield* generateTiers('lacuna')
-yield* repo.saveStages(enumLanguage.en, 'lacuna', Either.match(out, {
+yield* upsertWordJobStages(enumLanguage.en, 'lacuna', Either.match(out, {
   onLeft:  (error)  => stagePatch.failed(stage, error),
   onRight: (result) => stagePatch.succeeded(stage, result),
 }))
@@ -250,13 +253,13 @@ yield* repo.saveStages(enumLanguage.en, 'lacuna', Either.match(out, {
 
 | Case | BAD | GOOD |
 |---|---|---|
-| start a stage | `startStage(l,w,s)` | `saveStages(l,w, stagePatch.running(s))` |
-| succeed with result | `succeedStage(l,w,s,r)` | `saveStages(l,w, stagePatch.succeeded(s,r))` |
-| fail with error | `failStage(l,w,s,e)` | `saveStages(l,w, stagePatch.failed(s,e))` |
-| start generating / regen | `createRun` + bespoke reset | `saveStages(l,w, STAGES.map(stagePatch.pending))` (idempotent) |
-| full progress | `getProgress(l,w)` | `findStages({l,w})` |
-| is it still active? | `getActiveStages(l,w)` | `findStages({l,w, status:[pending,running]})` |
-| did `final_review` pass? | `didStagePass(l,w,final_review)` | `findStages({l,w, stage:final_review, status:succeeded})` |
+| start a stage | `startStage(l,w,s)` | `upsertWordJobStages(l,w, stagePatch.running(s))` |
+| succeed with result | `succeedStage(l,w,s,r)` | `upsertWordJobStages(l,w, stagePatch.succeeded(s,r))` |
+| fail with error | `failStage(l,w,s,e)` | `upsertWordJobStages(l,w, stagePatch.failed(s,e))` |
+| start generating / regen | `createRun` + bespoke reset | `upsertWordJobStages(l,w, STAGES.map(stagePatch.pending))` (idempotent) |
+| full progress | `getProgress(l,w)` | `selectWordJobStages({l,w})` |
+| is it still active? | `getActiveStages(l,w)` | `selectWordJobStages({l,w, status:[pending,running]})` |
+| did `final_review` pass? | `didStagePass(l,w,final_review)` | `selectWordJobStages({l,w, stage:final_review, status:succeeded})` |
 
 ### Scorecard
 
@@ -270,7 +273,7 @@ Symptoms removed: **change amplification** (the lifecycle rule is centralised), 
 write verb to learn, not five; one read shape, not four), **unknown-unknowns** (the caller can no longer
 set a stray timestamp or an illegal status string).
 
-**Where taste overrode the rule.** `saveStages` + `StagePatch` is *precisely* the
+**Where taste overrode the rule.** `upsertWordJobStages` + `StagePatch` is *precisely* the
 `mark(status, …)` shape `.claude/rules/deep-modules.md` flags as a **potential footgun** — a caller
 juggling status + result + error. It was chosen anyway because Move 2 **contained** the footgun: the
 dangerous coupling (status → timestamps) is authored once in `stagePatch`, so a caller builds
@@ -284,8 +287,8 @@ speculative generality losing to the taste gate.
 
 - The shipped code: `repositories/async-word-jobs/src/async-word-jobs.repo.ts` + `stage-patch.ts` (+ the
   package `CLAUDE.md` for the *why*) — the production version with `Effect.fnUntraced` and no
-  transactions. `WordsRepo` (`repositories/words/src/words.repo.ts`) applies the identical idioms to the
-  catalog (`find` + the single-or-array `save` upsert, one multi-row statement).
+  transactions. The words repo (`repositories/words/src/words.repo.ts`) applies the identical idioms to
+  the catalog (`selectWords` + the single-or-array `upsertWords` upsert, a per-content loop).
 - The same lesson one altitude up, at the **data model**: the rejected generic `async_jobs` engine
   (`payload {lang, word, stages}` + a `kind` discriminant + a second repo) → the flat `async_word_jobs`
   table — a general-purpose mechanism that bought nothing and cost a jsonb-index footgun and payload

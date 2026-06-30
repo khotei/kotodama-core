@@ -2,7 +2,7 @@ import type { AsyncWordJobRow, JobError, StageResult, WordJobStage } from '@lexi
 import { enumAsyncJobStatus } from '@lexiai/database'
 
 /**
- * One stage's state for `AsyncWordJobsRepo.saveStages` — the row it names (`stage`), the `status` it
+ * One stage's state for `upsertWordJobStages` — the row it names (`stage`), the `status` it
  * lands in, and the payload columns, each field typed off {@link AsyncWordJobRow} so the shape has
  * one author. Merge-patch semantics: an **absent** field leaves the stored column untouched, an
  * explicit **`null` clears it** (so a `succeeded` patch can't erase the `startedAt` its `running`

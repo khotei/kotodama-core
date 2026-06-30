@@ -6,8 +6,24 @@ import { FrequencyBand, SourceType, VisualKind } from './words.values'
  * The authored effect schemas for the `words` jsonb columns — the single definition of each content
  * shape. The table ({@link wordsTable}) takes each column's `$type` from these (`typeof X.Type`), and
  * {@link WordEntity} overrides the same columns with these schemas so the entity is fully typed
- * rather than opaque `Json`. core derives its `WordModel` from the entity, so every word shape has
- * exactly one author here.
+ * rather than opaque `Json`. `core` and the API contract consume the entity directly (there is no
+ * per-row model), so every word shape has exactly one author here.
+ *
+ * **Required vs nullable vs optional is a domain decision, not convenience.** A field is plain-required
+ * (`Schema.String`) when it exists for every valid word AND the model can always produce it
+ * (`Tier.title`, `Pronunciation.respelling`, `Visual.concept`) — required denies the model its only
+ * escape hatch (below), forcing real content. It is `Schema.NullOr` when "unknown" is a legal state to
+ * store (`firstAttested.year`) or the key is filled by the engine *after* the model plans it
+ * (`Visual.imageKey`, `AuthorExample.authorImageUrl` — the plan emits `null`, the render step fills it,
+ * so the key is required-but-nullable, never `optionalKey`). It is `Schema.optionalKey` only when the
+ * thing genuinely may not exist in the world (a quote with no `work`, a book `Source` with no `url`).
+ *
+ * Optional content fields use `Schema.optionalKey` (`key?: T`), never `Schema.optional`
+ * (`key?: T | undefined`): these schemas are the real engine's `generateObject` argument, and OpenAI
+ * structured output rejects an `undefined` in the AST. It translates *every* key to a required-nullable
+ * and decodes a returned `null` back to an absent key (`effect/unstable/ai/OpenAiStructuredOutput`) —
+ * so the model is always forced to emit the key and `optionalKey` only buys it a `null` escape. That is
+ * precisely why always-present fields are plain-required: take the null away.
  */
 
 /** Image/audio object key — images AND audio, hence `StorageKey`, not `ImageKey`. Presigned to a URL at read. */
@@ -16,7 +32,7 @@ export type StorageKey = typeof StorageKey.Type
 
 export const Pronunciation = Schema.Struct({
   ipa: Schema.String,
-  respelling: Schema.optional(Schema.String),
+  respelling: Schema.String,
   audio: Schema.Struct({
     uk: Schema.NullOr(StorageKey),
     us: Schema.NullOr(StorageKey),
@@ -26,8 +42,8 @@ export type Pronunciation = typeof Pronunciation.Type
 
 export const Lexical = Schema.Struct({
   partOfSpeech: Schema.String,
-  countable: Schema.optional(Schema.Boolean),
-  plural: Schema.optional(
+  countable: Schema.optionalKey(Schema.Boolean),
+  plural: Schema.optionalKey(
     Schema.Struct({ primary: Schema.String, also: Schema.Array(Schema.String) }),
   ),
   register: Schema.Array(Schema.String),
@@ -38,7 +54,7 @@ export const TierExample = Schema.Struct({ text: Schema.String, register: Schema
 export type TierExample = typeof TierExample.Type
 
 export const Tier = Schema.Struct({
-  title: Schema.optional(Schema.String),
+  title: Schema.String,
   body: Schema.String,
   examples: Schema.Array(TierExample),
 })
@@ -55,13 +71,16 @@ export const EtymologyStage = Schema.Struct({
   languageName: Schema.String,
   gloss: Schema.String,
   // Soft ref to a `Source.index` — app-enforced, no DB FK.
-  citation: Schema.optional(Schema.Number),
+  citation: Schema.optionalKey(Schema.Number),
 })
 export type EtymologyStage = typeof EtymologyStage.Type
 
 export const Etymology = Schema.Struct({
   summary: Schema.String,
-  firstAttested: Schema.Struct({ year: Schema.Number, language: Schema.String }),
+  // `year` is nullable: for many words the first-attestation year is genuinely unknown, and a
+  // required `Number` forced the model to emit `NaN` (a structured-output decode failure). `null`
+  // gives "unknown" a legal value under strict structured output.
+  firstAttested: Schema.Struct({ year: Schema.NullOr(Schema.Number), language: Schema.String }),
   origin: Schema.Struct({ from: Schema.String, to: Schema.String, gloss: Schema.String }),
   descent: Schema.Array(EtymologyStage),
 })
@@ -69,8 +88,8 @@ export type Etymology = typeof Etymology.Type
 
 export const AuthorExample = Schema.Struct({
   author: Schema.String,
-  authorImageUrl: Schema.optional(Schema.NullOr(StorageKey)),
-  work: Schema.optional(Schema.String),
+  authorImageUrl: Schema.NullOr(StorageKey),
+  work: Schema.optionalKey(Schema.String),
   language: Language,
   isGenerated: Schema.Boolean,
   quote: Schema.String,
@@ -82,14 +101,14 @@ export type CulturalTimelineEntry = typeof CulturalTimelineEntry.Type
 
 export const CulturalGuide = Schema.Struct({
   timeline: Schema.Array(CulturalTimelineEntry),
-  forecast2030: Schema.optional(Schema.String),
-  notes: Schema.optional(Schema.Array(Schema.String)),
+  forecast2030: Schema.optionalKey(Schema.String),
+  notes: Schema.Array(Schema.String),
 })
 export type CulturalGuide = typeof CulturalGuide.Type
 
 export const RelatedTerm = Schema.Struct({
   term: Schema.String,
-  note: Schema.optional(Schema.String),
+  note: Schema.optionalKey(Schema.String),
 })
 export type RelatedTerm = typeof RelatedTerm.Type
 
@@ -108,10 +127,10 @@ export const Visual = Schema.Struct({
   kind: VisualKind,
   imageKey: Schema.NullOr(StorageKey),
   prompt: Schema.String,
-  caption: Schema.optional(Schema.String),
-  concept: Schema.optional(Schema.String),
-  width: Schema.optional(Schema.Number),
-  height: Schema.optional(Schema.Number),
+  caption: Schema.optionalKey(Schema.String),
+  concept: Schema.String,
+  width: Schema.optionalKey(Schema.Number),
+  height: Schema.optionalKey(Schema.Number),
 })
 export type Visual = typeof Visual.Type
 
@@ -127,31 +146,32 @@ export const Source = Schema.Struct({
   index: Schema.Number,
   type: SourceType,
   title: Schema.String,
-  url: Schema.optional(Schema.String),
-  retrievedAt: Schema.optional(Schema.String),
-  year: Schema.optional(Schema.Number),
-  note: Schema.optional(Schema.String),
+  url: Schema.optionalKey(Schema.String),
+  retrievedAt: Schema.optionalKey(Schema.String),
+  year: Schema.optionalKey(Schema.Number),
+  note: Schema.optionalKey(Schema.String),
 })
 export type Source = typeof Source.Type
 
 export const Frequency = Schema.Struct({
   band: FrequencyBand,
-  trendNote: Schema.optional(Schema.String),
-  series: Schema.optional(
-    Schema.Array(Schema.Struct({ year: Schema.Number, value: Schema.Number })),
-  ),
-  changeNote: Schema.optional(Schema.String),
+  trendNote: Schema.optionalKey(Schema.String),
+  series: Schema.Array(Schema.Struct({ year: Schema.Number, value: Schema.Number })),
+  changeNote: Schema.optionalKey(Schema.String),
 })
 export type Frequency = typeof Frequency.Type
 
 /**
- * Storage provenance for a generated row — which model/prompt/pipeline produced it. Persistence
- * metadata, not rendered content, so `WordModel` (core) drops it; it stays a column the build
- * stamps at promotion.
+ * Storage provenance for a generated row — which models/prompts/pipeline produced it. Persistence
+ * metadata, not rendered content; a column the build stamps at promotion. `model` is the primary-tier
+ * label; `stageModels` is the full per-stage/role model map (so swapping any model shifts provenance),
+ * and `promptHash` digests every prompt surface — together they let "find stale words" detect a recipe
+ * change. Static per engine version: identical across all words one engine built.
  */
 export const SourceVersions = Schema.Struct({
   model: Schema.String,
   promptHash: Schema.String,
-  pipeline: Schema.optional(Schema.String),
+  pipeline: Schema.optionalKey(Schema.String),
+  stageModels: Schema.optionalKey(Schema.Record(Schema.String, Schema.String)),
 })
 export type SourceVersions = typeof SourceVersions.Type

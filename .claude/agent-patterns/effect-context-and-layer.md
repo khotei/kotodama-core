@@ -11,14 +11,20 @@ Read the vendored source before writing DI/wiring code.
 
 > v4 renamed `ServiceMap` **back to `Context`** during the beta. Use `Context.*`.
 
+> **Not everything is a service.** A `Context.Service` + `Layer` is for things that *own* a
+> resource / are *swapped in tests* (`DB`, `ContentEngine`, the queue/AI/storage clients). Repos are
+> **bare DB-verb functions** (`selectWords` / `upsertWords`) and use-cases are **plain functions** — both
+> ride their deps on the `R` channel, no tag. See "Service vs plain function" in
+> `.claude/rules/effect-conventions.md` before reaching for the pattern below.
+
 ## Defining a service
 
 ```ts
 import { Context, Effect, Layer } from 'effect'
 
-export class WordsRepo extends Context.Tag('@lexiai/repositories-words/WordsRepo')<
-  WordsRepo,
-  { readonly findById: (id: string) => Effect.Effect<Word | null> }
+export class ContentEngine extends Context.Tag('@lexiai/core-content/ContentEngine')<
+  ContentEngine,
+  { readonly produce: (stage: WordJobStage, language: Language, word: string) => Effect.Effect<StageResult> }
 >() {}
 ```
 
@@ -28,11 +34,11 @@ during the beta; the vendored source is authoritative.)
 ## Providing a Layer
 
 ```ts
-export const WordsRepoLive = Layer.effect(
-  WordsRepo,
+export const ContentEngineLive = Layer.effect(
+  ContentEngine,
   Effect.gen(function* () {
-    // acquire deps (DB client, etc.) here
-    return WordsRepo.of({ findById: (id) => Effect.succeed(null) })
+    // acquire deps (the AI client, etc.) here
+    return ContentEngine.of({ produce: (stage, language, word) => Effect.succeed(/* … */) })
   }),
 )
 ```

@@ -1,5 +1,2 @@
 export * from './word-build-message.schema'
-export * from './word-build-requester.service'
-export * from './word-build-state.service'
-export * from './word-builder.service'
-export * from './word-state.model'
+export * from './word-build-snapshot'

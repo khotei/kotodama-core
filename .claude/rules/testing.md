@@ -25,12 +25,13 @@ never lifecycle hooks. Three levels:
    so a plain `beforeEach` can't `yield*` them). Scenario seeds live at the layer that **owns the
    table**: `seedReadyWord` (`@lexiai/repositories-words/testing`); `PENDING_ALL` /
    `seedPendingPipeline` / `seedRunningStage` / `seedFailedWord`
-   (`@lexiai/repositories-async-word-jobs/testing`); state narrowing `assertStatus`
-   (`@lexiai/core-async-word-jobs/testing`). Test-data builders stay `@lexiai/database/factories`.
+   (`@lexiai/repositories-async-word-jobs/testing`); state narrowing `assertStatus` (a local helper in
+   `apps/api/test/words-api-test-utils.ts`, next to the `WordStateView` it narrows). Test-data builders stay
+   `@lexiai/database/factories`.
 3. **Test = `describe` + `it.effect`** — inline `resetDb`, a one-line seed helper, then a cohesive
    set of assertions.
 
-**Naming:** `describe` names the seam (`WordsRepo.find`, `WordBuildState.get`, `POST …/build`); `it`
+**Naming:** `describe` names the seam (`selectWords`, `collapseWordState`, `POST …/build`); `it`
 is a behaviour sentence (`'returns the saved row when the word exists'`). Keep the trailing `(AC-n)` —
 the deliberate exception to `comments.md`'s no-provenance rule: it maps a test to the feature AC that
 `/sdd:verify` checks.
@@ -94,7 +95,7 @@ neutral test workspace, since the layer rule forbids one app importing another.
 
 ## Test AWS services (LocalStack)
 
-- The **same per-file Testcontainers pattern** extends to AWS adapters via LocalStack. For the **queue** it is the *only* double — every queue-touching test runs `QueueServiceLive` over a per-file LocalStack container (`QueueLocalStackLive`), like the DB; the in-memory fake was removed (rationale + the `drainQueue` / `ConsumePoll` helpers that contain SQS's non-deterministic receive: `packages/queue/CLAUDE.md`). **Prefer the real adapter over a hand-written fake wherever a container is feasible**; reach for a fast in-memory double only when a container is infeasible *and* the fake stays faithful, and then pin the real `*Live` with one contract test. `@lexiai/queue/testing` (`packages/queue/src/testing.ts`) is the template a future `StorageServiceLive` test copies.
+- The **same per-file Testcontainers pattern** extends to AWS adapters via LocalStack. For the **queue** it is the *only* double — every queue-touching test runs `JobsQueueLive` over `QueueClientLive` on a per-file LocalStack container (`QueueLocalStackLive`), like the DB; the in-memory fake was removed (rationale + the `drainQueue` / `ConsumePoll` helpers that contain SQS's non-deterministic receive: `packages/queue/CLAUDE.md`). **Prefer the real adapter over a hand-written fake wherever a container is feasible**; reach for a fast in-memory double only when a container is infeasible *and* the fake stays faithful, and then pin the real `*Live` with one contract test. **`@lexiai/storage/testing` (`StorageLocalStackLive` + `bucketObjects`/`resetBucket`) is built from this same `packages/queue/src/testing.ts` template** — `StorageLocalStackLive` runs the bound `ImagesStoreLive` over the real `StorageClientLive` S3 adapter on LocalStack; the in-memory `StorageServiceTest` writer (and the `S3Writer` seam it needed) was removed. A downstream suite that does no S3 I/O (text stages, provenance) provides the tiny local no-op `UnusedStorage` (an `ImagesStore` that dies on `put`) rather than booting a container.
 - Image pinned to `localstack/localstack:4.4.0` (the last free, no-token community release — do not float to `:latest`). Unlike `PgContainer`, the LocalStack module's default wait strategy is log-based, so **no** `withWaitStrategy` override is needed.
 
 ## Effect tests

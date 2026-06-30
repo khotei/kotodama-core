@@ -1,7 +1,8 @@
 import { expect, it } from '@effect/vitest'
-import { WordBuilder, WordBuildMessageFromJson } from '@lexiai/core-async-word-jobs'
-import type { EffectDrizzleQueryError } from '@lexiai/database'
+import { WordBuildMessageFromJson } from '@lexiai/core-async-word-jobs'
+import { MockContentEngine, WordGenerationServiceLive } from '@lexiai/core-content'
 import { enumLanguage } from '@lexiai/database'
+import { resetDb, TestDatabaseLive } from '@lexiai/database/testing'
 import type { SQSEvent, SQSRecord } from 'aws-lambda'
 import { Effect, Layer, Schema } from 'effect'
 import { sqsBatchHandler } from '../src/handler'
@@ -9,42 +10,33 @@ import { sqsBatchHandler } from '../src/handler'
 const EN = enumLanguage.en
 const encode = Schema.encodeSync(WordBuildMessageFromJson)
 
-// The handler only catches build failures (never inspects the error value), so a stand-in suffices.
-const dbError = new Error('db boom') as unknown as EffectDrizzleQueryError
-
-// 'boom' fails with a DB error (the redrive case); every other word succeeds.
-const MockWordBuilder = Layer.succeed(
-  WordBuilder,
-  WordBuilder.of({
-    build: (_language, word) => (word === 'boom' ? Effect.fail(dbError) : Effect.void),
-  }),
-)
-
 // The handler reads only `messageId` + `body`; the rest of the SQS envelope is irrelevant here.
 const record = (messageId: string, body: string): SQSRecord =>
   ({ messageId, body }) as unknown as SQSRecord
 const event = (records: ReadonlyArray<SQSRecord>): SQSEvent => ({ Records: [...records] })
 
-it.effect('all records succeed → empty batchItemFailures (AWS deletes the whole batch)', () =>
-  Effect.gen(function* () {
-    const response = yield* sqsBatchHandler(
-      event([record('m1', encode({ language: EN, word: 'lacuna' }))]),
-    )
-    expect(response.batchItemFailures).toEqual([])
-  }).pipe(Effect.provide(MockWordBuilder)),
+// The handler's own job is the SQS envelope: map processBatch's failedIds → batchItemFailures keyed on
+// messageId. A non-empty (redrive) envelope needs a build to fail its Effect — only a real DB fault does
+// that, exercised end-to-end in consume.test.ts — so here we assert the happy envelope: a fully-built
+// batch reports no failures (AWS deletes the whole batch). `buildWord` runs for real over the mock engine
+// + a test DB (it is a plain function, no service to stub). The mock engine is wrapped in
+// WordGenerationServiceLive — buildWord's generation seam is now the service, not ContentEngine directly.
+const TestLayer = Layer.mergeAll(
+  WordGenerationServiceLive.pipe(Layer.provide(MockContentEngine)),
+  TestDatabaseLive,
 )
 
-it.effect('partial failure → batchItemFailures carries only the failed record’s messageId', () =>
-  Effect.gen(function* () {
-    const response = yield* sqsBatchHandler(
-      event([
-        record('ok', encode({ language: EN, word: 'lacuna' })),
-        record('bad', encode({ language: EN, word: 'boom' })),
-      ]),
-    )
-    // The handler's own job is the SQS envelope: map processBatch's failedIds to batchItemFailures
-    // keyed on messageId (only failures replay). Failure isolation across a batch and foreign-body
-    // skipping are processBatch's logic — owned by process-batch.test.ts, not re-driven here.
-    expect(response.batchItemFailures).toEqual([{ itemIdentifier: 'bad' }])
-  }).pipe(Effect.provide(MockWordBuilder)),
-)
+it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
+  it.effect('all records build → empty batchItemFailures (AWS deletes the whole batch)', () =>
+    Effect.gen(function* () {
+      yield* resetDb
+      const response = yield* sqsBatchHandler(
+        event([
+          record('m1', encode({ language: EN, word: 'lacuna' })),
+          record('m2', encode({ language: EN, word: 'serein' })),
+        ]),
+      )
+      expect(response.batchItemFailures).toEqual([])
+    }),
+  )
+})

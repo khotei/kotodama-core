@@ -8,7 +8,10 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
+    "@lexiai/ai": "workspace:*",
     "@lexiai/database": "workspace:*",
+    "@lexiai/external-apis": "workspace:*",
+    "@lexiai/storage": "workspace:*",
     "effect": "catalog:effect"
   },
   "scripts": {

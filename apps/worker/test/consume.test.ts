@@ -1,41 +1,29 @@
 import { expect, it } from '@effect/vitest'
-import {
-  WordBuilderLive,
-  WordBuildMessageFromJson,
-  WordBuildRequester,
-  WordBuildRequesterLive,
-  WordBuildStateLive,
-} from '@lexiai/core-async-word-jobs'
-import { MockContentEngine } from '@lexiai/core-content'
-import { WordFinderLive } from '@lexiai/core-words'
+import { WordBuildMessageFromJson } from '@lexiai/core-async-word-jobs'
+import { MockContentEngine, WordGenerationServiceLive } from '@lexiai/core-content'
 import { enumAsyncJobStatus, enumLanguage } from '@lexiai/database'
 import { resetDb, TestDatabaseLive } from '@lexiai/database/testing'
-import { QueueService } from '@lexiai/queue'
+import { JobsQueue } from '@lexiai/queue'
 import { drainQueue, QueueLocalStackLive } from '@lexiai/queue/testing'
-import { AsyncWordJobsRepo, AsyncWordJobsRepoLive } from '@lexiai/repositories-async-word-jobs'
-import { WordsRepo, WordsRepoLive } from '@lexiai/repositories-words'
+import { selectWordJobStages } from '@lexiai/repositories-async-word-jobs'
+import { selectWords } from '@lexiai/repositories-words'
+import { requestWordBuild } from '@lexiai/use-cases'
 import { Effect, Layer, Schema } from 'effect'
 import { ConsumePoll, consumeOnce } from '../src/consume'
 
 const EN = enumLanguage.en
 
 // One LocalStack SQS + one test DB (two containers), shared across the file (it.layer builds the
-// layer once), so a WordBuildRequester *enqueue* is consumable by the worker loop in the same test —
-// the real request → queue → worker → build path, not a stubbed message. `ConsumePoll` is shrunk to a
-// 1s wait so an empty-queue `consumeOnce` returns promptly instead of blocking the full 20s default.
-const InfraLive = Layer.mergeAll(
-  WordsRepoLive,
-  AsyncWordJobsRepoLive,
-  MockContentEngine,
+// layer once), so a `requestWordBuild` *enqueue* is consumable by the worker loop in the same test —
+// the real request → queue → worker → build path, not a stubbed message. The flows are plain functions
+// bottoming out at WordGenerationService (the mock engine wrapped in WordGenerationServiceLive) +
+// JobsQueue + DB, which this layer provides. `ConsumePoll` is shrunk to a 1s wait so an empty-queue
+// `consumeOnce` returns promptly instead of blocking 20s.
+const TestLayer = Layer.mergeAll(
+  WordGenerationServiceLive.pipe(Layer.provide(MockContentEngine)),
   QueueLocalStackLive,
-).pipe(Layer.provideMerge(TestDatabaseLive))
-
-const StateLive = WordBuildStateLive.pipe(
-  Layer.provideMerge(WordFinderLive),
-  Layer.provideMerge(InfraLive),
-)
-const TestLayer = Layer.mergeAll(WordBuildRequesterLive, WordBuilderLive).pipe(
-  Layer.provideMerge(StateLive),
+).pipe(
+  Layer.provideMerge(TestDatabaseLive),
   Layer.provideMerge(Layer.succeed(ConsumePoll, { max: 10, waitSeconds: 1 })),
 )
 
@@ -46,26 +34,25 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
       Effect.gen(function* () {
         yield* resetDb
         yield* drainQueue
-        const requester = yield* WordBuildRequester
-        const jobs = yield* AsyncWordJobsRepo
-        const words = yield* WordsRepo
 
         // AC-3 — an explicit create request on a Not-yet-made word starts exactly one build and moves the
         // word to Being made: stages seeded, a message enqueued, and no `words` row yet.
-        const state = yield* requester.request(EN, 'lacuna')
-        expect(state.status).toBe('running')
-        expect(yield* words.find({ language: EN, word: 'lacuna' })).toHaveLength(0)
-        expect((yield* jobs.findStages({ language: EN, word: 'lacuna' })).length).toBeGreaterThan(0)
+        const seeded = yield* requestWordBuild(EN, 'lacuna')
+        expect(seeded.length).toBeGreaterThan(0)
+        expect(yield* selectWords({ language: EN, word: 'lacuna' })).toHaveLength(0)
+        expect(
+          (yield* selectWordJobStages({ language: EN, word: 'lacuna' })).length,
+        ).toBeGreaterThan(0)
 
         // The worker consumes the one message and drives the build to completion.
         expect(yield* consumeOnce).toBe(1)
 
         // AC-4 — every ordered pass advanced to succeeded (observable progress through the pipeline).
-        const stages = yield* jobs.findStages({ language: EN, word: 'lacuna' })
+        const stages = yield* selectWordJobStages({ language: EN, word: 'lacuna' })
         expect(stages.every((stage) => stage.status === enumAsyncJobStatus.succeeded)).toBe(true)
 
         // AC-5 — the word is now Ready: a subsequent lookup returns it with assembled content.
-        const [ready] = yield* words.find({ language: EN, word: 'lacuna', limit: 1 })
+        const [ready] = yield* selectWords({ language: EN, word: 'lacuna', limit: 1 })
         expect(ready?.visuals.hero).not.toBeNull()
 
         // The message was acked (deleted only after success) — the queue is now empty.
@@ -77,21 +64,19 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
     Effect.gen(function* () {
       yield* resetDb
       yield* drainQueue
-      const requester = yield* WordBuildRequester
-      const queue = yield* QueueService
-      const words = yield* WordsRepo
+      const queue = yield* JobsQueue
 
-      yield* requester.request(EN, 'lacuna')
+      yield* requestWordBuild(EN, 'lacuna')
       expect(yield* consumeOnce).toBe(1) // first delivery → Ready, acked
 
-      // Model an SQS redrive: the identical message arrives again. WordBuildRequester would converge and not
-      // re-enqueue, so re-send the encoded body directly to stand in for the transport redelivering it.
+      // Model an SQS redrive: the identical message arrives again. `requestWordBuild` would converge and
+      // not re-enqueue, so re-send the encoded body directly to stand in for the transport redelivering it.
       const body = Schema.encodeSync(WordBuildMessageFromJson)({ language: EN, word: 'lacuna' })
       yield* queue.send(body)
       expect(yield* consumeOnce).toBe(1) // re-delivery re-runs the build
 
       // The promotion upsert on UNIQUE(word, language) means the re-run produced no second row.
-      const allWords = yield* words.find({})
+      const allWords = yield* selectWords({})
       expect(allWords).toHaveLength(1)
       expect(allWords[0]?.word).toBe('lacuna')
     }),
@@ -101,14 +86,13 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
     Effect.gen(function* () {
       yield* resetDb
       yield* drainQueue
-      const queue = yield* QueueService
-      const words = yield* WordsRepo
+      const queue = yield* JobsQueue
 
       // A foreign body on the queue (valid JSON, wrong shape) must not run a build.
       yield* queue.send(JSON.stringify({ kind: 'something-else' }))
       yield* consumeOnce
 
-      expect(yield* words.find({})).toHaveLength(0)
+      expect(yield* selectWords({})).toHaveLength(0)
     }),
   )
 })

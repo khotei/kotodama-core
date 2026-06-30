@@ -24,6 +24,9 @@ This project vendors external library source under `repos/` so Claude Code (Desk
 - Inspect `repos/effect-smol/` for idiomatic usage, tests, module structure, and API design — treat it as the source of truth for Effect patterns.
 - **Read `repos/effect-smol/LLMS.md` first** — it is present upstream and is the maintainers' own LLM-coding guide. (`repos/effect-smol/MIGRATION.md` and `packages/effect/SCHEMA.md` cover the v3→v4 and Schema migrations.)
 - Cross-reference the project-local cheat sheets in `.claude/agent-patterns/`:
+  - `.claude/agent-patterns/effect-stdlib.md` — blessed reuse catalog of the data/utility modules
+    (`Array`, `Option`, `Result`, `Predicate`, `Struct`, `Record`, `Order`, …); reach for these before
+    hand-rolling a helper.
   - `.claude/agent-patterns/effect-schema.md`
   - `.claude/agent-patterns/effect-context-and-layer.md`
   - `.claude/agent-patterns/effect-httpapi.md`

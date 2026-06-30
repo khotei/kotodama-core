@@ -9,16 +9,21 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@effect/ai-openai": "catalog:effect",
     "@effect/platform-bun": "catalog:effect",
+    "@lexiai/ai": "workspace:*",
     "@lexiai/config": "workspace:*",
     "@lexiai/core-async-word-jobs": "workspace:*",
     "@lexiai/core-content": "workspace:*",
     "@lexiai/core-words": "workspace:*",
     "@lexiai/database": "workspace:*",
+    "@lexiai/external-apis": "workspace:*",
     "@lexiai/observability": "workspace:*",
     "@lexiai/queue": "workspace:*",
     "@lexiai/repositories-async-word-jobs": "workspace:*",
     "@lexiai/repositories-words": "workspace:*",
+    "@lexiai/storage": "workspace:*",
+    "@lexiai/use-cases": "workspace:*",
     "effect": "catalog:effect"
   },
   "devDependencies": {

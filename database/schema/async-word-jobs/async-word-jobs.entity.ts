@@ -10,11 +10,11 @@ import { ASYNC_JOB_STATUSES } from './async-word-jobs.values'
  * + per-stage state. The `result`/`error` jsonb columns are **overridden** with their
  * authored content schemas so the entity is fully typed; a bare `createSelectSchema` erases every jsonb
  * column to opaque `Json` (its `$type` doesn't survive derivation — `drizzle-effect.md`). This is the
- * schema core's {@link AsyncWordJobModel} is derived from (it omits the storage envelope), so the job
- * shape has one author: the content schemas here.
+ * row schema the API contract composes and that `core` consumes directly (there is no per-row model),
+ * so the job shape has one author: the content schemas here.
  *
  * Reads go through the {@link AsyncWordJobRow} type (trusted DB data, no decode); this schema earns its
- * keep as the derivation source for the domain model and as the validated shape at write boundaries.
+ * keep as the per-row payload the API contract composes and as the validated shape at write boundaries.
  */
 export const AsyncWordJobEntity = createSelectSchema(asyncWordJobsTable, {
   word: (schema) => schema.check(Schema.isMinLength(1)),

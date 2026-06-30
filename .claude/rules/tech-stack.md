@@ -8,7 +8,7 @@ The authoritative source is the [Tech spec](https://www.notion.so/36dfb28bd5f181
 | Language | **TypeScript strict** | `tsconfig.base.json`: strict, `moduleResolution: bundler`, `verbatimModuleSyntax`, composite project refs. |
 | Effect | **Effect v4 (beta)** | Catalog pins the whole effect group to an **exact `4.0.0-beta.78`** (not the floating `beta` tag — adding a new effect-consuming edge re-resolved the tag to a freshly-published beta, skewing versions across the monorepo and breaking `tsc`). Use `Context.Service`/`Context.Tag` (v4 renamed back from `ServiceMap`). In-beta APIs live under `effect/unstable/*`. |
 | Server | `@effect/platform-bun` | `BunRuntime.runMain` entrypoints; deployed to AWS Lambda via the Lambda Web Adapter. |
-| SQL | `@effect/sql-pg` + **Drizzle** | Drizzle owns schema/migrations; repositories wrap it in `Context.Service`s. |
+| SQL | `@effect/sql-pg` + **Drizzle** | Drizzle owns schema/migrations; the `DB` layer is a `Context.Service`, repositories are bare functions over it. |
 | AI | `@effect/ai-openai` | text + image generation. |
 | Observability | `@effect/opentelemetry` | `TracingLive` layer factory in `@lexiai/observability`; OTLP→Jaeger locally (`infra`), any OTLP backend in prod. See `.claude/rules/observability.md`. |
 | Frontend | **React 19** + **Vite 6** | React Compiler on (babel plugin), TanStack Router (file-based, deferred), Tailwind v4, `@effect/atom-react`. |

@@ -1,5 +1,4 @@
-import type { WordBuilder } from '@lexiai/core-async-word-jobs'
-import type { SQSBatchResponse, SQSEvent } from 'aws-lambda'
+import type { SQSEvent } from 'aws-lambda'
 import { Effect } from 'effect'
 import { type BatchRecord, processBatch } from './process-batch'
 
@@ -15,16 +14,11 @@ import { type BatchRecord, processBatch } from './process-batch'
  * (a managed runtime built once, the prod layer provided, `runPromise`) is the deploy/packaging
  * feature's job — this module stays free of `BunRuntime` and layer wiring.
  */
-export const sqsBatchHandler = (
-  event: SQSEvent,
-): Effect.Effect<SQSBatchResponse, never, WordBuilder> => {
+export const sqsBatchHandler = Effect.fnUntraced(function* (event: SQSEvent) {
   const records: ReadonlyArray<BatchRecord> = event.Records.map((record) => ({
     id: record.messageId,
     body: record.body,
   }))
-  return processBatch(records).pipe(
-    Effect.map((failedIds) => ({
-      batchItemFailures: failedIds.map((itemIdentifier) => ({ itemIdentifier })),
-    })),
-  )
-}
+  const failedIds = yield* processBatch(records)
+  return { batchItemFailures: failedIds.map((itemIdentifier) => ({ itemIdentifier })) }
+})

@@ -17,9 +17,9 @@ can't localize.
   (`<entity>.values.ts`/`enums.ts`), and the `<Name>Entity` row schemas (`<entity>.entity.ts`,
   `createSelectSchema` + jsonb overrides so columns are typed, not opaque `Json`). **Both tables
   (`words`, `async_word_jobs`) follow this identically** — content schemas → entity. Consumers use the
-  rows/entities directly (the API contracts compose `WordEntity`); `core/` authors only computed read
-  models whose leaves derive from the entities (`WordStateModel`). One author per shape, no cycle. The
-  `<Name>EntityInsert` schemas validate untrusted writes (`WordBuilder.promote`). See `drizzle-effect.md`.
+  rows/entities directly (the API contracts compose `WordEntity`); the consuming layers author only
+  computed view/read models whose leaves derive from the entities (`WordStateView`). One author per shape, no cycle. The
+  `<Name>EntityInsert` schemas validate untrusted writes (`assembleWord`, `@lexiai/core-words`). See `drizzle-effect.md`.
 - **Layers (`src/db.ts`):** this package *exposes* layers only — `apps/*` compose them; `DatabaseLive`
   is the self-contained one. Wiring details: `drizzle-effect.md`.
 - **`db:*` scripts are config-driven** through `@lexiai/config` (`ConfigProviderLive` + `DatabaseUrl`)

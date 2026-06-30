@@ -18,6 +18,7 @@
     "@lexiai/observability": "workspace:*",
     "@lexiai/queue": "workspace:*",
     "@lexiai/repositories-words": "workspace:*",
-    "@lexiai/repositories-async-word-jobs": "workspace:*"
+    "@lexiai/repositories-async-word-jobs": "workspace:*",
+    "@lexiai/use-cases": "workspace:*"
   }
 }

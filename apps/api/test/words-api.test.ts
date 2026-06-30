@@ -1,30 +1,22 @@
 import { BunHttpServer } from '@effect/platform-bun'
 import { describe, expect, it } from '@effect/vitest'
-import { WordBuildRequesterLive, WordBuildStateLive } from '@lexiai/core-async-word-jobs'
-import { assertStatus } from '@lexiai/core-async-word-jobs/testing'
-import { WordFinderLive } from '@lexiai/core-words'
 import { enumAsyncJobStatus, enumLanguage, enumWordJobStage } from '@lexiai/database'
 import { resetDb, TestDatabaseLive } from '@lexiai/database/testing'
 import { QueueLocalStackLive } from '@lexiai/queue/testing'
-import { AsyncWordJobsRepoLive } from '@lexiai/repositories-async-word-jobs'
 import { seedPendingPipeline, seedRunningStage } from '@lexiai/repositories-async-word-jobs/testing'
-import { WordsRepoLive } from '@lexiai/repositories-words'
 import { seedReadyWord } from '@lexiai/repositories-words/testing'
 import { Effect, Layer } from 'effect'
 import { HttpRouter } from 'effect/unstable/http'
 import { HttpApiBuilder } from 'effect/unstable/httpapi'
 import { WordsApi } from '../src/words/words.api'
 import { WordsApiLive } from '../src/words/words.handler'
-import { buildWord, getWord, getWordState } from './support'
+import { assertStatus, buildWord, getWord, getWordState } from './words-api-test-utils'
 
-// The three handler use cases over the repos + a LocalStack SQS queue + an ephemeral Postgres.
-// `provideMerge` keeps the repos in context so a test can seed the ground-truth state each read sees.
-const DomainLive = WordBuildRequesterLive.pipe(
-  Layer.provideMerge(WordBuildStateLive),
-  Layer.provideMerge(WordFinderLive),
-  Layer.provideMerge(Layer.mergeAll(WordsRepoLive, AsyncWordJobsRepoLive, QueueLocalStackLive)),
-  Layer.provideMerge(TestDatabaseLive),
-)
+// `requestWordBuild` + the reads (selectWord / selectWordJobStages + collapseWordState) are plain
+// functions over the repos (which `yield*` DB) + JobsQueue — a LocalStack SQS queue + an ephemeral
+// Postgres. The handler flows bottom out at JobsQueue + DB, which this layer provides, so a test can
+// seed the ground-truth state each read sees.
+const DomainLive = QueueLocalStackLive.pipe(Layer.provideMerge(TestDatabaseLive))
 
 const ApiLive = HttpApiBuilder.layer(WordsApi).pipe(Layer.provide(WordsApiLive))
 
@@ -59,15 +51,15 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
   })
 
   describe('GET /api/words/:language/:word/state', () => {
-    it.effect('→ the running WordStateModel round-trips over the wire', () =>
+    it.effect('→ the running WordStateView round-trips over the wire', () =>
       Effect.gen(function* () {
         yield* resetDb
         yield* seedRunningStage(EN, 'lacuna', enumWordJobStage.fetch_source)
 
         const state = yield* getWordState(EN, 'lacuna')
         // The API owns only that the union discriminant + stage shape survive the contract encoding;
-        // stage *ordering* and the four-state collapse are owned by core's pure deriveWordState
-        // (word-state-derive.test.ts), so assert membership, not position.
+        // stage *ordering* and the four-state collapse are owned by core's pure collapseWordState
+        // (word-state-collapse.test.ts), so assert membership, not position.
         assertStatus(state, 'running')
         expect(state.stages).toContainEqual({
           stage: enumWordJobStage.fetch_source,
@@ -97,7 +89,7 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
     // 4xx (not a 500): every build error is a TaggedError through the same HttpApi error machinery, and
     // each is *compile-checked* against the endpoint's declared union (words.api.ts) — a missing
     // declaration fails tsc, never silently 500s. The per-state branching (in-progress vs already-ready
-    // vs invalid input) is owned by word-build-requester.service.test.ts, so it is not re-enumerated here.
+    // vs invalid input) is owned by word-build-request.use-case.test.ts, so it is not re-enumerated here.
     it.effect('on a Being-made word → a typed WordBuildInProgressError (AC-7)', () =>
       Effect.gen(function* () {
         yield* resetDb

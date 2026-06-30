@@ -35,7 +35,7 @@ program.pipe(Effect.provide(TracingLive('lexiai-api')), BunRuntime.runMain)
 - **Span the meaningful units of work**, not every function. Wrap use cases, repo
   calls, AI calls, queue ops with `Effect.withSpan('Domain.operation', { attributes })`.
   `@effect/sql-pg` and `HttpApi` add their own spans; don't duplicate them.
-- **Span names:** `PascalCaseSubject.operation` (e.g. `WordsRepo.findById`,
+- **Span names:** `PascalCaseSubject.operation` (e.g. `SelectWords.run`,
   `GenerateWord.run`). Attributes are lowercase dotted keys (`word.id`, `gen_ai.model`).
 - **Never put secrets in attributes.** Redacted config (DB URL, API keys) stays out of
   spans, same as it stays out of logs.

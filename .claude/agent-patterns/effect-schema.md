@@ -7,7 +7,7 @@ read it before writing Schema code.
   `SchemaTransformation.ts`, `SchemaGetter.ts`, `SchemaIssue.ts`.
 - Tests/examples: `repos/effect-smol/packages/effect/test/schema/Schema.test.ts`,
   `toCodec.test.ts`, `toArbitrary.test.ts`.
-- Use `effect/Schema` — **never Zod**. Word shapes are authored in `database/` (content schemas + `WordEntity`); consumers use them directly, and `core/` authors only computed read models (`WordStateModel`).
+- Use `effect/Schema` — **never Zod**. Word shapes are authored in `database/` (content schemas + `WordEntity`); consumers use them directly, and the consuming layers author only computed view/read models (`WordStateView`).
 
 ## Common constructors
 

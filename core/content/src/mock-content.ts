@@ -5,21 +5,21 @@ import {
   enumFrequencyBand,
   enumSourceType,
   enumVisualKind,
-  enumWordJobStage,
   type Frequency,
   type Language,
   type Lexical,
   type Pronunciation,
   type Relations,
   type Source,
-  type StageResult,
   type Tier,
   type Tiers,
   type Translation,
   type Visual,
   type Visuals,
+  type WordContent,
   type WordJobStage,
 } from '@lexiai/database'
+import { STAGE_SLICES, type StageSlice } from './stage-slices'
 
 /**
  * Deterministic, schema-valid mock word content, keyed only by the word. No `faker`, clock, or
@@ -91,6 +91,7 @@ const authorExamples = (word: string, language: Language): AuthorExample[] => [
   },
   {
     author: 'B. Poet',
+    authorImageUrl: storageKey(word, 'authors'),
     work: `${cap(word)} Verses`,
     language,
     isGenerated: true,
@@ -159,33 +160,38 @@ const frequency = (): Frequency => ({
 })
 
 /**
- * The per-stage content slices. Keys are disjoint across stages so the worker assembles a full
- * `Word` by merging all six — mirroring the real per-stage write at the swap boundary.
+ * The full mock `WordContent` — every field a `words` row carries. Typed as {@link WordContent}, so a
+ * new content field fails `tsc` here until the mock provides it. {@link mockStageContent} slices this
+ * through {@link STAGE_SLICES} instead of re-listing which keys each stage owns, so the mock can't drift
+ * from the real engine's per-stage partition.
  */
-const stageContent: Record<WordJobStage, (word: string, language: Language) => StageResult> = {
-  [enumWordJobStage.fetch_source]: (word) => ({
-    coreDefinition: `${cap(word)}: a deliberately mock definition of “${word}”.`,
-    lexical: lexical(word),
-    pronunciation: pronunciation(word),
-    sources: sources(word),
-  }),
-  [enumWordJobStage.enrich_etymology]: (word) => ({ etymology: etymology(word) }),
-  [enumWordJobStage.enrich_tiers]: (word) => ({
-    tiers: tiers(word),
-    relations: relations(word),
-    translations: translations(word),
-  }),
-  [enumWordJobStage.enrich_authors]: (word, language) => ({
-    authorExamples: authorExamples(word, language),
-    culturalGuide: culturalGuide(word),
-  }),
-  [enumWordJobStage.enrich_visuals]: (word) => ({ visuals: visuals(word) }),
-  [enumWordJobStage.final_review]: () => ({ frequency: frequency() }),
-}
+const fullMockContent = (word: string, language: Language): WordContent => ({
+  coreDefinition: `${cap(word)}: a deliberately mock definition of “${word}”.`,
+  lexical: lexical(word),
+  pronunciation: pronunciation(word),
+  sources: sources(word),
+  etymology: etymology(word),
+  tiers: tiers(word),
+  relations: relations(word),
+  translations: translations(word),
+  authorExamples: authorExamples(word, language),
+  culturalGuide: culturalGuide(word),
+  visuals: visuals(word),
+  frequency: frequency(),
+})
 
-/** The `StageResult` a given pass writes for `(word, language)`. Pure and deterministic. */
-export const mockStageContent = (
-  stage: WordJobStage,
+/**
+ * The typed {@link StageSlice} a given pass writes for `(word, language)` — the stage's keys
+ * ({@link STAGE_SLICES}, the real engine's own partition) picked off {@link fullMockContent}. Pure and
+ * deterministic. The cast bridges the runtime key-pick to the static slice type; the keys come from
+ * `STAGE_SLICES[stage]` itself, so the pick always yields exactly that stage's slice.
+ */
+export const mockStageContent = <S extends WordJobStage>(
+  stage: S,
   word: string,
   language: Language,
-): StageResult => stageContent[stage](word, language)
+): StageSlice<S> => {
+  const content = fullMockContent(word, language) as Record<string, unknown>
+  const keys = Object.keys(STAGE_SLICES[stage].fields)
+  return Object.fromEntries(keys.map((key) => [key, content[key]])) as StageSlice<S>
+}

@@ -67,13 +67,15 @@
                 "patterns": [
                   {
                     "group": [
+                      "@lexiai/use-cases",
+                      "@lexiai/use-cases-*",
                       "@lexiai/core-*",
                       "@lexiai/repositories-*",
                       "@lexiai/apps-*",
                       "@lexiai/database",
                       "@lexiai/database/factories"
                     ],
-                    "message": "Layer violation: packages/* are leaves and must not import core, repositories, database, or apps. See CLAUDE.md dependency hierarchy."
+                    "message": "Layer violation: packages/* are leaves and must not import use-cases, core, repositories, database, or apps. See CLAUDE.md dependency hierarchy."
                   },
                   {
                     "group": ["**/repos/**"],
@@ -96,8 +98,14 @@
               "options": {
                 "patterns": [
                   {
-                    "group": ["@lexiai/core-*", "@lexiai/repositories-*", "@lexiai/apps-*"],
-                    "message": "Layer violation: database/ may only import @lexiai/* packages, never core, repositories, or apps."
+                    "group": [
+                      "@lexiai/use-cases",
+                      "@lexiai/use-cases-*",
+                      "@lexiai/core-*",
+                      "@lexiai/repositories-*",
+                      "@lexiai/apps-*"
+                    ],
+                    "message": "Layer violation: database/ may only import @lexiai/* packages, never use-cases, core, repositories, or apps."
                   },
                   {
                     "group": ["**/repos/**"],
@@ -120,8 +128,13 @@
               "options": {
                 "patterns": [
                   {
-                    "group": ["@lexiai/core-*", "@lexiai/apps-*"],
-                    "message": "Layer violation: repositories/* may depend on database and packages only, never core or apps."
+                    "group": [
+                      "@lexiai/use-cases",
+                      "@lexiai/use-cases-*",
+                      "@lexiai/core-*",
+                      "@lexiai/apps-*"
+                    ],
+                    "message": "Layer violation: repositories/* may depend on database and packages only, never use-cases, core, or apps."
                   },
                   {
                     "group": ["**/repos/**"],
@@ -144,8 +157,32 @@
               "options": {
                 "patterns": [
                   {
+                    "group": ["@lexiai/use-cases", "@lexiai/use-cases-*", "@lexiai/apps-*"],
+                    "message": "Layer violation: core/* must not import use-cases or apps."
+                  },
+                  {
+                    "group": ["**/repos/**"],
+                    "message": "Do not import from repos/ \u2014 it is vendored, read-only reference material. Import the published package (effect, @effect/*) instead."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["use-cases/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
                     "group": ["@lexiai/apps-*"],
-                    "message": "Layer violation: core/* must not import apps."
+                    "message": "Layer violation: use-cases/ is the top tier below apps \u2014 it composes core, repositories, database, and packages, but must not import apps."
                   },
                   {
                     "group": ["**/repos/**"],

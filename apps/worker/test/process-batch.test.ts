@@ -1,45 +1,90 @@
 import { expect, it } from '@effect/vitest'
-import { WordBuilder, WordBuildMessageFromJson } from '@lexiai/core-async-word-jobs'
-import type { EffectDrizzleQueryError } from '@lexiai/database'
+import { WordBuildMessageFromJson } from '@lexiai/core-async-word-jobs'
+import {
+  MockContentEngine,
+  WordGenerationService,
+  WordGenerationServiceLive,
+} from '@lexiai/core-content'
 import { enumLanguage } from '@lexiai/database'
-import { Effect, Layer, Ref, Schema } from 'effect'
+import { resetDb, TestDatabaseLive } from '@lexiai/database/testing'
+import { selectWordJobStages } from '@lexiai/repositories-async-word-jobs'
+import { selectWords } from '@lexiai/repositories-words'
+import { Effect, Layer, Schema } from 'effect'
 import { processBatch } from '../src/process-batch'
 
 const EN = enumLanguage.en
 const encode = Schema.encodeSync(WordBuildMessageFromJson)
 
-// processBatch only ever *catches* a build failure (it records the record's id and never inspects the
-// error value), so a stand-in is enough to drive the failure path without constructing the real
-// drizzle error or importing drizzle into the worker layer.
-const dbError = new Error('db boom') as unknown as EffectDrizzleQueryError
+// The sentinel word whose generation *dies* (an unrecoverable defect, not a typed failure) — the way
+// `createWord`'s `orDie` on a malformed assembly would — so the batch-isolation contract can be
+// exercised without a malformed-content fixture.
+const BOOM = 'boom'
 
-it.effect(
-  'reports failed builds, skips foreign bodies, and isolates one failure from the rest',
-  () =>
+// A generation seam that delegates every word to the real mock-backed service, except BOOM, which it
+// `die`s. A single-tag decorator over WordGenerationServiceLive (same shape as WordGenerationServiceTimed).
+const DefectGenerationLive = Layer.effect(
+  WordGenerationService,
+  Effect.gen(function* () {
+    const base = yield* WordGenerationService
+    return WordGenerationService.of({
+      generate: (language, word) =>
+        word === BOOM ? Effect.die(new Error('malformed assembly')) : base.generate(language, word),
+    })
+  }),
+).pipe(Layer.provide(WordGenerationServiceLive.pipe(Layer.provide(MockContentEngine))))
+
+// processBatch runs real builds over the mock engine + a test DB (buildWord is a plain function, no
+// service to stub). This unit owns: a foreign body is **skipped** (neither built nor failed); valid
+// messages build, so a happy batch reports no failures; and a build that **dies** is isolated to its
+// own failed id (`matchCause`) rather than poisoning the batch. The DB-fault redrive path is exercised
+// end-to-end in consume.test.ts. The mock engine is wrapped in the defect decorator, transparent for
+// every non-BOOM word.
+const TestLayer = Layer.mergeAll(DefectGenerationLive, TestDatabaseLive)
+
+it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
+  it.effect('builds valid messages, skips foreign bodies — a happy batch has no failures', () =>
     Effect.gen(function* () {
-      const built = yield* Ref.make<ReadonlyArray<string>>([])
-      // 'boom' fails with a DB error (the redrive case); every other word succeeds and is recorded.
-      const MockWordBuilder = Layer.succeed(
-        WordBuilder,
-        WordBuilder.of({
-          build: (_language, word) =>
-            word === 'boom' ? Effect.fail(dbError) : Ref.update(built, (xs) => [...xs, word]),
-        }),
-      )
+      yield* resetDb
 
       const records = [
         { id: 'ok-1', body: encode({ language: EN, word: 'lacuna' }) },
-        { id: 'fail-1', body: encode({ language: EN, word: 'boom' }) },
         { id: 'foreign-1', body: JSON.stringify({ kind: 'something-else' }) },
         { id: 'ok-2', body: encode({ language: EN, word: 'serein' }) },
       ]
 
-      const failedIds = yield* processBatch(records).pipe(Effect.provide(MockWordBuilder))
+      const failedIds = yield* processBatch(records)
 
-      // Only the DB-failing record is returned: a success is absent (the edge acks it), and a foreign
-      // body is skipped — neither built nor failed (AC-5).
-      expect(failedIds).toEqual(['fail-1'])
-      // The failure did not abort the others — both valid words still built (AC-4, isolation).
-      expect(yield* Ref.get(built)).toEqual(expect.arrayContaining(['lacuna', 'serein']))
+      // Every valid build succeeded and the foreign body was skipped — nothing to redrive (AC-5).
+      expect(failedIds).toEqual([])
+      // The valid words built (stage rows + a ready row); the foreign body triggered no build.
+      expect((yield* selectWordJobStages({ language: EN, word: 'lacuna' })).length).toBeGreaterThan(
+        0,
+      )
+      expect(yield* selectWords({ language: EN, word: 'lacuna' })).toHaveLength(1)
     }),
-)
+  )
+
+  it.effect(
+    'isolates a build that dies — only its id redrives, the other records still build',
+    () =>
+      Effect.gen(function* () {
+        yield* resetDb
+
+        const records = [
+          { id: 'ok-1', body: encode({ language: EN, word: 'lacuna' }) },
+          { id: 'boom-1', body: encode({ language: EN, word: BOOM }) },
+          { id: 'ok-2', body: encode({ language: EN, word: 'serein' }) },
+        ]
+
+        const failedIds = yield* processBatch(records)
+
+        // The defect was caught per-record: only BOOM's id comes back to redrive, and the two valid
+        // words still built to completion (a bare `Effect.match` would have let the defect tear the
+        // whole batch down, so neither `serein` nor a clean `failedIds` would survive).
+        expect(failedIds).toEqual(['boom-1'])
+        expect(yield* selectWords({ language: EN, word: 'lacuna' })).toHaveLength(1)
+        expect(yield* selectWords({ language: EN, word: 'serein' })).toHaveLength(1)
+        expect(yield* selectWords({ language: EN, word: BOOM })).toHaveLength(0)
+      }),
+  )
+})

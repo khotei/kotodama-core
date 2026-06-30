@@ -5,10 +5,18 @@
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./provisioning": "./src/provisioning.ts",
+    "./testing": "./src/testing.ts"
   },
   "dependencies": {
-    "effect": "catalog:effect"
+    "effect": "catalog:effect",
+    "@lexiai/config": "workspace:*"
+  },
+  "devDependencies": {
+    "@aws-sdk/client-s3": "catalog:aws",
+    "@testcontainers/localstack": "catalog:test",
+    "testcontainers": "catalog:test"
   },
   "scripts": {
     "test": "vitest run",

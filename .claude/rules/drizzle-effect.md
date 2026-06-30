@@ -89,7 +89,7 @@ table reads each `$type` from `typeof X.Type` and the entity overrides the same 
 Reads still use the **`<Entity>Row`** type (`$inferSelect`, trusted DB data, no decode); the `Entity`
 schema earns its keep as (a) the per-row payload the API contracts compose (and the derivation source
 for core's read-model leaves) and (b) the validated shape at write/untrusted boundaries
-(`WordBuilder.promote` decodes assembled LLM output through `WordEntityInsert`). **Every entity is
+(`assembleWord` decodes assembled LLM output through `WordEntityInsert`). **Every entity is
 authored the same way** — `words` and `async_word_jobs` both have a
 `<entity>.content.ts` (authored content schemas) + `<entity>.entity.ts` (`<Name>Entity` +
 `<Name>EntityInsert`). `async_word_jobs`' `result` is an
@@ -101,7 +101,7 @@ the worker assembles the `words` row); `error` is the typed `JobError`. The row 
 
 Shape knowledge is authored at the **bottom** and flows up: `database/` authors the content
 effect-schemas, value tuples/`pgEnum`s, and `WordEntity`; `core/` consumes them directly
-(`core → database`, a legal downward edge) and authors only computed read models (`WordStateModel`);
+(`core → database`, a legal downward edge); the consuming layers author only computed view/read models (`WordStateView`);
 the API contract composes both. There is **one author per shape** and no cycle.
 `database/` may import `drizzle-orm` (it is backend persistence); the FE has no vocabulary package
 (`packages/schemas` was deprecated) — its contract surface is re-established when the UI returns.
@@ -138,8 +138,8 @@ through a real `effect/Schema`** before the promotion upsert. So `words` never h
 permissive-row → strict-union dance above is unnecessary for it (it remains the right tool for a
 table that genuinely *must* store a pre-ready row).
 
-> **Decision (F-PLAT-005 §v7, supersedes the F-PLAT-004 plan):** `WordsRepo` hands back the
-> plain `WordRow` (`$inferSelect`) — already complete, no union/decoder needed — and `create`
+> **Decision (F-PLAT-005 §v7, supersedes the F-PLAT-004 plan):** `selectWords` hands back the
+> plain `WordRow` (`$inferSelect`) — already complete, no union/decoder needed — and `upsertWords`
 > is the single promotion **upsert** on `UNIQUE(word, language)` (first-gen inserts, regen replaces).
 > The earlier plan's 1:1 `word_details` split (and the nullable-row union) was dropped in favour of this merge.
 
