@@ -64,8 +64,8 @@ Cross-cutting rules load **always**; the rest are **path-scoped** via `paths:` f
 only when you touch a matching file, keeping the always-on context lean (Claude Code guidance:
 target < 200 lines of always-loaded context per file; bloat reduces adherence).
 
-- **Always:** `tech-stack` · `dependency-hierarchy` · `naming` · `deep-modules` · `comments` ·
-  `tooling` · `commits` · `pull-requests` · `claude-md`.
+- **Always:** `tech-stack` · `dependency-hierarchy` · `naming` · `deep-modules` · `capability-sweep` ·
+  `comments` · `tooling` · `commits` · `pull-requests` · `claude-md`.
 - **Path-scoped (load on match):** `effect-conventions`, `vendored-sources` → `**/*.ts` ·
   `drizzle-effect` → `database/**`, `repositories/**` · `config` → `packages/config/**`,
   `**/main.ts` · `testing` → `**/test/**`, `**/*.test.ts` · `observability` →

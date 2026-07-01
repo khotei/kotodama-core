@@ -109,6 +109,12 @@ and pointing at the repo's real code) and one full move-by-move refactoring — 
 `.claude/agent-patterns/deep-modules-examples.md` (on-demand; read it when designing or reworking an
 interface).
 
+A **generative** companion — a "symptom → structural move" recognition map (co-occurring booleans →
+discriminated union; threaded arg → context; abstraction-for-one-caller → delete it; …), the design-side
+sibling of the Postgres capability catalog — lives in `.claude/agent-patterns/design-heuristics.md`
+(on-demand; the checklist above *filters*, that catalog *generates*). It is the leg-B source for the
+capability sweep (`.claude/prompts/capability-sweep.md`).
+
 ---
 
 ## Review checklist (a diff or a file)

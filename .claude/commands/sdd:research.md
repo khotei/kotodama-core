@@ -20,7 +20,11 @@ topic.
 
 1. **Scope** the topic `$ARGUMENTS` into the specific questions the research must answer.
 2. **Gather evidence** from multiple sources — `WebSearch`/`WebFetch` for external, the Notion MCP +
-   `Read`/`Grep` for internal specs/code. Prefer primary/authoritative sources; triangulate.
+   `Read`/`Grep` for internal specs/code. Prefer primary/authoritative sources; triangulate. **Use both
+   legs of the capability sweep as your search lens** (`@.claude/prompts/capability-sweep.md`): actively
+   enumerate the best platform-native capabilities *and* the strongest design/structure options
+   (`@.claude/agent-patterns/design-heuristics.md`) that bear on the topic — so the findings surface the
+   best-in-class approach, cited, not just the naive/default one a later Plan would otherwise reach for.
 3. **Ground every claim.** Each factual statement gets an inline citation to a real, retrievable
    source. A claim with no source **does not ship** — drop it or list it as an open question
    (invention is forbidden — playbook §1.5).

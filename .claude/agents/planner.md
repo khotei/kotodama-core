@@ -26,10 +26,16 @@ sequenced into tasks, and how it will be tested. You decide the *how*; you never
 
 ## How you work
 
+- **Sweep before you decompose.** Run the capability + design sweep
+  (`@.claude/prompts/capability-sweep.md`) across this feature's subsystems *and* core design
+  decisions — both legs: platform capabilities and the design/structure catalog
+  `@.claude/agent-patterns/design-heuristics.md`. Do not lock the first workable structure; surface the
+  deepest platform + design option, weighed against the step-0 criteria. Its **findings block belongs
+  in the Plan** — including where you *declined* a seam/abstraction, and why.
 - Read the plan template `@.claude/sdd/plan-template.md` and fill it. The **Module decomposition**
   (decompose per `@.claude/rules/deep-modules.md` — prefer deep modules, apply its taste gate, flag
-  shallow ones) and the **Testing strategy** (external behavior to test per module, prior art in
-  `lexi-ai/` to imitate, what's deliberately untested) are mandatory.
+  shallow ones — the sweep is what feeds it) and the **Testing strategy** (external behavior to test
+  per module, prior art in `lexi-ai/` to imitate, what's deliberately untested) are mandatory.
 - Data-source IDs: `@.claude/sdd/data-sources.md`. Write the plan into a collapsible **Plan** toggle
   on the feature page via the Notion MCP.
 

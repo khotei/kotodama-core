@@ -18,10 +18,18 @@ data-source IDs `@.claude/sdd/data-sources.md`.
 
 1. **Re-read the feature spec** (`$ARGUMENTS`) end to end — goal, scope, ACs, the `Reflects:`
    pointer.
-2. **Produce the plan** using `@.claude/sdd/plan-template.md`. The **Module decomposition** (decompose
+2. **Run a capability + design sweep first, then produce the plan.** Before locking any decomposition,
+   run the sweep in `@.claude/prompts/capability-sweep.md` across the subsystems *and* the core design
+   decisions this feature turns on — **both legs**: platform capabilities (leg A) and the
+   design/structure recognition map `@.claude/agent-patterns/design-heuristics.md` (leg B). Do not
+   settle for the first workable structure — surface the deepest platform + design option, weighed.
+   Then fill `@.claude/sdd/plan-template.md`: the sweep drives the **Module decomposition** (decompose
    per `@.claude/rules/deep-modules.md` — prefer *deep modules*, apply its taste gate, flag shallow
-   wrappers for redesign) and the **Testing strategy** (external behavior to test per module, the
-   prior art in `lexi-ai/` to imitate, what's deliberately left untested) are mandatory.
+   wrappers for redesign), and its **findings block goes into the plan** (criteria → chosen approach,
+   naming the native primitive *and* the abstraction that houses it → trade-offs incl. second-order
+   consequences → **where you deliberately declined a seam/abstraction, and why**). The **Testing
+   strategy** (external behavior to test per module, the prior art in `lexi-ai/` to imitate, what's
+   deliberately left untested) is mandatory.
 3. **Cite the Tech spec section** behind every architectural choice. Architecture **not yet** in the
    Tech spec → prefix it **`proposal:`** (it must be approved before Phase 4).
 4. **Sequence the work** into ordered steps — each step becomes exactly one Phase-4 task. Aim for

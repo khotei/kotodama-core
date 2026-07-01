@@ -26,6 +26,10 @@ gather, weigh, and **ground** the facts, then write them up as a cited Research-
 
 - Use `WebSearch` / `WebFetch` for external evidence and `Read`/`Grep` + the Notion MCP for internal
   specs and `lexi-ai/` code. Triangulate across multiple sources before asserting a finding.
+- **Search with both legs of the capability sweep** (`@.claude/prompts/capability-sweep.md`) as your
+  lens — enumerate the best platform-native capabilities *and* the strongest design/structure options
+  (`@.claude/agent-patterns/design-heuristics.md`) for the topic, so findings present the best-in-class
+  approach (cited), not the naive default a later Plan would otherwise inherit.
 - Write the page with: a short **summary**, **findings** (each individually cited), **open
   questions / gaps**, and a **sources** list. Data-source IDs: `@.claude/sdd/data-sources.md`.
 - Create it in the Specs DB with `Doc type = Research`, `Status = Draft`, `Version = 0.1`, and
