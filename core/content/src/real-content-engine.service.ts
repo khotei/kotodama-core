@@ -1,19 +1,21 @@
 import { createHash } from 'node:crypto'
 import { type AiError, AiService } from '@lexiai/ai'
 import {
+  AuthorExample,
+  CulturalGuide,
   enumVisualKind,
   enumWordJobStage,
   type Language,
   type SourceVersions,
   type StorageKey,
-  type Visual,
+  Visual,
   type VisualKind,
   type Visuals,
   type WordJobStage,
 } from '@lexiai/database'
 import { WikiClient } from '@lexiai/external-apis'
 import { authorKey, ImagesStore, imageKey, type StorageError } from '@lexiai/storage'
-import { Effect, Layer, Option, Schema, Semaphore } from 'effect'
+import { Effect, Layer, Option, Schema, Semaphore, Struct } from 'effect'
 import { ContentEngine, ContentEngineError } from './content-engine.service'
 import {
   IMAGE_CONCURRENCY,
@@ -47,6 +49,31 @@ import { STAGE_SLICES, type StageSlice, type WordGrounding } from './stage-slice
 const FetchSourceOutput = Schema.Struct({
   isReal: Schema.Boolean,
   ...STAGE_SLICES[enumWordJobStage.fetch_source].fields,
+})
+
+/**
+ * The two media stages' **generation schemas** — what the model is asked to plan, which differs from the
+ * stored slice by exactly the **render-filled keys**: `Visual.imageKey` / `AuthorExample.authorImageUrl`
+ * are absent here (the model can't know an S3 key while planning; the render step adds them, so the
+ * stored {@link Visuals}/{@link AuthorExample} require them). The leaf plans drop that one key from the
+ * stored schema; the stage plans restate the (tiny, stable) slice partition — `tsc` flags any drift,
+ * since each handler's return must still satisfy `StageSlice<S>` ({@link STAGE_SLICES}). The four text
+ * stages have no such split — they generate their slice verbatim, straight off `STAGE_SLICES`.
+ */
+const VisualPlan = Visual.mapFields(Struct.omit(['imageKey']))
+const AuthorExamplePlan = AuthorExample.mapFields(Struct.omit(['authorImageUrl']))
+
+const EnrichVisualsPlan = Schema.Struct({
+  visuals: Schema.Struct({
+    hero: VisualPlan,
+    infographic: VisualPlan,
+    memes: Schema.Array(VisualPlan),
+  }),
+})
+
+const EnrichAuthorsPlan = Schema.Struct({
+  authorExamples: Schema.Array(AuthorExamplePlan),
+  culturalGuide: CulturalGuide,
 })
 
 /**
@@ -211,13 +238,13 @@ export const RealContentEngineLive: Layer.Layer<
     ): Effect.Effect<StageSlice<'enrich_visuals'>, ContentEngineError> =>
       Effect.gen(function* () {
         const { visuals } = yield* ai.generateObject(
-          STAGE_SLICES[enumWordJobStage.enrich_visuals],
+          EnrichVisualsPlan,
           enrichVisualsPrompt(language, word, grounding),
           TEXT_GEN.visuals,
         )
 
         const renderInto = (
-          visual: Visual,
+          visual: typeof VisualPlan.Type,
           kind: VisualKind,
           index?: number,
         ): Effect.Effect<Visual, AiError | StorageError> =>
@@ -227,15 +254,12 @@ export const RealContentEngineLive: Layer.Layer<
 
         // Every image is independent — render hero, infographic and all memes concurrently. Done
         // sequentially each `gpt-image-2` call is ~1min, so a multi-image plan blew the per-stage
-        // budget (the `enrich_visuals` timeout); in parallel the stage costs ~one image.
+        // budget (the `enrich_visuals` timeout); in parallel the stage costs ~one image. hero and
+        // infographic are always present (the plan requires both) — no null-skip branch.
         const [hero, infographic, memes] = yield* Effect.all(
           [
-            visuals.hero === null
-              ? Effect.succeed(null)
-              : renderInto(visuals.hero, enumVisualKind.hero),
-            visuals.infographic === null
-              ? Effect.succeed(null)
-              : renderInto(visuals.infographic, enumVisualKind.infographic),
+            renderInto(visuals.hero, enumVisualKind.hero),
+            renderInto(visuals.infographic, enumVisualKind.infographic),
             Effect.forEach(
               visuals.memes,
               (meme, index) => renderInto(meme, enumVisualKind.meme, index),
@@ -259,7 +283,7 @@ export const RealContentEngineLive: Layer.Layer<
     ): Effect.Effect<StageSlice<'enrich_authors'>, ContentEngineError> =>
       Effect.gen(function* () {
         const { authorExamples, culturalGuide } = yield* ai.generateObject(
-          STAGE_SLICES[enumWordJobStage.enrich_authors],
+          EnrichAuthorsPlan,
           enrichAuthorsPrompt(language, word, grounding),
           TEXT_GEN.authors,
         )

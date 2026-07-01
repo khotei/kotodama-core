@@ -12,11 +12,16 @@ import { FrequencyBand, SourceType, VisualKind } from './words.values'
  * **Required vs nullable vs optional is a domain decision, not convenience.** A field is plain-required
  * (`Schema.String`) when it exists for every valid word AND the model can always produce it
  * (`Tier.title`, `Pronunciation.respelling`, `Visual.concept`) — required denies the model its only
- * escape hatch (below), forcing real content. It is `Schema.NullOr` when "unknown" is a legal state to
- * store (`firstAttested.year`) or the key is filled by the engine *after* the model plans it
- * (`Visual.imageKey`, `AuthorExample.authorImageUrl` — the plan emits `null`, the render step fills it,
- * so the key is required-but-nullable, never `optionalKey`). It is `Schema.optionalKey` only when the
- * thing genuinely may not exist in the world (a quote with no `work`, a book `Source` with no `url`).
+ * escape hatch (below), forcing real content. It is `Schema.NullOr` only when "unknown" is a legal
+ * *stored* state (`firstAttested.year`, `frequency`). It is `Schema.optionalKey` only when the thing
+ * genuinely may not exist in the world (a quote with no `work`, a book `Source` with no `url`).
+ *
+ * **Render-filled keys are required here, nullable only in the generation plan.** `Visual.imageKey` and
+ * `AuthorExample.authorImageUrl` are plain-required: a stored word always has its images rendered, so
+ * the entity — the shape `core`, the API contract, and the FE read — guarantees them. The model cannot
+ * know an S3 key while planning, so the *generation plan* (`@lexiai/core-content`'s `real-content-engine`)
+ * **omits** the key and the render step adds it; that plan variant, not this stored schema, carries the
+ * absence. Likewise `Visuals.hero`/`infographic` are required — every stored word gets both.
  *
  * Optional content fields use `Schema.optionalKey` (`key?: T`), never `Schema.optional`
  * (`key?: T | undefined`): these schemas are the real engine's `generateObject` argument, and OpenAI
@@ -88,7 +93,7 @@ export type Etymology = typeof Etymology.Type
 
 export const AuthorExample = Schema.Struct({
   author: Schema.String,
-  authorImageUrl: Schema.NullOr(StorageKey),
+  authorImageUrl: StorageKey,
   work: Schema.optionalKey(Schema.String),
   language: Language,
   isGenerated: Schema.Boolean,
@@ -119,13 +124,18 @@ export const Relations = Schema.Struct({
 })
 export type Relations = typeof Relations.Type
 
-/** `languageName` is a free-text name ("French"), not the `Language` enum. */
-export const Translation = Schema.Struct({ languageName: Schema.String, term: Schema.String })
+/**
+ * One translation of the headword. `language` is a stable ISO 639-1 code from {@link Language} — the
+ * machine value, not a free-text name — so the card localizes the name (frontend) and links every
+ * translation straight to that word (the code is always a real word language). `term` is the headword
+ * in that language.
+ */
+export const Translation = Schema.Struct({ language: Language, term: Schema.String })
 export type Translation = typeof Translation.Type
 
 export const Visual = Schema.Struct({
   kind: VisualKind,
-  imageKey: Schema.NullOr(StorageKey),
+  imageKey: StorageKey,
   prompt: Schema.String,
   caption: Schema.optionalKey(Schema.String),
   concept: Schema.String,
@@ -134,10 +144,14 @@ export const Visual = Schema.Struct({
 })
 export type Visual = typeof Visual.Type
 
-/** One hero, one infographic, N memes — not a flat `Visual[]`. */
+/**
+ * One hero, one infographic, N memes — not a flat `Visual[]`. `hero`/`infographic` are required: every
+ * stored word gets both (the generation plan no longer permits a `null` here — see the header note and
+ * `@lexiai/core-content`).
+ */
 export const Visuals = Schema.Struct({
-  hero: Schema.NullOr(Visual),
-  infographic: Schema.NullOr(Visual),
+  hero: Visual,
+  infographic: Visual,
   memes: Schema.Array(Visual),
 })
 export type Visuals = typeof Visuals.Type

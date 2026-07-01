@@ -100,8 +100,8 @@ const makeRelations = (): Relations => ({
 })
 
 const makeTranslations = (): Translation[] => [
-  { languageName: 'French', term: faker.lorem.word() },
-  { languageName: 'German', term: faker.lorem.word() },
+  { language: 'fr', term: faker.lorem.word() },
+  { language: 'de', term: faker.lorem.word() },
 ]
 
 const makeVisual = (kind: Visual['kind']): Visual => ({

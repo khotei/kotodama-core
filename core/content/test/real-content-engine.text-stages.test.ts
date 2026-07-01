@@ -46,7 +46,7 @@ const tiersObject = (word: string) => ({
     cultural: { title: 'Cultural', body: `cultural ${word}`, examples: [] },
   },
   relations: { synonyms: [{ term: `${word}-like` }], antonyms: [], family: [] },
-  translations: [{ languageName: 'French', term: `${word} (fr)` }],
+  translations: [{ language: 'fr', term: `${word} (fr)` }],
 })
 
 /** A canned `final_review` object, shaped like the engine's frequency struct. */

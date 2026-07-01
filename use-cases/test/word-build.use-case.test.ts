@@ -203,7 +203,7 @@ const slices: { readonly [S in WordJobStage]: StageSlice<S> } = {
       cultural: { title: 'Cultural', body: 'Manuscript studies.', examples: [] },
     },
     relations: { synonyms: [], antonyms: [], family: [] },
-    translations: [{ languageName: 'French', term: 'lacune' }],
+    translations: [{ language: 'fr', term: 'lacune' }],
   },
   [enumWordJobStage.enrich_visuals]: {
     visuals: {
@@ -213,7 +213,12 @@ const slices: { readonly [S in WordJobStage]: StageSlice<S> } = {
         prompt: 'hero',
         concept: 'an empty manuscript gap',
       },
-      infographic: null,
+      infographic: {
+        kind: enumVisualKind.infographic,
+        imageKey: 'visuals/en/lacuna/infographic.png',
+        prompt: 'infographic',
+        concept: 'a labelled gap in a page',
+      },
       memes: [],
     },
   },

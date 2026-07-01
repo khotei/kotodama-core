@@ -107,22 +107,6 @@ it.layer(StorageLocalStackLive, { timeout: '120 seconds' })((it) => {
       }).pipe(Effect.provide(engineLayer(visualsPlanObject('lacuna'), PNG_BYTES))),
     )
 
-    it.effect('skips a null hero/infographic, still renders present visuals', () =>
-      Effect.gen(function* () {
-        const engine = yield* ContentEngine
-        const result = yield* engine.produce('enrich_visuals', enumLanguage.en, 'lacuna')
-
-        const { visuals } = Schema.decodeUnknownSync(Schema.Struct({ visuals: Visuals }))(result)
-        expect(visuals.hero).toBeNull()
-        expect(visuals.infographic).toBeNull()
-        expect(visuals.memes).toEqual([])
-      }).pipe(
-        Effect.provide(
-          engineLayer({ visuals: { hero: null, infographic: null, memes: [] } }, PNG_BYTES),
-        ),
-      ),
-    )
-
     it.effect('fails failed when image generation errors', () =>
       Effect.gen(function* () {
         const engine = yield* ContentEngine

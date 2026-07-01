@@ -1,5 +1,8 @@
-import type { Language } from '@lexiai/database'
+import { LANGUAGES, type Language } from '@lexiai/database'
 import type { WordGrounding } from './stage-slices'
+
+/** The translation target codes the model must use, rendered into the `enrich_tiers` prompt. */
+const TRANSLATION_CODES = LANGUAGES.join(', ')
 
 /**
  * Prompt templates for the real engine, one named builder per stage. Kept as a separate data module
@@ -90,16 +93,19 @@ export const enrichTiersPrompt = (
   groundedSense(grounding) +
   [
     `You are a lexicographer writing the meaning layer for the ${language} word "${word}".`,
-    'Return: tiers — quick, everyday, deep, and cultural readings (each a body sentence + example',
-    'sentences with a register); relations — synonyms, antonyms, and the word family; and',
-    'translations into a few major languages (languageName + term).',
+    'Return: tiers — quick, everyday, deep, and cultural readings. For EACH tier write a body that',
+    'explains the meaning in prose ONLY — do NOT put example sentences inside body — and provide',
+    'EXACTLY 3 entries in that tier’s examples array, each an object { text, register } where text',
+    "is a full sentence using the word and register names its tone (e.g. 'everyday', 'formal',",
+    "'literary'). Also return relations — synonyms, antonyms, and the word family — and translations,",
+    'each { language, term } where language is the ISO 639-1 code and term is the headword in that',
+    `language. Provide one for each of: ${TRANSLATION_CODES} — skipping the word's own language (${language}).`,
   ].join('\n')
 
 /**
- * The `enrich_visuals` text step: a *plan* of the visuals to render — one hero, one infographic, and a
- * few memes — each carrying a rich image `prompt`/`concept`/`caption` but `imageKey: null` (the engine
- * fills the keys after it renders each prompt to storage). `hero`/`infographic` may be `null` when no
- * such visual fits the word.
+ * The `enrich_visuals` text step: a *plan* of the visuals to render — always a hero and an infographic,
+ * plus exactly 3 memes — each carrying a rich image `prompt`/`concept`/`caption` but **no** image key
+ * (the plan schema omits it; the engine renders each prompt to storage and fills the key after).
  */
 export const enrichVisualsPrompt = (
   language: Language,
@@ -109,18 +115,17 @@ export const enrichVisualsPrompt = (
   groundedSense(grounding) +
   [
     `You are an art director planning illustrations for the ${language} word "${word}".`,
-    'Return visuals: a hero (one striking lead image), an infographic (a visual, symbolic breakdown —',
-    'not a worded diagram), and a few memes — each with kind, a vivid image-generation prompt, a',
-    'concept, and an optional caption. Every prompt must describe a PURE illustration with NO text, letters,',
-    'or words rendered inside the image — caption and concept are separate text fields the UI overlays.',
-    'Set every imageKey to null; the keys are assigned after rendering. Use null for hero or',
-    'infographic if none fits.',
+    'Return visuals: ALWAYS a hero (one striking lead image) AND an infographic (a visual, symbolic',
+    'breakdown — not a worded diagram), plus EXACTLY 3 memes — each with kind, a vivid',
+    'image-generation prompt, a concept, and an optional caption. Every prompt must describe a PURE',
+    'illustration with NO text, letters, or words rendered inside the image — caption and concept are',
+    'separate text fields the UI overlays. Do not include image keys; they are assigned after rendering.',
   ].join('\n')
 
 /**
- * The `enrich_authors` text step: notable authors who used the word plus a cultural guide. Each
- * author carries `authorImageUrl: null` (the engine renders a portrait per author after this step and
- * fills the keys). The model must mark a fabricated quote `isGenerated: true` and only set
+ * The `enrich_authors` text step: notable authors who used the word plus a cultural guide. Each author
+ * carries **no** image key (the plan schema omits it; the engine renders a portrait per author after
+ * this step and fills the key). The model must mark a fabricated quote `isGenerated: true` and only set
  * `isGenerated: false` for a genuinely attested one it can defend.
  */
 export const enrichAuthorsPrompt = (
@@ -132,7 +137,7 @@ export const enrichAuthorsPrompt = (
   [
     `You are a literary scholar gathering how the ${language} word "${word}" has been used.`,
     'Return authorExamples — notable authors with a quote using the word (author, optional work,',
-    'language, isGenerated, quote); set authorImageUrl to null (portraits are rendered after). Mark a',
+    'language, isGenerated, quote); do not include an image key (portraits are rendered after). Mark a',
     'fabricated quote isGenerated=true; reserve isGenerated=false for an attested one you can defend.',
     'Also return a culturalGuide: a short timeline (date + text), an optional 2030 forecast, and notes.',
   ].join('\n')

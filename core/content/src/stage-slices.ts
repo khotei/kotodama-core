@@ -7,10 +7,12 @@ import { type Schema, Struct } from 'effect'
  * Each slice is **`pick`ed off {@link WordContentSchema}** ({@link import('@lexiai/database')}), not
  * re-declared, so a field's schema (e.g. `frequency`'s nullability) has exactly one author in
  * `database/` and can't drift; this map authors only the *partition* (which keys per stage). The six
- * picks are disjoint and collectively cover every `WordContent` field. Both the **type**
- * ({@link StageSlice}) and the **runtime schema** (the real engine's `generateObject` argument) come
- * from here, so a stage's promise and its generation can't drift either. Each struct encodes to a
- * plain object, the shape `AiService.generateObject` requires.
+ * picks are disjoint and collectively cover every `WordContent` field. The **type** ({@link StageSlice})
+ * is every stage's return contract. The four **text** stages also use the slice **as** their
+ * `generateObject` argument (generate == persist); the two **media** stages (`enrich_visuals`,
+ * `enrich_authors`) instead generate a *plan* — the slice minus its render-filled image keys — and fill
+ * the keys before returning (see `real-content-engine`). Each struct encodes to a plain object, the
+ * shape `AiService.generateObject` requires.
  *
  * `satisfies Record<WordJobStage, Schema.Top>` makes the map **exhaustive at compile time** (a new
  * stage in `WORD_JOB_STAGES` fails `tsc` until its slice is added) while keeping each value's precise

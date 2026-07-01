@@ -115,8 +115,8 @@ const relations = (word: string): Relations => ({
 })
 
 const translations = (word: string): Translation[] => [
-  { languageName: 'French', term: `${word} (fr)` },
-  { languageName: 'German', term: `${word} (de)` },
+  { language: 'fr', term: `${word} (fr)` },
+  { language: 'de', term: `${word} (de)` },
 ]
 
 const visual = (word: string, kind: Visual['kind']): Visual => ({
