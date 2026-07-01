@@ -13,6 +13,18 @@ shapes — `@effect/sql-drizzle`, `Context.Tag`, `@effect/sql/SqlError`). Cheat-
 snippets: `.claude/agent-patterns/drizzle-effect.md`. Vendored: `repos/drizzle/` (read-only —
 never import; see `.claude/rules/vendored-sources.md`).
 
+## Reach for the Postgres primitive first (capability sweep)
+
+Before hand-writing a **loop over rows, a second query per row, a manual aggregate/dedup/collapse, a
+running total, or a slow `LIKE '%…%'`** in application code, check whether Postgres does it in one
+construct — pushing a *data-shape* concern into the engine is the deep-module move (a whole class of
+app-side loops disappears behind a narrow typed repo function or a `pgView`). The recognition map
+(symptom → primitive), each item grounded in the lexi-ai schema with its Drizzle expression and a docs
+citation, is **`.claude/agent-patterns/postgres-capabilities.md`** — the SQL sibling of the
+`effect-stdlib` / `type-fest` catalogs. Consult it when writing any non-trivial query (the taste gate
+in `.claude/rules/deep-modules.md` still governs — don't cargo-cult a feature where a plain query is
+clearer).
+
 ## DB layer — `drizzle-orm/effect-postgres`
 
 **Canonical implementation: `database/src/db.ts`** (built in F-PLAT-004/T03 — read it
