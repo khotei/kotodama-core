@@ -1,9 +1,9 @@
 {
-  "name": "@lexiai/infra",
+  "name": "@kotodama/infra",
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "local:up": "docker compose -f local/docker-compose.yml up -d --wait && bun run --filter '@lexiai/database' db:migrate && bun run local:provision",
+    "local:up": "docker compose -f local/docker-compose.yml up -d --wait && bun run --filter '@kotodama/database' db:migrate && bun run local:provision",
     "local:down": "docker compose -f local/docker-compose.yml down",
     "local:clean": "docker compose -f local/docker-compose.yml down -v",
     "local:logs": "docker compose -f local/docker-compose.yml logs -f",
@@ -16,9 +16,9 @@
     "@aws-sdk/client-s3": "catalog:aws",
     "@aws-sdk/client-sqs": "catalog:aws",
     "@effect/platform-bun": "catalog:effect",
-    "@lexiai/config": "workspace:*",
-    "@lexiai/queue": "workspace:*",
-    "@lexiai/storage": "workspace:*",
+    "@kotodama/config": "workspace:*",
+    "@kotodama/queue": "workspace:*",
+    "@kotodama/storage": "workspace:*",
     "effect": "catalog:effect"
   }
 }

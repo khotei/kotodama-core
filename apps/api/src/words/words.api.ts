@@ -5,8 +5,8 @@ import {
   WordAlreadyReadyError,
   WordBuildInProgressError,
   WordNotReadyError,
-} from '@lexiai/core-words'
-import { AsyncJobStatus, WordEntity } from '@lexiai/database'
+} from '@kotodama/core-words'
+import { AsyncJobStatus, WordEntity } from '@kotodama/database'
 import { Schema } from 'effect'
 import { HttpApi, HttpApiEndpoint, HttpApiGroup } from 'effect/unstable/httpapi'
 import { Paginated, pageQuery } from '../pagination.view'
@@ -70,4 +70,4 @@ export const wordsGroup = HttpApiGroup.make('words')
   .add(search)
   .add(counts)
 
-export const WordsApi = HttpApi.make('lexiai').add(wordsGroup).prefix('/api')
+export const WordsApi = HttpApi.make('kotodama').add(wordsGroup).prefix('/api')

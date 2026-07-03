@@ -1,4 +1,4 @@
-# core/content — `@lexiai/core-content`
+# core/content — `@kotodama/core-content`
 
 The word-generation seam. `ContentEngine` is the `Context.Service` port called once per stage
 (`produce(stage, …)` → the stage's typed slice); `MockContentEngine` and the real OpenAI engine are
@@ -27,14 +27,14 @@ which is why it lives in `core`, not `packages/ai` (a `packages/*` leaf may not 
 - **`generation-defaults.ts` is the one OpenAI-tuning surface** — models, reasoning effort, image
   options, `NO_TEXT_DIRECTIVE`, and the resilience preset *values* (`TEXT_RESILIENCE` /
   `IMAGE_RESILIENCE`). Deliberately not split: one retune touches one file. The resilience
-  *mechanism* lives in `@lexiai/ai`; the engine makes **bare** `ai.*` calls — the presets are
+  *mechanism* lives in `@kotodama/ai`; the engine makes **bare** `ai.*` calls — the presets are
   applied by the `AiServiceResilient` decorator at the worker entrypoint, never inline here.
 - The real engine's media stages share `renderToStorage` (generate → `storage.put` → key), which is
   **key-scheme-agnostic** — the caller builds keys so the path scheme stays solely in
-  `@lexiai/storage`. `mediaFailure` keeps error `cause`s JSON-serializable: a `StorageError`'s
+  `@kotodama/storage`. `mediaFailure` keeps error `cause`s JSON-serializable: a `StorageError`'s
   cause is a live S3 rejection, so it's dropped for a `{ tag, key }` snapshot.
 - `MockContentEngine` is deterministic by construction (same `(word, stage)` → same content, no
   faker/clock); its failure paths are an injectable `ContentPolicy`.
 
-**May import:** `@lexiai/database`, `@lexiai/*` packages, `effect`. **MUST NOT import:** `apps/*`;
-`@lexiai/database/factories` belongs in tests, never `src/**`.
+**May import:** `@kotodama/database`, `@kotodama/*` packages, `effect`. **MUST NOT import:** `apps/*`;
+`@kotodama/database/factories` belongs in tests, never `src/**`.

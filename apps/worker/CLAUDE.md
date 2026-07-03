@@ -1,4 +1,4 @@
-# apps/worker — `@lexiai/app-worker`
+# apps/worker — `@kotodama/app-worker`
 
 SQS consumer: one driver-agnostic **consume core** (`src/process-batch.ts`) + two thin edges —
 prod is an SQS-triggered Lambda (`src/handler.ts`, event source mapping); local dev/test is a
@@ -25,6 +25,6 @@ poll-loop (`src/consume.ts` under `BunRuntime` from `src/main.ts`).
 - The prod handler stays deploy-clean (no `BunRuntime`/layer wiring); packaging it into the real
   Lambda entry is a later infra feature.
 
-**May import:** `core/*`, `use-cases/*`, `@lexiai/database` + `repositories/*` (for
-`DatabaseLive`), `@lexiai/*` packages, `effect`, `@effect/platform-bun`. **MUST NOT import:**
-another app. `@lexiai/database/factories` belongs in tests, not `src/**`.
+**May import:** `core/*`, `use-cases/*`, `@kotodama/database` + `repositories/*` (for
+`DatabaseLive`), `@kotodama/*` packages, `effect`, `@effect/platform-bun`. **MUST NOT import:**
+another app. `@kotodama/database/factories` belongs in tests, not `src/**`.

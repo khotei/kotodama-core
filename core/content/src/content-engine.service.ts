@@ -1,4 +1,4 @@
-import type { JobErrorType, Language, SourceVersionsEntity, WordJobStage } from '@lexiai/database'
+import type { JobErrorType, Language, SourceVersionsEntity, WordJobStage } from '@kotodama/database'
 import { Context, Data, type Effect } from 'effect'
 import type { StageSlice, WordGrounding } from './stage-slices'
 
@@ -33,4 +33,4 @@ export class ContentEngine extends Context.Service<
      */
     readonly sourceVersions: SourceVersionsEntity
   }
->()('@lexiai/core-content/ContentEngine') {}
+>()('@kotodama/core-content/ContentEngine') {}

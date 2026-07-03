@@ -1,4 +1,4 @@
-# Running LexiAI across environments
+# Running Kotodama across environments
 
 *Diátaxis: how-to.* The same code runs in three environments; what changes between them is **where
 configuration comes from** — so that is how this guide is keyed. Commands name a `package.json`
@@ -24,7 +24,7 @@ key — it explains each one inline, so they aren't restated here.
 
 `cp .env.example .env` is meant to **work out of the box** for local dev: every value is a working
 default wired to the `local:up` stack — the dev Postgres URL, the LocalStack `:4566` endpoint, the
-`lexiai-images` / `lexiai-jobs` names, the placeholder `test` AWS credentials (LocalStack ignores
+`kotodama-images` / `kotodama-jobs` names, the placeholder `test` AWS credentials (LocalStack ignores
 them), the port, and the log level. **Leave them as they are.**
 
 The **one value you must supply is `OPENAI_API_KEY`** — a real key (the shipped `sk-local-placeholder`
@@ -37,7 +37,7 @@ correct for local. How the keys are *consumed* (the `Config` definitions): `pack
 
 One quick-start lives in the [README](../readme.md#run-it) — don't duplicate it. The *why*:
 
-- **`local:up`** ([`@lexiai/infra`](../infra/package.json)) is idempotent and does everything in order:
+- **`local:up`** ([`@kotodama/infra`](../infra/package.json)) is idempotent and does everything in order:
   starts the containers and waits healthy, migrates the dev DB, then `local:provision` creates the SQS
   queue + S3 bucket from the inventory. New AWS resource? See
   [`infra/CLAUDE.md`](../infra/CLAUDE.md#how-to-add-a-new-aws-resource).
@@ -50,13 +50,13 @@ One quick-start lives in the [README](../readme.md#run-it) — don't duplicate i
 ## Test
 
 ```bash
-bun run test                                   # all workspaces; bun run --filter '@lexiai/<name>' test for one
+bun run test                                   # all workspaces; bun run --filter '@kotodama/<name>' test for one
 ```
 
 - **No `.env.test`, and the dev stack is never touched.** Each DB-touching suite spins an **ephemeral
   Testcontainers Postgres** and builds its `PgClient` from the *container's* `getConnectionUri()` — not
-  `@lexiai/config`'s `DatabaseUrl`. Each AWS-touching suite boots a per-file LocalStack container and
-  resolves the `@lexiai/config` AWS seam from a **replacement `ConfigProvider`** built from that
+  `@kotodama/config`'s `DatabaseUrl`. Each AWS-touching suite boots a per-file LocalStack container and
+  resolves the `@kotodama/config` AWS seam from a **replacement `ConfigProvider`** built from that
   container's endpoint. **`ConfigProviderLive` is never in the test layer graph** — the *dev-untouched
   invariant*, the reason a test can never reach the dev LocalStack or dev DB.
 - **Why containers, not fakes:** the real adapter is exercised at the seam (no divergent in-memory

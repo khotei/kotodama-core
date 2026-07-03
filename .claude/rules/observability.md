@@ -7,13 +7,13 @@ paths:
 # Observability (tracing)
 
 Backend apps emit OpenTelemetry spans over OTLP/HTTP via `TracingLive(serviceName)`
-(`@lexiai/observability`), provided at the app entrypoint before the runtime starts:
+(`@kotodama/observability`), provided at the app entrypoint before the runtime starts:
 
 ```ts
-program.pipe(Effect.provide(TracingLive('lexiai-api')), BunRuntime.runMain)
+program.pipe(Effect.provide(TracingLive('kotodama-api')), BunRuntime.runMain)
 ```
 
-- **Local:** spans land in the Jaeger container (`bun run --filter '@lexiai/infra' local:up`,
+- **Local:** spans land in the Jaeger container (`bun run --filter '@kotodama/infra' local:up`,
   browse http://localhost:16686). **Prod:** same code — set the OTel-standard
   `OTEL_EXPORTER_OTLP_ENDPOINT`; with it unset, `TracingLive` is inert.
 - **Vendor-neutral on purpose** — OTel→Jaeger was chosen over Effect's DevTools panel
@@ -28,5 +28,5 @@ program.pipe(Effect.provide(TracingLive('lexiai-api')), BunRuntime.runMain)
 - Span names: `PascalCaseSubject.operation`; attributes are lowercase dotted keys.
 - **Never put secrets in attributes** — redacted config stays out of spans, same as logs.
 - **`TracingLive` reads `process.env` directly**, not `AppConfig` — `observability` is a leaf
-  package (may not import `@lexiai/config`), and env-var config is OTel's own idiom.
-- One service name per app: `lexiai-api`, `lexiai-worker`.
+  package (may not import `@kotodama/config`), and env-var config is OTel's own idiom.
+- One service name per app: `kotodama-api`, `kotodama-worker`.

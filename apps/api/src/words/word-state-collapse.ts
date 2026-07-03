@@ -1,5 +1,5 @@
-import type { Word } from '@lexiai/core-words'
-import { type AsyncWordJobRow, enumAsyncJobStatus, WORD_JOB_STAGES } from '@lexiai/database'
+import type { Word } from '@kotodama/core-words'
+import { type AsyncWordJobRow, enumAsyncJobStatus, WORD_JOB_STAGES } from '@kotodama/database'
 import { Array as Arr, Option, Order } from 'effect'
 import type { StageProgress, WordStateView } from './word-state.view'
 

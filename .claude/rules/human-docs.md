@@ -20,7 +20,7 @@ Remove the copies and the docs stop rotting.
 
 1. **Why, not what.** Hand-write only *intent* and *the path to run things* — never facts the code is
    the source of truth for (signatures, structure, versions, command steps). Same bar as `claude-md.md`.
-2. **Commands come from `package.json`, docs name the script.** Write `bun run --filter '@lexiai/infra'
+2. **Commands come from `package.json`, docs name the script.** Write `bun run --filter '@kotodama/infra'
    local:up` and explain *why* — never the substeps it runs. The script is the single source; a doc
    that re-lists its steps drifts the day the script changes. New run path ⇒ a new script
    (`local:smoke`), not a new doc paragraph.

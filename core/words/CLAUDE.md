@@ -1,4 +1,4 @@
-# core/words — `@lexiai/core-words`
+# core/words — `@kotodama/core-words`
 
 Word creation + input gates + build-admission policy + the domain `Word` union. There is **no
 per-row word "model"** — backend code speaks the `database/` shapes directly (`WordRow` through
@@ -42,6 +42,6 @@ transforms storage (e.g. presigned URLs).
   answers 200 `null` first.
 - Re-exports `Language` so the API speaks the vocabulary through core.
 
-**May import:** `core/content`, `@lexiai/ai`, `repositories/*`, `@lexiai/database`, `@lexiai/*`
+**May import:** `core/content`, `@kotodama/ai`, `repositories/*`, `@kotodama/database`, `@kotodama/*`
 packages, `effect`. **MUST NOT import:** `apps/*`, `use-cases/*`; no HTTP code.
-`@lexiai/database/factories` (pulls faker) belongs in tests, not `src/**`.
+`@kotodama/database/factories` (pulls faker) belongs in tests, not `src/**`.

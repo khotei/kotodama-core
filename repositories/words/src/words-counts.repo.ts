@@ -1,5 +1,5 @@
-import type { AsyncJobStatus } from '@lexiai/database'
-import { DB, wordsTable } from '@lexiai/database'
+import type { AsyncJobStatus } from '@kotodama/database'
+import { DB, wordsTable } from '@kotodama/database'
 import type { SQLWrapper } from 'drizzle-orm'
 import { sql } from 'drizzle-orm'
 import { Effect } from 'effect'

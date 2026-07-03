@@ -17,7 +17,7 @@ feature/task body) is fetched live.
 
 ## Anchor pages
 
-- **Project hub — LexiAI:** https://www.notion.so/36dfb28bd5f1816d87dfe7af807a19d2
+- **Project hub — Kotodama:** https://www.notion.so/36dfb28bd5f1816d87dfe7af807a19d2
 - **SDD playbook (the authored source these commands compile):** https://www.notion.so/36dfb28bd5f181238a86d26457bc24e7
 
 ## Notes
@@ -25,4 +25,4 @@ feature/task body) is fetched live.
 - To scope a `notion-search` to one database, pass its `collection://` ID as the search scope —
   avoids cross-database noise when looking up the current max Feature/Task ID.
 - These IDs only change if a database is recreated. If a write fails with "unknown data source",
-  re-confirm the ID from the LexiAI hub before editing here.
+  re-confirm the ID from the Kotodama hub before editing here.

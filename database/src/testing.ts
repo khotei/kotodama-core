@@ -13,7 +13,7 @@ class ContainerError extends Data.TaggedError('ContainerError')<{ cause: unknown
 // Resolved from this file's location, not `cwd`, to stay robust to the invoking dir.
 const migrationsFolder = join(dirname(fileURLToPath(import.meta.url)), '..', 'migrations')
 
-class PgContainer extends Context.Service<PgContainer>()('@lexiai/database/testing/PgContainer', {
+class PgContainer extends Context.Service<PgContainer>()('@kotodama/database/testing/PgContainer', {
   make: Effect.acquireRelease(
     Effect.tryPromise({
       // Wait on the healthcheck alone, overriding the module default that also runs
@@ -34,7 +34,7 @@ class PgContainer extends Context.Service<PgContainer>()('@lexiai/database/testi
   static readonly layer = Layer.effect(this)(this.make)
 }
 
-// Container's generated URI, NOT @lexiai/config's DatabaseUrl (the dev DB).
+// Container's generated URI, NOT @kotodama/config's DatabaseUrl (the dev DB).
 const PgClientLive = Layer.unwrap(
   Effect.gen(function* () {
     const container = yield* PgContainer

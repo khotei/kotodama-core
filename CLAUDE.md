@@ -1,6 +1,6 @@
-# LexiAI — Claude Code project context
+# Kotodama — Claude Code project context
 
-LexiAI is a language-learning platform: users request words, the system generates rich word
+Kotodama is a language-learning platform: users request words, the system generates rich word
 entries (definitions, examples, images) via AI background jobs, and surfaces them through
 spaced-repetition review. **This repo is the foundational Bun monorepo scaffolding** — strict
 layering so every later feature ships cheaply. Authoritative product/architecture detail lives
@@ -37,7 +37,7 @@ Details: `.claude/rules/dependency-hierarchy.md`.
 | `bun run tsc` | Typecheck all workspaces (`bun run --filter '*' typecheck`) |
 | `bun run test` | `@effect/vitest` per workspace (`bun run --filter '*' test`). NOT `bun test`. |
 | `bun run check` | `lint` + `tsc` |
-| `bun run --filter '@lexiai/<name>' <script>` | per-package dev/build/test/db:* |
+| `bun run --filter '@kotodama/<name>' <script>` | per-package dev/build/test/db:* |
 | `bun run vendor:effect:update` | pull vendored Effect source (`repos/effect-smol`) |
 
 ## Commits & the pre-commit gate

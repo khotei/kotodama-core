@@ -7,7 +7,7 @@ agent: spec-author
 
 <!-- Generated from SDD playbook §7.2 (+ §6.1 template, §4 contract) — https://www.notion.so/36dfb28bd5f181238a86d26457bc24e7. Re-sync on change. -->
 
-You are running **Phase 1 (Specify)** of the LexiAI SDD playbook.
+You are running **Phase 1 (Specify)** of the Kotodama SDD playbook.
 
 **Input:** a one-line feature idea — `$ARGUMENTS`.
 **Goal:** one fully-filled **Feature page** in the Features DB, `Status = Drafted`. Notion-only —
@@ -28,7 +28,7 @@ Features collection id lives there).
    digits.
 2. **Read the sources to cite.** Search the Specs DB for the Product / Tech / Design / Research
    specs and the Personas doc; read the sections that justify this feature's choices. Open the
-   relevant `lexi-ai/` code if it grounds a claim.
+   relevant `kotodama-core/` code if it grounds a claim.
 3. **Fill every section** of `@.claude/sdd/feature-template.md`. Crystallise what implementation
    must produce — do **not** restate the spec; cite it by section (`Tech spec §2.6`).
 4. **Write acceptance criteria in EARS** — *WHEN \<event\> THE SYSTEM SHALL \<behavior\>*. Each AC

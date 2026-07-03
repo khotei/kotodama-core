@@ -7,13 +7,13 @@ agent: researcher
 
 <!-- Generated from SDD playbook §1.5 (grounding) + §4 — https://www.notion.so/36dfb28bd5f181238a86d26457bc24e7. Re-sync on change. -->
 
-You are running the **Research** phase of the LexiAI SDD playbook on the topic `$ARGUMENTS`.
+You are running the **Research** phase of the Kotodama SDD playbook on the topic `$ARGUMENTS`.
 (This stands in for the playbook's phase-0 `/sdd:constitution` — the constitution already exists as
 the repo-root `CLAUDE.md`, so the optional pre-Specify step here is evidence-gathering.)
 
 **Embedded — do NOT fetch from Notion:** the data-source IDs `@.claude/sdd/data-sources.md` (the
 Specs collection id lives there); the target is `Doc type = Research`.
-**Fetch live:** the web sources, plus any existing LexiAI specs / `lexi-ai/` code that bear on the
+**Fetch live:** the web sources, plus any existing Kotodama specs / `kotodama-core/` code that bear on the
 topic.
 
 ## Steps

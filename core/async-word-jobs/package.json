@@ -1,5 +1,5 @@
 {
-  "name": "@lexiai/core-async-word-jobs",
+  "name": "@kotodama/core-async-word-jobs",
   "version": "0.0.0",
   "private": true,
   "main": "./src/index.ts",
@@ -9,10 +9,10 @@
   },
   "dependencies": {
     "effect": "catalog:effect",
-    "@lexiai/core-words": "workspace:*",
-    "@lexiai/database": "workspace:*",
-    "@lexiai/queue": "workspace:*",
-    "@lexiai/repositories-async-word-jobs": "workspace:*"
+    "@kotodama/core-words": "workspace:*",
+    "@kotodama/database": "workspace:*",
+    "@kotodama/queue": "workspace:*",
+    "@kotodama/repositories-async-word-jobs": "workspace:*"
   },
   "scripts": {
     "test": "bun --bun vitest run",

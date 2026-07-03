@@ -15,43 +15,43 @@
       },
     },
     "apps/api": {
-      "name": "@lexiai/app-api",
+      "name": "@kotodama/app-api",
       "version": "0.0.0",
       "dependencies": {
         "@effect/ai-openai": "catalog:effect",
         "@effect/platform-bun": "catalog:effect",
-        "@lexiai/ai": "workspace:*",
-        "@lexiai/config": "workspace:*",
-        "@lexiai/core-async-word-jobs": "workspace:*",
-        "@lexiai/core-words": "workspace:*",
-        "@lexiai/database": "workspace:*",
-        "@lexiai/observability": "workspace:*",
-        "@lexiai/queue": "workspace:*",
-        "@lexiai/repositories-async-word-jobs": "workspace:*",
-        "@lexiai/repositories-words": "workspace:*",
-        "@lexiai/use-cases": "workspace:*",
+        "@kotodama/ai": "workspace:*",
+        "@kotodama/config": "workspace:*",
+        "@kotodama/core-async-word-jobs": "workspace:*",
+        "@kotodama/core-words": "workspace:*",
+        "@kotodama/database": "workspace:*",
+        "@kotodama/observability": "workspace:*",
+        "@kotodama/queue": "workspace:*",
+        "@kotodama/repositories-async-word-jobs": "workspace:*",
+        "@kotodama/repositories-words": "workspace:*",
+        "@kotodama/use-cases": "workspace:*",
         "effect": "catalog:effect",
       },
     },
     "apps/worker": {
-      "name": "@lexiai/app-worker",
+      "name": "@kotodama/app-worker",
       "version": "0.0.0",
       "dependencies": {
         "@effect/ai-openai": "catalog:effect",
         "@effect/platform-bun": "catalog:effect",
-        "@lexiai/ai": "workspace:*",
-        "@lexiai/config": "workspace:*",
-        "@lexiai/core-async-word-jobs": "workspace:*",
-        "@lexiai/core-content": "workspace:*",
-        "@lexiai/core-words": "workspace:*",
-        "@lexiai/database": "workspace:*",
-        "@lexiai/external-apis": "workspace:*",
-        "@lexiai/observability": "workspace:*",
-        "@lexiai/queue": "workspace:*",
-        "@lexiai/repositories-async-word-jobs": "workspace:*",
-        "@lexiai/repositories-words": "workspace:*",
-        "@lexiai/storage": "workspace:*",
-        "@lexiai/use-cases": "workspace:*",
+        "@kotodama/ai": "workspace:*",
+        "@kotodama/config": "workspace:*",
+        "@kotodama/core-async-word-jobs": "workspace:*",
+        "@kotodama/core-content": "workspace:*",
+        "@kotodama/core-words": "workspace:*",
+        "@kotodama/database": "workspace:*",
+        "@kotodama/external-apis": "workspace:*",
+        "@kotodama/observability": "workspace:*",
+        "@kotodama/queue": "workspace:*",
+        "@kotodama/repositories-async-word-jobs": "workspace:*",
+        "@kotodama/repositories-words": "workspace:*",
+        "@kotodama/storage": "workspace:*",
+        "@kotodama/use-cases": "workspace:*",
         "effect": "catalog:effect",
       },
       "devDependencies": {
@@ -59,45 +59,45 @@
       },
     },
     "core/async-word-jobs": {
-      "name": "@lexiai/core-async-word-jobs",
+      "name": "@kotodama/core-async-word-jobs",
       "version": "0.0.0",
       "dependencies": {
-        "@lexiai/core-words": "workspace:*",
-        "@lexiai/database": "workspace:*",
-        "@lexiai/queue": "workspace:*",
-        "@lexiai/repositories-async-word-jobs": "workspace:*",
+        "@kotodama/core-words": "workspace:*",
+        "@kotodama/database": "workspace:*",
+        "@kotodama/queue": "workspace:*",
+        "@kotodama/repositories-async-word-jobs": "workspace:*",
         "effect": "catalog:effect",
       },
     },
     "core/content": {
-      "name": "@lexiai/core-content",
+      "name": "@kotodama/core-content",
       "version": "0.0.0",
       "dependencies": {
-        "@lexiai/ai": "workspace:*",
-        "@lexiai/database": "workspace:*",
-        "@lexiai/external-apis": "workspace:*",
-        "@lexiai/storage": "workspace:*",
+        "@kotodama/ai": "workspace:*",
+        "@kotodama/database": "workspace:*",
+        "@kotodama/external-apis": "workspace:*",
+        "@kotodama/storage": "workspace:*",
         "effect": "catalog:effect",
       },
     },
     "core/words": {
-      "name": "@lexiai/core-words",
+      "name": "@kotodama/core-words",
       "version": "0.0.0",
       "dependencies": {
-        "@lexiai/ai": "workspace:*",
-        "@lexiai/core-content": "workspace:*",
-        "@lexiai/database": "workspace:*",
-        "@lexiai/repositories-words": "workspace:*",
+        "@kotodama/ai": "workspace:*",
+        "@kotodama/core-content": "workspace:*",
+        "@kotodama/database": "workspace:*",
+        "@kotodama/repositories-words": "workspace:*",
         "effect": "catalog:effect",
       },
     },
     "database": {
-      "name": "@lexiai/database",
+      "name": "@kotodama/database",
       "version": "0.0.0",
       "dependencies": {
         "@effect/platform-bun": "catalog:effect",
         "@effect/sql-pg": "catalog:effect",
-        "@lexiai/config": "workspace:*",
+        "@kotodama/config": "workspace:*",
         "drizzle-kit": "catalog:db",
         "drizzle-orm": "catalog:db",
         "effect": "catalog:effect",
@@ -110,20 +110,20 @@
       },
     },
     "infra": {
-      "name": "@lexiai/infra",
+      "name": "@kotodama/infra",
       "version": "0.0.0",
       "dependencies": {
         "@aws-sdk/client-s3": "catalog:aws",
         "@aws-sdk/client-sqs": "catalog:aws",
         "@effect/platform-bun": "catalog:effect",
-        "@lexiai/config": "workspace:*",
-        "@lexiai/queue": "workspace:*",
-        "@lexiai/storage": "workspace:*",
+        "@kotodama/config": "workspace:*",
+        "@kotodama/queue": "workspace:*",
+        "@kotodama/storage": "workspace:*",
         "effect": "catalog:effect",
       },
     },
     "packages/ai": {
-      "name": "@lexiai/ai",
+      "name": "@kotodama/ai",
       "version": "0.0.0",
       "dependencies": {
         "@effect/ai-openai": "catalog:effect",
@@ -131,21 +131,21 @@
       },
     },
     "packages/config": {
-      "name": "@lexiai/config",
+      "name": "@kotodama/config",
       "version": "0.0.0",
       "dependencies": {
         "effect": "catalog:effect",
       },
     },
     "packages/external-apis": {
-      "name": "@lexiai/external-apis",
+      "name": "@kotodama/external-apis",
       "version": "0.0.0",
       "dependencies": {
         "effect": "catalog:effect",
       },
     },
     "packages/observability": {
-      "name": "@lexiai/observability",
+      "name": "@kotodama/observability",
       "version": "0.0.0",
       "dependencies": {
         "@effect/opentelemetry": "catalog:effect",
@@ -162,11 +162,11 @@
       },
     },
     "packages/queue": {
-      "name": "@lexiai/queue",
+      "name": "@kotodama/queue",
       "version": "0.0.0",
       "dependencies": {
         "@aws-sdk/client-sqs": "catalog:aws",
-        "@lexiai/config": "workspace:*",
+        "@kotodama/config": "workspace:*",
         "effect": "catalog:effect",
       },
       "devDependencies": {
@@ -175,10 +175,10 @@
       },
     },
     "packages/storage": {
-      "name": "@lexiai/storage",
+      "name": "@kotodama/storage",
       "version": "0.0.0",
       "dependencies": {
-        "@lexiai/config": "workspace:*",
+        "@kotodama/config": "workspace:*",
         "effect": "catalog:effect",
       },
       "devDependencies": {
@@ -188,11 +188,11 @@
       },
     },
     "repositories/async-word-jobs": {
-      "name": "@lexiai/repositories-async-word-jobs",
+      "name": "@kotodama/repositories-async-word-jobs",
       "version": "0.0.0",
       "dependencies": {
         "@effect/sql-pg": "catalog:effect",
-        "@lexiai/database": "workspace:*",
+        "@kotodama/database": "workspace:*",
         "drizzle-orm": "catalog:db",
         "effect": "catalog:effect",
       },
@@ -203,11 +203,11 @@
       },
     },
     "repositories/words": {
-      "name": "@lexiai/repositories-words",
+      "name": "@kotodama/repositories-words",
       "version": "0.0.0",
       "dependencies": {
         "@effect/sql-pg": "catalog:effect",
-        "@lexiai/database": "workspace:*",
+        "@kotodama/database": "workspace:*",
         "drizzle-orm": "catalog:db",
         "effect": "catalog:effect",
       },
@@ -218,20 +218,20 @@
       },
     },
     "use-cases": {
-      "name": "@lexiai/use-cases",
+      "name": "@kotodama/use-cases",
       "version": "0.0.0",
       "dependencies": {
-        "@lexiai/core-async-word-jobs": "workspace:*",
-        "@lexiai/core-content": "workspace:*",
-        "@lexiai/core-words": "workspace:*",
-        "@lexiai/database": "workspace:*",
-        "@lexiai/queue": "workspace:*",
-        "@lexiai/repositories-async-word-jobs": "workspace:*",
-        "@lexiai/repositories-words": "workspace:*",
+        "@kotodama/core-async-word-jobs": "workspace:*",
+        "@kotodama/core-content": "workspace:*",
+        "@kotodama/core-words": "workspace:*",
+        "@kotodama/database": "workspace:*",
+        "@kotodama/queue": "workspace:*",
+        "@kotodama/repositories-async-word-jobs": "workspace:*",
+        "@kotodama/repositories-words": "workspace:*",
         "effect": "catalog:effect",
       },
       "devDependencies": {
-        "@lexiai/ai": "workspace:*",
+        "@kotodama/ai": "workspace:*",
       },
     },
   },
@@ -443,39 +443,39 @@
 
     "@js-temporal/polyfill": ["@js-temporal/polyfill@0.5.1", "", { "dependencies": { "jsbi": "^4.3.0" } }, "sha512-hloP58zRVCRSpgDxmqCWJNlizAlUgJFqG2ypq79DCvyv9tHjRYMDOcPFjzfl/A1/YxDvRCZz8wvZvmapQnKwFQ=="],
 
+    "@kotodama/ai": ["@kotodama/ai@workspace:packages/ai"],
+
+    "@kotodama/app-api": ["@kotodama/app-api@workspace:apps/api"],
+
+    "@kotodama/app-worker": ["@kotodama/app-worker@workspace:apps/worker"],
+
+    "@kotodama/config": ["@kotodama/config@workspace:packages/config"],
+
+    "@kotodama/core-async-word-jobs": ["@kotodama/core-async-word-jobs@workspace:core/async-word-jobs"],
+
+    "@kotodama/core-content": ["@kotodama/core-content@workspace:core/content"],
+
+    "@kotodama/core-words": ["@kotodama/core-words@workspace:core/words"],
+
+    "@kotodama/database": ["@kotodama/database@workspace:database"],
+
+    "@kotodama/external-apis": ["@kotodama/external-apis@workspace:packages/external-apis"],
+
+    "@kotodama/infra": ["@kotodama/infra@workspace:infra"],
+
+    "@kotodama/observability": ["@kotodama/observability@workspace:packages/observability"],
+
+    "@kotodama/queue": ["@kotodama/queue@workspace:packages/queue"],
+
+    "@kotodama/repositories-async-word-jobs": ["@kotodama/repositories-async-word-jobs@workspace:repositories/async-word-jobs"],
+
+    "@kotodama/repositories-words": ["@kotodama/repositories-words@workspace:repositories/words"],
+
+    "@kotodama/storage": ["@kotodama/storage@workspace:packages/storage"],
+
+    "@kotodama/use-cases": ["@kotodama/use-cases@workspace:use-cases"],
+
     "@kwsites/file-exists": ["@kwsites/file-exists@1.1.1", "", { "dependencies": { "debug": "^4.1.1" } }, "sha512-m9/5YGR18lIwxSFDwfE3oA7bWuq9kdau6ugN4H2rJeyhFQZcG9AgSHkQtSD15a8WvTgfz9aikZMrKPHvbpqFiw=="],
-
-    "@lexiai/ai": ["@lexiai/ai@workspace:packages/ai"],
-
-    "@lexiai/app-api": ["@lexiai/app-api@workspace:apps/api"],
-
-    "@lexiai/app-worker": ["@lexiai/app-worker@workspace:apps/worker"],
-
-    "@lexiai/config": ["@lexiai/config@workspace:packages/config"],
-
-    "@lexiai/core-async-word-jobs": ["@lexiai/core-async-word-jobs@workspace:core/async-word-jobs"],
-
-    "@lexiai/core-content": ["@lexiai/core-content@workspace:core/content"],
-
-    "@lexiai/core-words": ["@lexiai/core-words@workspace:core/words"],
-
-    "@lexiai/database": ["@lexiai/database@workspace:database"],
-
-    "@lexiai/external-apis": ["@lexiai/external-apis@workspace:packages/external-apis"],
-
-    "@lexiai/infra": ["@lexiai/infra@workspace:infra"],
-
-    "@lexiai/observability": ["@lexiai/observability@workspace:packages/observability"],
-
-    "@lexiai/queue": ["@lexiai/queue@workspace:packages/queue"],
-
-    "@lexiai/repositories-async-word-jobs": ["@lexiai/repositories-async-word-jobs@workspace:repositories/async-word-jobs"],
-
-    "@lexiai/repositories-words": ["@lexiai/repositories-words@workspace:repositories/words"],
-
-    "@lexiai/storage": ["@lexiai/storage@workspace:packages/storage"],
-
-    "@lexiai/use-cases": ["@lexiai/use-cases@workspace:use-cases"],
 
     "@msgpackr-extract/msgpackr-extract-darwin-arm64": ["@msgpackr-extract/msgpackr-extract-darwin-arm64@3.0.4", "", { "os": "darwin", "cpu": "arm64" }, "sha512-LCkGo6JDfaBhgST7UpPWgNgLINpcpabaHfyz5OBx75nUYxBsaEPxjnyNjWpeb/xBup/682QnBfRBy2/LvPutZQ=="],
 

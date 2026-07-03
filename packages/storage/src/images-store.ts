@@ -1,4 +1,4 @@
-import { ImagesBucket } from '@lexiai/config'
+import { ImagesBucket } from '@kotodama/config'
 import { Context, Effect, Layer } from 'effect'
 import { StorageClient } from './storage-client'
 import type { StorageError, StoragePutOptions } from './storage-types'
@@ -17,7 +17,7 @@ export interface ImagesStoreShape {
  * more wrapper over the same base.
  */
 export class ImagesStore extends Context.Service<ImagesStore, ImagesStoreShape>()(
-  '@lexiai/storage/ImagesStore',
+  '@kotodama/storage/ImagesStore',
 ) {}
 
 export const ImagesStoreLive = Layer.effect(

@@ -1,5 +1,5 @@
-import { WordBuildMessageFromJson } from '@lexiai/core-async-word-jobs'
-import { buildWord } from '@lexiai/use-cases'
+import { WordBuildMessageFromJson } from '@kotodama/core-async-word-jobs'
+import { buildWord } from '@kotodama/use-cases'
 import { Array as Arr, Context, Effect, Option, Schema } from 'effect'
 
 // The prod edge passes the SQS `messageId` as `id`; the local edge the receipt `handle`.
@@ -13,7 +13,7 @@ export interface BatchRecord {
  * rate-limit window, so concurrent builds collide on 429s — raise once a higher tier lifts it.
  * Caps per-invocation fan-out only (AWS parallelizes across invocations).
  */
-export const BatchConcurrency = Context.Reference<number>('@lexiai/app-worker/BatchConcurrency', {
+export const BatchConcurrency = Context.Reference<number>('@kotodama/app-worker/BatchConcurrency', {
   defaultValue: () => 1,
 })
 

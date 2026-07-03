@@ -5,8 +5,8 @@ import {
   enumLanguage,
   enumWordJobStage,
   wordJobStage,
-} from '@lexiai/database'
-import { resetDb, TestDatabaseLive } from '@lexiai/database/testing'
+} from '@kotodama/database'
+import { resetDb, TestDatabaseLive } from '@kotodama/database/testing'
 import { Effect } from 'effect'
 import { selectWordJobStages, stagePatch, upsertWordJobStages } from '../src/index'
 

@@ -5,7 +5,7 @@ argument-hint: "F-AREA-NNN"
 
 <!-- Generated from SDD playbook §7.5 (+ §6.2 template, §4 contract) — https://www.notion.so/36dfb28bd5f181238a86d26457bc24e7. Re-sync on change. -->
 
-You are running **Phase 4 (Tasks)** of the LexiAI SDD playbook on `$ARGUMENTS`.
+You are running **Phase 4 (Tasks)** of the Kotodama SDD playbook on `$ARGUMENTS`.
 
 **Adopt the task-splitter discipline** (`@.claude/agents/task-splitter.md`): vertical tracer-bullet
 slices, XS–M only, no code, approval before rows.

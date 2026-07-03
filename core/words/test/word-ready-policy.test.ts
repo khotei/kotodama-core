@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@effect/vitest'
-import { enumAsyncJobStatus } from '@lexiai/database'
-import { makeWordInsert } from '@lexiai/database/factories'
+import { enumAsyncJobStatus } from '@kotodama/database'
+import { makeWordInsert } from '@kotodama/database/factories'
 import { Effect } from 'effect'
 import type { UnreadyWord, Word } from '../src/word.schema'
 import { ensureReadyWord } from '../src/word-ready-policy'

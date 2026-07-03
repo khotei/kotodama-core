@@ -1,4 +1,4 @@
-# packages/external-apis — `@lexiai/external-apis`
+# packages/external-apis — `@kotodama/external-apis`
 
 `WikiClient` — best-effort Wikipedia/Wiktionary grounding for the word engine. **Backend-only.**
 

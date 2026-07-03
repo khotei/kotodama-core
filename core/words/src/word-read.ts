@@ -1,5 +1,5 @@
-import type { Language } from '@lexiai/database'
-import { selectWord } from '@lexiai/repositories-words'
+import type { Language } from '@kotodama/database'
+import { selectWord } from '@kotodama/repositories-words'
 import { Effect, Option } from 'effect'
 import { decodeWord } from './word.schema'
 

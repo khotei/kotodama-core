@@ -1,5 +1,5 @@
 {
-  "name": "@lexiai/repositories-async-word-jobs",
+  "name": "@kotodama/repositories-async-word-jobs",
   "version": "0.0.0",
   "private": true,
   "main": "./src/index.ts",
@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@effect/sql-pg": "catalog:effect",
-    "@lexiai/database": "workspace:*",
+    "@kotodama/database": "workspace:*",
     "drizzle-orm": "catalog:db",
     "effect": "catalog:effect"
   },

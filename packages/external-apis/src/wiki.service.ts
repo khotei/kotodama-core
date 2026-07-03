@@ -26,7 +26,7 @@ export class WikiClient extends Context.Service<
       limit: number,
     ) => Effect.Effect<ReadonlyArray<WikiSearchHit>, WikiError>
   }
->()('@lexiai/external-apis/WikiClient') {}
+>()('@kotodama/external-apis/WikiClient') {}
 
 // `schemaJson` decodes the whole `{ status, headers, body }` envelope, so the body schema is wrapped
 // under `body`; excess envelope keys are ignored by Schema's default decode.

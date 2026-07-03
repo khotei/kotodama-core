@@ -1,4 +1,4 @@
-import { LANGUAGES, type Language } from '@lexiai/database'
+import { LANGUAGES, type Language } from '@kotodama/database'
 import type { WordGrounding } from './stage-slices'
 
 // One named builder per stage, kept as a data module (not inlined in handlers) so

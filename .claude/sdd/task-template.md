@@ -43,7 +43,7 @@ One sentence. The single observable outcome. *"A fresh `git clone` followed by X
 - <Decision deferred to a later task + rationale.>
 ```
 
-## Sizing & autonomy (LexiAI)
+## Sizing & autonomy (Kotodama)
 
 - **Estimate** is **XS–M only** — `XS` ≤30 min · `S` ≤2 h · `M` ≤1 day. An `L` task splits; an
   `XL` is refused (it's a hidden mini-feature).

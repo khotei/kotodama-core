@@ -1,5 +1,5 @@
 {
-  "name": "@lexiai/app-api",
+  "name": "@kotodama/app-api",
   "version": "0.0.0",
   "private": true,
   "scripts": {
@@ -12,15 +12,15 @@
     "effect": "catalog:effect",
     "@effect/ai-openai": "catalog:effect",
     "@effect/platform-bun": "catalog:effect",
-    "@lexiai/ai": "workspace:*",
-    "@lexiai/config": "workspace:*",
-    "@lexiai/core-async-word-jobs": "workspace:*",
-    "@lexiai/core-words": "workspace:*",
-    "@lexiai/database": "workspace:*",
-    "@lexiai/observability": "workspace:*",
-    "@lexiai/queue": "workspace:*",
-    "@lexiai/repositories-words": "workspace:*",
-    "@lexiai/repositories-async-word-jobs": "workspace:*",
-    "@lexiai/use-cases": "workspace:*"
+    "@kotodama/ai": "workspace:*",
+    "@kotodama/config": "workspace:*",
+    "@kotodama/core-async-word-jobs": "workspace:*",
+    "@kotodama/core-words": "workspace:*",
+    "@kotodama/database": "workspace:*",
+    "@kotodama/observability": "workspace:*",
+    "@kotodama/queue": "workspace:*",
+    "@kotodama/repositories-words": "workspace:*",
+    "@kotodama/repositories-async-word-jobs": "workspace:*",
+    "@kotodama/use-cases": "workspace:*"
   }
 }

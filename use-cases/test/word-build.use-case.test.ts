@@ -7,7 +7,7 @@ import {
   type StageSlice,
   WordGenerationServiceLive,
   WordGenerationServiceTimed,
-} from '@lexiai/core-content'
+} from '@kotodama/core-content'
 import {
   type AsyncWordJobRow,
   enumAsyncJobStatus,
@@ -18,12 +18,12 @@ import {
   enumWordJobStage,
   type WordJobStage,
   wordJobStage,
-} from '@lexiai/database'
-import { resetDb, TestDatabaseLive } from '@lexiai/database/testing'
-import { selectWordJobStages } from '@lexiai/repositories-async-word-jobs'
-import { seedPendingPipeline } from '@lexiai/repositories-async-word-jobs/testing'
-import { selectWord, selectWords } from '@lexiai/repositories-words'
-import { seedUnreadyWord } from '@lexiai/repositories-words/testing'
+} from '@kotodama/database'
+import { resetDb, TestDatabaseLive } from '@kotodama/database/testing'
+import { selectWordJobStages } from '@kotodama/repositories-async-word-jobs'
+import { seedPendingPipeline } from '@kotodama/repositories-async-word-jobs/testing'
+import { selectWord, selectWords } from '@kotodama/repositories-words'
+import { seedUnreadyWord } from '@kotodama/repositories-words/testing'
 import { Duration, Effect, Layer, Option } from 'effect'
 import { TestClock } from 'effect/testing'
 import { buildWord } from '../src/index'

@@ -1,4 +1,4 @@
-# repositories/async-word-jobs — `@lexiai/repositories-async-word-jobs`
+# repositories/async-word-jobs — `@kotodama/repositories-async-word-jobs`
 
 Bare persistence functions over `async_word_jobs` — `selectWordJobStages` + `upsertWordJobStages`
 (`src/async-word-jobs.repo.ts`, `src/stage-patch.ts`). No repo service (owns no resource; see
@@ -32,7 +32,7 @@ The status ⇄ `startedAt`/`finishedAt` pairing is persistence vocabulary author
 
 ## Boundaries
 
-- May import `@lexiai/database`, other `@lexiai/*`, `effect`, `drizzle-orm` query helpers — never
+- May import `@kotodama/database`, other `@kotodama/*`, `effect`, `drizzle-orm` query helpers — never
   a bare `drizzle()`/driver, never `core/*` or `apps/*`.
 - Tests are DB-backed (Testcontainers — needs Docker):
-  `bun run --filter '@lexiai/repositories-async-word-jobs' test`.
+  `bun run --filter '@kotodama/repositories-async-word-jobs' test`.

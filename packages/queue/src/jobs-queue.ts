@@ -1,4 +1,4 @@
-import { JobsQueueUrl } from '@lexiai/config'
+import { JobsQueueUrl } from '@kotodama/config'
 import { Context, Effect, Layer } from 'effect'
 import { QueueClient } from './queue-client'
 import type { QueueError, QueueMessage, ReceiveOptions } from './queue-types'
@@ -17,7 +17,7 @@ export interface JobsQueueShape {
  * DLQ) is one more wrapper over the same base.
  */
 export class JobsQueue extends Context.Service<JobsQueue, JobsQueueShape>()(
-  '@lexiai/queue/JobsQueue',
+  '@kotodama/queue/JobsQueue',
 ) {}
 
 export const JobsQueueLive = Layer.effect(

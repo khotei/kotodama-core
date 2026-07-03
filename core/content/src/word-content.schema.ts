@@ -1,4 +1,4 @@
-import { WordEntity } from '@lexiai/database'
+import { WordEntity } from '@kotodama/database'
 import { Struct } from 'effect'
 
 /**

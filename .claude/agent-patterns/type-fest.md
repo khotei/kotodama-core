@@ -42,7 +42,7 @@ export type AsyncWordJobUpsert = Readonly<Pick<AsyncWordJobRow, 'stage' | 'statu
 
 - **`Arrayable` — don't use type-fest's.** Theirs is mutable `T | T[]` (deliberately, pending
   microsoft/TypeScript#17002). This repo's single-or-array idiom is readonly; use
-  **`Arrayable<T>` from `@lexiai/utils`** (`T | readonly T[]`), whose `isArray`/`toArray` companions
+  **`Arrayable<T>` from `@kotodama/utils`** (`T | readonly T[]`), whose `isArray`/`toArray` companions
   do the narrowing the TS issue blocks.
 - Domain shapes still derive from their single author (`<Name>Entity`/`<Name>Row` via
   `Pick`/`Except`, or `effect/Schema` combinators in core) — type-fest shapes the *projection*, it

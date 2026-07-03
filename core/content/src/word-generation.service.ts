@@ -1,4 +1,4 @@
-import type { Language, SourceVersionsEntity } from '@lexiai/database'
+import type { Language, SourceVersionsEntity } from '@kotodama/database'
 import { type Cause, Context, Duration, Effect, Layer } from 'effect'
 import { ContentEngine } from './content-engine.service'
 import type { WordContent } from './word-content.schema'
@@ -23,7 +23,7 @@ export class WordGenerationService extends Context.Service<
       WordGenerationError | Cause.TimeoutError
     >
   }
->()('@lexiai/core-content/WordGenerationService') {}
+>()('@kotodama/core-content/WordGenerationService') {}
 
 export const WordGenerationServiceLive: Layer.Layer<WordGenerationService, never, ContentEngine> =
   Layer.effect(

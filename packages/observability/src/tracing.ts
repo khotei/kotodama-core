@@ -1,4 +1,4 @@
-// Reads `OTEL_EXPORTER_OTLP_ENDPOINT` directly, not via `@lexiai/config`: leaf
+// Reads `OTEL_EXPORTER_OTLP_ENDPOINT` directly, not via `@kotodama/config`: leaf
 // package, may not import `config`. See @.claude/rules/observability.md.
 
 // NodeSdk subpath, not the package barrel — the barrel re-exports WebSdk, which

@@ -1,5 +1,5 @@
 import { BunRuntime } from '@effect/platform-bun'
-import { ConfigProviderLive, Port } from '@lexiai/config'
+import { ConfigProviderLive, Port } from '@kotodama/config'
 import { Data, Effect } from 'effect'
 
 // `bun run src/local-smoke.ts [word] [language]` — defaults build `en/lacuna`.

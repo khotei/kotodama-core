@@ -46,8 +46,8 @@ workspace may depend on. No behaviour yet — each ships a typed stub,
 ## What changed
 
 - Added `packages/{schemas,http,ai,queue,storage,config,observability}`.
-- Wired catalog versions + `@lexiai/*` names per `.claude/rules/naming.md`.
-- `packages/http` references `@lexiai/schemas`; all others are leaves.
+- Wired catalog versions + `@kotodama/*` names per `.claude/rules/naming.md`.
+- `packages/http` references `@kotodama/schemas`; all others are leaves.
 
 ## How it works
 
@@ -105,8 +105,8 @@ package.json, tsconfig, and a smoke test so the layer graph compiles.
 
 ## What changed
 - Added packages/{schemas,http,ai,queue,storage,config,observability}.
-- Wired catalog versions + @lexiai/* names per naming.md.
-- packages/http references @lexiai/schemas; all others are leaves.
+- Wired catalog versions + @kotodama/* names per naming.md.
+- packages/http references @kotodama/schemas; all others are leaves.
 
 ## How it works
 packages/* sit at the bottom of the hierarchy: everything may import

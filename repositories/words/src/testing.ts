@@ -1,6 +1,6 @@
-import type { Language, WordInsert } from '@lexiai/database'
-import { enumAsyncJobStatus } from '@lexiai/database'
-import { makeWordInsert } from '@lexiai/database/factories'
+import type { Language, WordInsert } from '@kotodama/database'
+import { enumAsyncJobStatus } from '@kotodama/database'
+import { makeWordInsert } from '@kotodama/database/factories'
 import { upsertWord } from './words.repo'
 
 /** A non-`succeeded` `status` — the states an unready `words` row can carry (content NULL). */

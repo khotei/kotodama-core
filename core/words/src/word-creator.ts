@@ -1,6 +1,6 @@
-import { WordGenerationService } from '@lexiai/core-content'
-import { enumAsyncJobStatus, type Language, WordEntityInsert } from '@lexiai/database'
-import { upsertWord } from '@lexiai/repositories-words'
+import { WordGenerationService } from '@kotodama/core-content'
+import { enumAsyncJobStatus, type Language, WordEntityInsert } from '@kotodama/database'
+import { upsertWord } from '@kotodama/repositories-words'
 import { Effect, Schema } from 'effect'
 
 const decodeWordInsert = Schema.decodeUnknownEffect(WordEntityInsert)

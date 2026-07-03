@@ -47,6 +47,6 @@ one that *does* have node, `vitest` would run under Node and its `import 'bun'`
 prefixes the bin with `bun --bun`** (`bun --bun tsc --noEmit`, `bun --bun vitest run`,
 `bun --bun drizzle-kit …`) — the same forcing already used for `bun --bun vite`. The flag lives in
 the **package** script, not the root aggregator, so a standalone
-`bun run --filter '@lexiai/<name>' {typecheck,test}` is forced onto Bun too.
+`bun run --filter '@kotodama/<name>' {typecheck,test}` is forced onto Bun too.
 
 `bun test` invokes Bun's built-in runner and ignores the `test` script — always `bun run test`.

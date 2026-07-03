@@ -4,7 +4,7 @@ import {
   SendMessageCommand,
   SQSClient,
 } from '@aws-sdk/client-sqs'
-import { AwsClientConfig } from '@lexiai/config'
+import { AwsClientConfig } from '@kotodama/config'
 import { Context, Effect, Layer } from 'effect'
 import { QueueError, type QueueMessage, type ReceiveOptions } from './queue-types'
 
@@ -22,7 +22,7 @@ export interface QueueClientShape {
  * number of queues.
  */
 export class QueueClient extends Context.Service<QueueClient, QueueClientShape>()(
-  '@lexiai/queue/QueueClient',
+  '@kotodama/queue/QueueClient',
 ) {}
 
 export const QueueClientLive = Layer.effect(

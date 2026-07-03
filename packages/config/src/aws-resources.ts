@@ -9,8 +9,8 @@ export type AwsResource =
   | { readonly kind: 's3'; readonly name: string }
 
 export const awsResources = {
-  jobsQueue: { kind: 'sqs', name: 'lexiai-jobs' },
-  imagesBucket: { kind: 's3', name: 'lexiai-images' },
+  jobsQueue: { kind: 'sqs', name: 'kotodama-jobs' },
+  imagesBucket: { kind: 's3', name: 'kotodama-images' },
 } as const satisfies Record<string, AwsResource>
 
 export const awsResourceList: readonly AwsResource[] = Object.values(awsResources)

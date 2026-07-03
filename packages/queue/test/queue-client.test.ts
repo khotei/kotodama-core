@@ -1,5 +1,5 @@
 import { expect, it } from '@effect/vitest'
-import { awsResources } from '@lexiai/config'
+import { awsResources } from '@kotodama/config'
 import { Effect } from 'effect'
 import { QueueClient } from '../src'
 import { ensureQueue } from '../src/ensure-queue'

@@ -1,11 +1,11 @@
-# core/async-word-jobs — `@lexiai/core-async-word-jobs`
+# core/async-word-jobs — `@kotodama/core-async-word-jobs`
 
 The job-side building blocks of the word-build flows (the flows themselves live in
-`@lexiai/use-cases` and compose these). Owns exactly: the snapshot read
+`@kotodama/use-cases` and compose these). Owns exactly: the snapshot read
 (`readWordBuildSnapshot` — pairs `core/words`' `findWord` (decoded `Option<Word>`) +
 `selectWordJobStages` into `{ word, stages }` for the API's `getWordState` view; a plain function,
 deps on `R`) and the build-dispatch message (`WordBuildMessage` + its JSON codec — authored here
-because `@lexiai/queue` stays message-agnostic).
+because `@kotodama/queue` stays message-agnostic).
 
 Not here, on purpose: the build-admission gate lives in `core/words` (a word-creation decision);
 the view collapse lives at the API edge (presentation); seed + enqueue + which stages a build
@@ -18,5 +18,5 @@ comprises live in `requestWordBuild` (`use-cases`).
   (worker-side) are deliberately separate flows — do not merge them, and do not pull them down
   into this package.
 
-**May import:** `core/*`, `repositories/*`, `@lexiai/database`, `@lexiai/*` packages, `effect`.
-**MUST NOT import:** `apps/*`, `@lexiai/use-cases` (the tier above).
+**May import:** `core/*`, `repositories/*`, `@kotodama/database`, `@kotodama/*` packages, `effect`.
+**MUST NOT import:** `apps/*`, `@kotodama/use-cases` (the tier above).

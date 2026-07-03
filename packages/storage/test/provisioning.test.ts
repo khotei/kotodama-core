@@ -3,9 +3,9 @@ import { Effect } from 'effect'
 import { ensureBucket } from '../src/provisioning'
 import { StorageLocalStackContainer, s3 } from '../src/testing'
 
-// A bucket name distinct from the harness's own `lexiai-test-visuals`, so the first ensure exercises
+// A bucket name distinct from the harness's own `kotodama-test-visuals`, so the first ensure exercises
 // the real create path (not a name LocalStack already holds).
-const BUCKET = 'lexiai-test-provisioning'
+const BUCKET = 'kotodama-test-provisioning'
 
 // Provision the bucket directly against the container, bypassing `StorageLocalStackLive` (which
 // pre-creates the prod bucket) — this suite owns the create-then-no-op path end to end.

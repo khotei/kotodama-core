@@ -1,4 +1,4 @@
-import { enumAsyncJobStatus, WordEntity } from '@lexiai/database'
+import { enumAsyncJobStatus, WordEntity } from '@kotodama/database'
 import { Schema, Struct } from 'effect'
 
 /**

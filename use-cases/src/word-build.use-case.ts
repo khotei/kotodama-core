@@ -1,16 +1,16 @@
-import { createWord } from '@lexiai/core-words'
+import { createWord } from '@kotodama/core-words'
 import {
   enumAsyncJobStatus,
   enumJobErrorType,
   type Language,
   WORD_JOB_STAGES,
-} from '@lexiai/database'
+} from '@kotodama/database'
 import {
   type AsyncWordJobUpsert,
   stagePatch,
   upsertWordJobStages,
-} from '@lexiai/repositories-async-word-jobs'
-import { selectWord, upsertWord } from '@lexiai/repositories-words'
+} from '@kotodama/repositories-async-word-jobs'
+import { selectWord, upsertWord } from '@kotodama/repositories-words'
 import { Effect, Option } from 'effect'
 
 // A terminally-failed build's write, in one place: log, batch the stage journal, flip the row

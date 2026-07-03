@@ -5,7 +5,7 @@ import {
   enumWordJobStage,
   WordEntityInsert,
   wordJobStage,
-} from '@lexiai/database'
+} from '@kotodama/database'
 import { Duration, Effect, Schema } from 'effect'
 import { TestClock } from 'effect/testing'
 import { ContentEngine, ContentEngineError, MockContentEngine, makeMockContentEngine } from '../src'

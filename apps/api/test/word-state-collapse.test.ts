@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@effect/vitest'
-import type { ReadyWord, UnreadyWord, Word } from '@lexiai/core-words'
+import type { ReadyWord, UnreadyWord, Word } from '@kotodama/core-words'
 import {
   type AsyncWordJobRow,
   enumAsyncJobStatus,
@@ -7,7 +7,7 @@ import {
   enumWordJobStage,
   type JobErrorEntity,
   type WordJobStage,
-} from '@lexiai/database'
+} from '@kotodama/database'
 import { Option } from 'effect'
 import { collapseWordState } from '../src/words/word-state-collapse'
 import { assertStatus } from './words-api-test-utils'

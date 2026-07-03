@@ -6,7 +6,7 @@ restatement.
 
 ## Scripts
 
-Run from the repo root; per-package via `bun run --filter '@lexiai/<name>' <script>`.
+Run from the repo root; per-package via `bun run --filter '@kotodama/<name>' <script>`.
 
 | Script | Does | Source |
 |---|---|---|
@@ -45,7 +45,7 @@ PRs **squash-merge** into one commit whose subject is the PR title and body is t
 
 Use the `/new-package` Claude Code command — it scaffolds `package.json`, `tsconfig`, `src`, a smoke
 test, the one-line `vitest.config.ts`, and a `CLAUDE.md` in the correct layer, with **zero** root-config
-edits. Naming (`@lexiai/<folder>`, file roles): [`naming.md`](../.claude/rules/naming.md). Where it may
+edits. Naming (`@kotodama/<folder>`, file roles): [`naming.md`](../.claude/rules/naming.md). Where it may
 sit in the layer graph: [`dependency-hierarchy.md`](../.claude/rules/dependency-hierarchy.md).
 
 ## Working with Effect & Drizzle

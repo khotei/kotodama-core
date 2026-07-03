@@ -37,7 +37,7 @@ gotcha *inside* a body, at the exact line it warns about.
 
 Tags: `{@link Symbol}` for internal cross-refs; `@see` for a rule/spec pointer; `@example` (fenced
 ```ts) only for genuinely non-obvious usage; `@param`/`@returns` only when name + type don't
-already say it. Never `@since`/`@category`/docgen tags — LexiAI isn't a published library. The
+already say it. Never `@since`/`@category`/docgen tags — Kotodama isn't a published library. The
 Gate-A bar is unchanged in this form: one strong sentence beats a paragraph.
 
 ## Maintenance — a comment is never "kept in sync"

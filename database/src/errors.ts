@@ -1,4 +1,4 @@
-// Re-exported so `repositories/*` name the error channel through `@lexiai/database`, not
+// Re-exported so `repositories/*` name the error channel through `@kotodama/database`, not
 // `drizzle-orm`. Every query surfaces `EffectDrizzleQueryError`; `db.transaction` adds `SqlError`.
 import type { SqlError as SqlErrorNamespace } from 'effect/unstable/sql'
 

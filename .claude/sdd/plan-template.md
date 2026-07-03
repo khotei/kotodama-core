@@ -37,7 +37,7 @@ implementation) and **Testing strategy** — don't drop them.
 
 ## Testing strategy
 - What to test: the external, observable behavior of each module — not implementation details.
-- Which modules get tests (happy + failure path), and the prior art in `lexi-ai/` to imitate.
+- Which modules get tests (happy + failure path), and the prior art in `kotodama-core/` to imitate.
 - What is deliberately left untested, and why.
 
 ## Risks
@@ -53,10 +53,10 @@ implementation) and **Testing strategy** — don't drop them.
 - ...
 ```
 
-## LexiAI notes
+## Kotodama notes
 
 - **Cite the Tech spec section** behind every architectural choice (`Tech spec §2.6`). Ground it in
-  the existing `lexi-ai/` code where one exists to imitate.
+  the existing `kotodama-core/` code where one exists to imitate.
 - **New architecture not yet in the Tech spec → prefix `proposal:`** in the plan. A `proposal:` must
   be approved before Phase 4 (`/sdd:tasks`); it is not a settled decision.
 - **Sequencing aims for 5–15 steps.** >20 steps means the feature is too big — split it. Each step

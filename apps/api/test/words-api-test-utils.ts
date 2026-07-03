@@ -1,4 +1,4 @@
-import type { AsyncJobStatus, Language } from '@lexiai/database'
+import type { AsyncJobStatus, Language } from '@kotodama/database'
 import { Effect } from 'effect'
 import { HttpApiClient } from 'effect/unstable/httpapi'
 import type { WordStateView, WordStatus } from '../src/words/word-state.view'

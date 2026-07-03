@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { type AiError, AiService } from '@lexiai/ai'
+import { type AiError, AiService } from '@kotodama/ai'
 import {
   AuthorExampleEntity,
   CulturalGuideEntity,
@@ -12,9 +12,9 @@ import {
   type VisualKind,
   type VisualsEntity,
   type WordJobStage,
-} from '@lexiai/database'
-import { WikiClient } from '@lexiai/external-apis'
-import { authorKey, ImagesStore, imageKey, type StorageError } from '@lexiai/storage'
+} from '@kotodama/database'
+import { WikiClient } from '@kotodama/external-apis'
+import { authorKey, ImagesStore, imageKey, type StorageError } from '@kotodama/storage'
 import { Effect, Layer, Option, Schema, Semaphore, Struct } from 'effect'
 import { ContentEngine, ContentEngineError } from './content-engine.service'
 import {
@@ -173,7 +173,7 @@ export const RealContentEngineLive: Layer.Layer<
       ai.generateObject(schema, prompt, config).pipe(Effect.mapError(textFailure))
 
     // The one image→storage seam both media stages share. The CALLER builds the key, so the path
-    // scheme stays solely in @lexiai/storage; the model/size/quality decision stays in
+    // scheme stays solely in @kotodama/storage; the model/size/quality decision stays in
     // generation-defaults.
     const renderToStorage = (
       key: StorageKey,

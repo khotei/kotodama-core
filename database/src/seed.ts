@@ -1,6 +1,6 @@
 import { BunRuntime } from '@effect/platform-bun'
 import { faker } from '@faker-js/faker'
-import { ConfigProviderLive } from '@lexiai/config'
+import { ConfigProviderLive } from '@kotodama/config'
 import { Effect } from 'effect'
 import { DatabaseLive, DB } from './db'
 import { makeAsyncWordJobInsert, makeWordInsert } from './factories'
@@ -13,7 +13,7 @@ import {
 } from './index'
 
 // Dev seed. Idempotent via `onConflictDoNothing` on `UNIQUE(word, language)`.
-// Run: `bun run --filter '@lexiai/database' db:seed`.
+// Run: `bun run --filter '@kotodama/database' db:seed`.
 faker.seed(20260604)
 
 const WORDS = ['lacuna', 'ephemeral', 'serendipity', 'petrichor'] as const

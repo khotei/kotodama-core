@@ -1,4 +1,4 @@
-# apps/api — `@lexiai/app-api`
+# apps/api — `@kotodama/app-api`
 
 HttpApi server (Effect v4); Bun locally, AWS Lambda via the Lambda Web Adapter. The contract
 (`src/words/words.api.ts`) + handlers (`words.handler.ts`) live here as a pair, one folder per
@@ -41,6 +41,6 @@ resource group. Patterns: `.claude/agent-patterns/effect-httpapi.md`.
   deliberately duplicates the worker's (~10 lines) and omits its resilience decorator: the input
   judge is fail-open, so retry buys little and would pull image-path tuning into a text-only app.
 
-**May import:** `core/*`, `use-cases/*`, `@lexiai/database` + `repositories/*`, `@lexiai/*`
+**May import:** `core/*`, `use-cases/*`, `@kotodama/database` + `repositories/*`, `@kotodama/*`
 packages, `effect`, `@effect/platform-bun`. **MUST NOT import:** another app.
-`@lexiai/database/factories` belongs in tests, not `src/**`.
+`@kotodama/database/factories` belongs in tests, not `src/**`.

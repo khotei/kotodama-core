@@ -1,5 +1,5 @@
 {
-  "name": "@lexiai/core-content",
+  "name": "@kotodama/core-content",
   "version": "0.0.0",
   "private": true,
   "main": "./src/index.ts",
@@ -8,10 +8,10 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@lexiai/ai": "workspace:*",
-    "@lexiai/database": "workspace:*",
-    "@lexiai/external-apis": "workspace:*",
-    "@lexiai/storage": "workspace:*",
+    "@kotodama/ai": "workspace:*",
+    "@kotodama/database": "workspace:*",
+    "@kotodama/external-apis": "workspace:*",
+    "@kotodama/storage": "workspace:*",
     "effect": "catalog:effect"
   },
   "scripts": {

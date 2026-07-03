@@ -1,6 +1,6 @@
 import { Data } from 'effect'
 
-/** The single failure of `@lexiai/storage` — callers handle one tag. */
+/** The single failure of `@kotodama/storage` — callers handle one tag. */
 export class StorageError extends Data.TaggedError('StorageError')<{
   readonly key: string
   readonly cause: unknown
@@ -24,7 +24,7 @@ export interface AuthorKeyInput {
   readonly index: number
 }
 
-// The `.png` suffix is fixed — `@lexiai/ai`'s `generateImage` always emits PNG bytes.
+// The `.png` suffix is fixed — `@kotodama/ai`'s `generateImage` always emits PNG bytes.
 export const imageKey = ({ language, word, kind, index }: ImageKeyInput): string => {
   const leaf = index === undefined ? kind : `${kind}-${index}`
   return `visuals/${language}/${word}/${leaf}.png`

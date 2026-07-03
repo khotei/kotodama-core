@@ -125,7 +125,7 @@ jobs:
       # `bun run test` runs @effect/vitest (NOT `bun test`, the built-in runner). DB + queue
       # tests start ephemeral Postgres / LocalStack containers via Testcontainers — no
       # `services:` block needed: `ubuntu-latest` ships a running Docker daemon, and each
-      # container's URL/endpoint is generated (see @lexiai/{database,queue}/testing).
+      # container's URL/endpoint is generated (see @kotodama/{database,queue}/testing).
       - name: Test
         run: bun run test
 

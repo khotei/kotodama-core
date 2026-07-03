@@ -1,11 +1,11 @@
 import * as OpenAiClient from '@effect/ai-openai/OpenAiClient'
 import * as OpenAiClientGenerated from '@effect/ai-openai/OpenAiClientGenerated'
 import { BunHttpClient, BunHttpServer, BunRuntime } from '@effect/platform-bun'
-import { AiServiceLive } from '@lexiai/ai'
-import { ConfigProviderLive, OpenaiApiKey, Port } from '@lexiai/config'
-import { DatabaseLive } from '@lexiai/database'
-import { TracingLive } from '@lexiai/observability'
-import { JobsQueueLive, QueueClientLive } from '@lexiai/queue'
+import { AiServiceLive } from '@kotodama/ai'
+import { ConfigProviderLive, OpenaiApiKey, Port } from '@kotodama/config'
+import { DatabaseLive } from '@kotodama/database'
+import { TracingLive } from '@kotodama/observability'
+import { JobsQueueLive, QueueClientLive } from '@kotodama/queue'
 import { Effect, Layer } from 'effect'
 import { HttpRouter } from 'effect/unstable/http'
 import { HttpApiBuilder } from 'effect/unstable/httpapi'
@@ -45,7 +45,7 @@ const program = Effect.gen(function* () {
 })
 
 program.pipe(
-  Effect.provide(TracingLive('lexiai-api')),
+  Effect.provide(TracingLive('kotodama-api')),
   Effect.provide(ConfigProviderLive),
   BunRuntime.runMain,
 )

@@ -57,7 +57,7 @@ defense**; the re-sync header just points back at the playbook.
     (including connected MCP tools) is denied.
   - **`disallowedTools:`** — a *denylist*: the agent inherits everything from the main session
     **except** the named tools.
-- **LexiAI uses `disallowedTools` for the "refuses to write code" agents** (spec-author, planner,
+- **Kotodama uses `disallowedTools` for the "refuses to write code" agents** (spec-author, planner,
   task-splitter, researcher, verifier): e.g. `disallowedTools: Edit, Write, NotebookEdit` (add
   `Bash` for the non-implementer agents). **Decision — why denylist, not an allowlist:** the hard
   boundary we care about is "cannot touch code." A denylist expresses exactly that **and** lets the
@@ -107,7 +107,7 @@ recipe. (Connecting Notion needs no repo config — there is no committed `.mcp.
 ## Artifacts are Notion-only
 
 Deliberate divergence from the playbook §1.4/§3, which also writes local `specs/F-NNN-slug/`
-mirrors (`spec.md` / `plan.md` / `tasks.md`). LexiAI writes **only** to Notion (Feature row,
+mirrors (`spec.md` / `plan.md` / `tasks.md`). Kotodama writes **only** to Notion (Feature row,
 Research page, Task rows on the board, Verify report toggle). Recorded so a future reader doesn't
 "restore" the folder.
 

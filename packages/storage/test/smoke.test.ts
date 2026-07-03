@@ -1,5 +1,5 @@
 import { expect, it } from '@effect/vitest'
 
-it('@lexiai/storage toolchain loads', () => {
+it('@kotodama/storage toolchain loads', () => {
   expect(true).toBe(true)
 })

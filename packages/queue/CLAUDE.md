@@ -1,4 +1,4 @@
-# packages/queue — `@lexiai/queue`
+# packages/queue — `@kotodama/queue`
 
 A message-agnostic queue port over `@aws-sdk/client-sqs`, split into a parameterized base +
 a bound wrapper so the boundary is multi-queue-capable by construction: **`QueueClient`** (holds
@@ -12,7 +12,7 @@ DLQ) is one more bound wrapper over the same base, no `QueueClient` change. **Ba
 - `ensureQueue(client, name)` is provisioning, not the port (the caller owns the `SQSClient`);
   idempotent with no pre-check — `CreateQueue` with no attributes is a no-op on an existing queue.
 
-## Testing — `@lexiai/queue/testing`
+## Testing — `@kotodama/queue/testing`
 
 **No in-memory fake** — a hand-modelled fake is itself a divergent double, so every queue-touching
 test runs the real `JobsQueueLive` over `QueueClientLive` on a per-file LocalStack container
@@ -26,11 +26,11 @@ non-deterministic receive (cap-10, may-return-fewer, visibility timing), contain
   wait so an empty-queue poll returns promptly.
 - **`withSqs(use)`** — a short-lived SDK client at the container endpoint, for driving raw SQS
   primitives (`ensureQueue`).
-- **Dev-untouched invariant:** the harness overrides the `@lexiai/config` AWS seam with a
+- **Dev-untouched invariant:** the harness overrides the `@kotodama/config` AWS seam with a
   **replacement** `ConfigProvider` built from the container's URI — `ConfigProviderLive` (the dev
   `.env`) is never in the test layer graph, so a test structurally cannot reach the dev LocalStack.
   Dummy AWS creds ride the same provider (the SDK must sign even though LocalStack ignores it); in
   prod the Lambda role injects them via env into the same `AwsClientConfig`.
 - Image pinned `localstack/localstack:4.4.0`, `SERVICES=sqs`.
 
-**May import:** `effect`, `@aws-sdk/client-sqs`, `@lexiai/config`.
+**May import:** `effect`, `@aws-sdk/client-sqs`, `@kotodama/config`.

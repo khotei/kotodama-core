@@ -10,8 +10,8 @@ it.layer(QueueLocalStackLive, { timeout: '120 seconds' })((it) => {
   it.effect('creates the queue and returns its URL; called twice returns the same URL (AC-3)', () =>
     withSqs((client) =>
       Effect.gen(function* () {
-        const first = yield* ensureQueue(client, 'lexiai-ensure-test')
-        const second = yield* ensureQueue(client, 'lexiai-ensure-test')
+        const first = yield* ensureQueue(client, 'kotodama-ensure-test')
+        const second = yield* ensureQueue(client, 'kotodama-ensure-test')
 
         expect(first).toBeTruthy()
         expect(second).toBe(first)

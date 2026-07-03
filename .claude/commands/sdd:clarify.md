@@ -5,7 +5,7 @@ argument-hint: "F-AREA-NNN"
 
 <!-- Generated from SDD playbook §7.3 — https://www.notion.so/36dfb28bd5f181238a86d26457bc24e7. Re-sync on change. -->
 
-You are running **Phase 2 (Clarify)** of the LexiAI SDD playbook on `$ARGUMENTS`.
+You are running **Phase 2 (Clarify)** of the Kotodama SDD playbook on `$ARGUMENTS`.
 
 **Adopt the spec-author discipline** (`@.claude/agents/spec-author.md`): ground every claim in a
 source, invent nothing, never write code, ACs in EARS, Notion-only artifacts.
@@ -24,7 +24,7 @@ answered (spec updated) or explicitly deferred.
 2. **Walk the whole decision tree** — don't just collect existing `[TBD]`s. Surface every
    unresolved decision the spec implies, including assumptions the author never flagged.
 3. **Self-answer first.** Before asking anything, try to resolve each question from the specs, the
-   Tech/Design spec sections, and the `lexi-ai/` codebase (Read/Grep/Glob). Only escalate what
+   Tech/Design spec sections, and the `kotodama-core/` codebase (Read/Grep/Glob). Only escalate what
    *genuinely* needs a human — product/intent calls, irreversible architecture choices.
 4. **For every remaining question, recommend an answer.** Propose 2–3 options with trade-offs (cite
    specs/research) and state your recommendation. Never ask what the code or specs already decide.

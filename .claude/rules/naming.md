@@ -2,9 +2,9 @@
 
 ## Packages
 
-`@lexiai/<folder>`, nested folders flatten with a dash: `core/words` → `@lexiai/core-words`,
-`repositories/async-word-jobs` → `@lexiai/repositories-async-word-jobs`, `database` →
-`@lexiai/database`. Apps drop the plural: `apps/api` → `@lexiai/app-api`.
+`@kotodama/<folder>`, nested folders flatten with a dash: `core/words` → `@kotodama/core-words`,
+`repositories/async-word-jobs` → `@kotodama/repositories-async-word-jobs`, `database` →
+`@kotodama/database`. Apps drop the plural: `apps/api` → `@kotodama/app-api`.
 
 ## Files
 
@@ -92,7 +92,7 @@ DatabaseLive`); and a `Context.Service` file reads Shape → tag → helpers →
 ## Effect
 
 - `Context.Service`/`Context.Tag` ids are slash-namespaced to the package:
-  `Context.Tag<ContentEngine>("@lexiai/core-content/ContentEngine")`.
+  `Context.Tag<ContentEngine>("@kotodama/core-content/ContentEngine")`.
 - Tagged errors: `PascalCase` ending in `Error` (`WordNotFoundError`), via `Data.TaggedError`.
 - Layers: one `*Live` per boundary service — the swappable client/config rides the service's `R`
   channel, is provided at the app entrypoint, and is faked in tests.

@@ -1,15 +1,15 @@
 import { expect, it } from '@effect/vitest'
-import { WordBuildMessageFromJson } from '@lexiai/core-async-word-jobs'
+import { WordBuildMessageFromJson } from '@kotodama/core-async-word-jobs'
 import {
   MockContentEngine,
   WordGenerationService,
   WordGenerationServiceLive,
-} from '@lexiai/core-content'
-import { enumLanguage } from '@lexiai/database'
-import { resetDb, TestDatabaseLive } from '@lexiai/database/testing'
-import { selectWordJobStages } from '@lexiai/repositories-async-word-jobs'
-import { selectWords } from '@lexiai/repositories-words'
-import { seedUnreadyWord } from '@lexiai/repositories-words/testing'
+} from '@kotodama/core-content'
+import { enumLanguage } from '@kotodama/database'
+import { resetDb, TestDatabaseLive } from '@kotodama/database/testing'
+import { selectWordJobStages } from '@kotodama/repositories-async-word-jobs'
+import { selectWords } from '@kotodama/repositories-words'
+import { seedUnreadyWord } from '@kotodama/repositories-words/testing'
 import { Effect, Layer, Schema } from 'effect'
 import { processBatch } from '../src/process-batch'
 

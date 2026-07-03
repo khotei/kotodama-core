@@ -1,8 +1,14 @@
 import { describe, expect, it } from '@effect/vitest'
 import { faker } from '@faker-js/faker'
-import { DB, enumAsyncJobStatus, enumLanguage, enumVisualKind, wordsTable } from '@lexiai/database'
-import { makeWordInsert } from '@lexiai/database/factories'
-import { resetDb, TestDatabaseLive } from '@lexiai/database/testing'
+import {
+  DB,
+  enumAsyncJobStatus,
+  enumLanguage,
+  enumVisualKind,
+  wordsTable,
+} from '@kotodama/database'
+import { makeWordInsert } from '@kotodama/database/factories'
+import { resetDb, TestDatabaseLive } from '@kotodama/database/testing'
 import { eq } from 'drizzle-orm'
 import { Effect, Exit, Option } from 'effect'
 import { selectWord, selectWords, upsertWord, upsertWords } from '../src/index'

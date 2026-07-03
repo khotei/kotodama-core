@@ -1,5 +1,5 @@
 {
-  "name": "@lexiai/queue",
+  "name": "@kotodama/queue",
   "version": "0.0.0",
   "private": true,
   "main": "./src/index.ts",
@@ -11,7 +11,7 @@
   "dependencies": {
     "effect": "catalog:effect",
     "@aws-sdk/client-sqs": "catalog:aws",
-    "@lexiai/config": "workspace:*"
+    "@kotodama/config": "workspace:*"
   },
   "devDependencies": {
     "@testcontainers/localstack": "catalog:test",

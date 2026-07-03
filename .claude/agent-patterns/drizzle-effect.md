@@ -1,6 +1,6 @@
 # Drizzle ⇄ Effect — project pattern notes
 
-Project-local cheat sheet for LexiAI's two mandated Drizzle integrations. **The source of truth
+Project-local cheat sheet for Kotodama's two mandated Drizzle integrations. **The source of truth
 is the vendored `rc` source**, not this file and not the web docs (which still show Effect v3).
 There is **no Drizzle `LLMS.md`** — this file is the entry point. The *mandate* is
 `.claude/rules/drizzle-effect.md`.
@@ -19,7 +19,7 @@ There is **no Drizzle `LLMS.md`** — this file is the entry point. The *mandate
 
 ## Schema derivation — `drizzle-orm/effect-schema` (NOT used in this repo)
 
-LexiAI deleted its derived `<Entity>Schema`s — `createSelectSchema` erases jsonb `$type` to opaque
+Kotodama deleted its derived `<Entity>Schema`s — `createSelectSchema` erases jsonb `$type` to opaque
 `Json`, so repos return `$inferSelect` rows and runtime validation decodes through hand-authored
 `effect/Schema` structs (`.claude/rules/drizzle-effect.md` § "Why there are NO derived row
 schemas"). The upstream API, for reading the vendored source / a future genuine need:
@@ -49,12 +49,12 @@ export const WordSchemaInsert = createInsertSchema(wordsTable, {
 
 The real implementation is **`database/src/db.ts`** — copy from there, not from web docs
 (still Effect v3: `@effect/sql-drizzle`, `Context.Tag('DB')`). The URL comes from
-`@lexiai/config`'s `DatabaseUrl`, resolved from the active `ConfigProvider`.
+`@kotodama/config`'s `DatabaseUrl`, resolved from the active `ConfigProvider`.
 
 ```ts
 // database/src/db.ts
 import { PgClient } from '@effect/sql-pg'
-import { DatabaseUrl } from '@lexiai/config'
+import { DatabaseUrl } from '@kotodama/config'
 import * as PgDrizzle from 'drizzle-orm/effect-postgres'
 import { Context, Effect, Layer } from 'effect'
 import { relations } from '../schema'
@@ -67,7 +67,7 @@ const dbEffect = PgDrizzle.make({ relations }).pipe(Effect.provide(PgDrizzle.Def
 
 // Class-syntax Context.Service (NOT Context.Tag — v4 settled on Context.Service).
 export class DB extends Context.Service<DB, Effect.Success<typeof dbEffect>>()(
-  '@lexiai/database/DB',
+  '@kotodama/database/DB',
 ) {}
 
 export const DBLive = Layer.effect(DB, dbEffect) // needs a PgClient

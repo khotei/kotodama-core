@@ -1,5 +1,5 @@
-import type { JobErrorEntity, StageResultEntity, WordJobStage } from '@lexiai/database'
-import { enumAsyncJobStatus } from '@lexiai/database'
+import type { JobErrorEntity, StageResultEntity, WordJobStage } from '@kotodama/database'
+import { enumAsyncJobStatus } from '@kotodama/database'
 import type { AsyncWordJobUpsert } from './async-word-jobs.repo'
 
 /**

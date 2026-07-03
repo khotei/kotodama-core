@@ -1,10 +1,10 @@
-import { JobsQueue, type ReceiveOptions } from '@lexiai/queue'
+import { JobsQueue, type ReceiveOptions } from '@kotodama/queue'
 import { Context, Effect } from 'effect'
 import { processBatch } from './process-batch'
 
 // Default = the SQS maximum (fewest empty receives); tests Layer.succeed a short wait so an
 // empty-queue poll returns promptly instead of blocking 20s.
-export const ConsumePoll = Context.Reference<ReceiveOptions>('@lexiai/app-worker/ConsumePoll', {
+export const ConsumePoll = Context.Reference<ReceiveOptions>('@kotodama/app-worker/ConsumePoll', {
   defaultValue: () => ({ max: 10, waitSeconds: 20 }),
 })
 

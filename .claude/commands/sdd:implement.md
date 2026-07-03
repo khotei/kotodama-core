@@ -5,7 +5,7 @@ argument-hint: "<task-id or task URL>"
 
 <!-- Generated from SDD playbook §7.6 — https://www.notion.so/36dfb28bd5f181238a86d26457bc24e7. Re-sync on change. -->
 
-You are running **Phase 5 (Implement)** of the LexiAI SDD playbook on task `$ARGUMENTS`.
+You are running **Phase 5 (Implement)** of the Kotodama SDD playbook on task `$ARGUMENTS`.
 
 **Adopt the implementer discipline** (`@.claude/agents/implementer.md`): Autonomy gate, failing test
 first, stay scoped, living spec, respect the repo rules, commit per `@.claude/rules/commits.md`.
@@ -20,7 +20,7 @@ first, stay scoped, living spec, respect the repo rules, commit per `@.claude/ru
    Move the task to `Status = In progress`.
 2. **Read the context.** The parent Feature spec (linked from the task), the relevant Tech/Design
    spec sections, and the task's `Covers ACs:` list. Resolve open questions from the specs +
-   `lexi-ai/` code before asking the user.
+   `kotodama-core/` code before asking the user.
 3. **Write the failing test first** (happy + failure path), confirm it fails, **then** implement to
    green. Some chores have no meaningful unit test — judge the value rather than force one, and say
    so if you skip it.

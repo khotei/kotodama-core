@@ -86,7 +86,7 @@ const describeCause = (raw: unknown): string => {
 }
 
 /**
- * The single failure of `@lexiai/ai` — every underlying error collapses here so callers handle one
+ * The single failure of `@kotodama/ai` — every underlying error collapses here so callers handle one
  * tag. All three fields are derived at construction, before the live provider object is discarded
  * — build via {@link AiError.fromCause}; only the synthetic "no image bytes" case constructs
  * directly.
@@ -126,7 +126,7 @@ export class AiService extends Context.Service<
       opts: ImageOptions,
     ) => Effect.Effect<Uint8Array, AiError>
   }
->()('@lexiai/ai/AiService') {}
+>()('@kotodama/ai/AiService') {}
 
 // Two clients, deliberately: `generateObject` needs the handwritten OpenAiClient (what
 // OpenAiLanguageModel.model requires); `generateImage` needs the generated one — the only place

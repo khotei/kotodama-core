@@ -14,7 +14,7 @@ real implementation patterns instead of guessing from training memory or stale w
 - `repos/drizzle/` — Drizzle ORM pinned to the **`1.0.0-rc` tag line** (its `effect-schema` /
   `effect-postgres` integrations are native Effect v4; the `beta.*` line is Effect v3 — never use
   it, and never vendor `main`, which is stable `0.45.x` with no Effect entrypoints). Vendored
-  whole, so all dialects are greppable — LexiAI is Postgres-only via the two Effect entrypoints
+  whole, so all dialects are greppable — Kotodama is Postgres-only via the two Effect entrypoints
   under `drizzle-orm/src/{effect-schema,effect-postgres}`; real examples live in
   `integration-tests/tests/pg/`.
 

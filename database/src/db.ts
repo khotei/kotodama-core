@@ -1,5 +1,5 @@
 import { PgClient } from '@effect/sql-pg'
-import { DatabaseUrl } from '@lexiai/config'
+import { DatabaseUrl } from '@kotodama/config'
 import * as PgDrizzle from 'drizzle-orm/effect-postgres'
 import { Context, Effect, Layer } from 'effect'
 import { relations } from '../schema'
@@ -15,7 +15,7 @@ export const PgClientLive = PgClient.layerConfig({ url: DatabaseUrl })
 const dbEffect = PgDrizzle.make({ relations }).pipe(Effect.provide(PgDrizzle.DefaultServices))
 
 export class DB extends Context.Service<DB, Effect.Success<typeof dbEffect>>()(
-  '@lexiai/database/DB',
+  '@kotodama/database/DB',
 ) {}
 
 export const DBLive = Layer.effect(DB, dbEffect)

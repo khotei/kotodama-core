@@ -1,7 +1,7 @@
 import { expect, it } from '@effect/vitest'
-import { AiServiceTest } from '@lexiai/ai/testing'
-import { WordBuildMessageFromJson } from '@lexiai/core-async-word-jobs'
-import { WordVerdict } from '@lexiai/core-words'
+import { AiServiceTest } from '@kotodama/ai/testing'
+import { WordBuildMessageFromJson } from '@kotodama/core-async-word-jobs'
+import { WordVerdict } from '@kotodama/core-words'
 import {
   DB,
   enumAsyncJobStatus,
@@ -9,13 +9,13 @@ import {
   enumLanguage,
   enumWordJobStage,
   wordJobStage,
-} from '@lexiai/database'
-import { resetDb, TestDatabaseLive } from '@lexiai/database/testing'
-import { drainQueue, QueueLocalStackLive } from '@lexiai/queue/testing'
-import { selectWordJobStages } from '@lexiai/repositories-async-word-jobs'
-import { seedFailedWord } from '@lexiai/repositories-async-word-jobs/testing'
-import { searchWords, selectWord } from '@lexiai/repositories-words'
-import { seedReadyWord, seedUnreadyWord } from '@lexiai/repositories-words/testing'
+} from '@kotodama/database'
+import { resetDb, TestDatabaseLive } from '@kotodama/database/testing'
+import { drainQueue, QueueLocalStackLive } from '@kotodama/queue/testing'
+import { selectWordJobStages } from '@kotodama/repositories-async-word-jobs'
+import { seedFailedWord } from '@kotodama/repositories-async-word-jobs/testing'
+import { searchWords, selectWord } from '@kotodama/repositories-words'
+import { seedReadyWord, seedUnreadyWord } from '@kotodama/repositories-words/testing'
 import { Effect, Layer, Option, Schema } from 'effect'
 import { requestWordBuild } from '../src/index'
 

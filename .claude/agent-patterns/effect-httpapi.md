@@ -18,14 +18,14 @@ The contract lives with its server — `apps/api/src/words/words.api.ts` beside
 ```ts
 import { HttpApi, HttpApiEndpoint, HttpApiGroup } from 'effect/unstable/httpapi'
 import { Schema } from 'effect'
-import { WordEntity } from '@lexiai/database'
+import { WordEntity } from '@kotodama/database'
 
 const getWord = HttpApiEndpoint.get('getWord', '/words/:id')
   .setSuccess(WordEntity)
 
 const words = HttpApiGroup.make('words').add(getWord)
 
-export const Api = HttpApi.make('lexiai').add(words)
+export const Api = HttpApi.make('kotodama').add(words)
 ```
 
 - Endpoints: `HttpApiEndpoint.get` / `.post` (+ path/payload/success/error schemas).

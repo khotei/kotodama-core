@@ -1,4 +1,4 @@
-import { AwsClientConfig } from '@lexiai/config'
+import { AwsClientConfig } from '@kotodama/config'
 import { type Config, Context, Effect, Layer } from 'effect'
 import { StorageError, type StoragePutOptions } from './storage-types'
 
@@ -16,7 +16,7 @@ export interface StorageClientShape {
  * override routes each write, so one client serves any number of buckets.
  */
 export class StorageClient extends Context.Service<StorageClient, StorageClientShape>()(
-  '@lexiai/storage/StorageClient',
+  '@kotodama/storage/StorageClient',
 ) {}
 
 // Config-resolved credentials via AwsClientConfig, never Bun.S3Client's ambient env read — the

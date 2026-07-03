@@ -4,8 +4,8 @@ import type {
   EffectDrizzleQueryError,
   Language,
   WordJobStage,
-} from '@lexiai/database'
-import { asyncWordJobsTable, DB, patchOnConflict } from '@lexiai/database'
+} from '@kotodama/database'
+import { asyncWordJobsTable, DB, patchOnConflict } from '@kotodama/database'
 import { and, eq, inArray } from 'drizzle-orm'
 import { Array as Arr, Effect } from 'effect'
 

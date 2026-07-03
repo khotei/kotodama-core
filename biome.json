@@ -67,13 +67,13 @@
                 "patterns": [
                   {
                     "group": [
-                      "@lexiai/use-cases",
-                      "@lexiai/use-cases-*",
-                      "@lexiai/core-*",
-                      "@lexiai/repositories-*",
-                      "@lexiai/apps-*",
-                      "@lexiai/database",
-                      "@lexiai/database/factories"
+                      "@kotodama/use-cases",
+                      "@kotodama/use-cases-*",
+                      "@kotodama/core-*",
+                      "@kotodama/repositories-*",
+                      "@kotodama/apps-*",
+                      "@kotodama/database",
+                      "@kotodama/database/factories"
                     ],
                     "message": "Layer violation: packages/* are leaves and must not import use-cases, core, repositories, database, or apps. See CLAUDE.md dependency hierarchy."
                   },
@@ -99,13 +99,13 @@
                 "patterns": [
                   {
                     "group": [
-                      "@lexiai/use-cases",
-                      "@lexiai/use-cases-*",
-                      "@lexiai/core-*",
-                      "@lexiai/repositories-*",
-                      "@lexiai/apps-*"
+                      "@kotodama/use-cases",
+                      "@kotodama/use-cases-*",
+                      "@kotodama/core-*",
+                      "@kotodama/repositories-*",
+                      "@kotodama/apps-*"
                     ],
-                    "message": "Layer violation: database/ may only import @lexiai/* packages, never use-cases, core, repositories, or apps."
+                    "message": "Layer violation: database/ may only import @kotodama/* packages, never use-cases, core, repositories, or apps."
                   },
                   {
                     "group": ["**/repos/**"],
@@ -129,10 +129,10 @@
                 "patterns": [
                   {
                     "group": [
-                      "@lexiai/use-cases",
-                      "@lexiai/use-cases-*",
-                      "@lexiai/core-*",
-                      "@lexiai/apps-*"
+                      "@kotodama/use-cases",
+                      "@kotodama/use-cases-*",
+                      "@kotodama/core-*",
+                      "@kotodama/apps-*"
                     ],
                     "message": "Layer violation: repositories/* may depend on database and packages only, never use-cases, core, or apps."
                   },
@@ -157,7 +157,7 @@
               "options": {
                 "patterns": [
                   {
-                    "group": ["@lexiai/use-cases", "@lexiai/use-cases-*", "@lexiai/apps-*"],
+                    "group": ["@kotodama/use-cases", "@kotodama/use-cases-*", "@kotodama/apps-*"],
                     "message": "Layer violation: core/* must not import use-cases or apps."
                   },
                   {
@@ -181,7 +181,7 @@
               "options": {
                 "patterns": [
                   {
-                    "group": ["@lexiai/apps-*"],
+                    "group": ["@kotodama/apps-*"],
                     "message": "Layer violation: use-cases/ is the top tier below apps \u2014 it composes core, repositories, database, and packages, but must not import apps."
                   },
                   {

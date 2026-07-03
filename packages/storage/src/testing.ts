@@ -4,7 +4,7 @@ import {
   ListObjectsV2Command,
   S3Client,
 } from '@aws-sdk/client-s3'
-import { awsResources } from '@lexiai/config'
+import { awsResources } from '@kotodama/config'
 import { LocalstackContainer } from '@testcontainers/localstack'
 import { ConfigProvider, Context, Data, Effect, Layer } from 'effect'
 import { ImagesStore, ImagesStoreLive } from './images-store'
@@ -35,7 +35,7 @@ export const s3 = (endpoint: string) =>
   })
 
 export class StorageLocalStackContainer extends Context.Service<StorageLocalStackContainer>()(
-  '@lexiai/storage/testing/StorageLocalStackContainer',
+  '@kotodama/storage/testing/StorageLocalStackContainer',
   {
     // Unlike `PgContainer`, no `withWaitStrategy` override: the module default is log-based, not
     // the exec probe that hangs on Docker Desktop/macOS.

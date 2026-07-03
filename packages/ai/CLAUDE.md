@@ -1,4 +1,4 @@
-# packages/ai — `@lexiai/ai`
+# packages/ai — `@kotodama/ai`
 
 `AiService` — a deep wrapper over `@effect/ai-openai`: two methods (`generateObject`,
 `generateImage`), OpenAI hidden entirely, one `AiError` as the whole failure surface.
@@ -29,7 +29,7 @@ discarded** — the error is persisted into the `async_word_jobs.error` jsonb co
 round-trip `JSON.stringify`. **Never store the live `Error`/provider object as a field** (live
 objects carry non-enumerable getters / circular refs).
 
-## Testing — `@lexiai/ai/testing`
+## Testing — `@kotodama/ai/testing`
 
 `AiServiceTest(fixtures)` returns canned object/image (omit a field ⇒ that method fails) — for
 downstream suites, no network/key. The package's own tests drive the real service over fake OpenAI

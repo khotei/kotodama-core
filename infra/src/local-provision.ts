@@ -7,9 +7,9 @@ import {
   awsResources,
   ConfigProviderLive,
   JobsQueueUrl,
-} from '@lexiai/config'
-import { ensureQueue } from '@lexiai/queue'
-import { ensureBucket } from '@lexiai/storage/provisioning'
+} from '@kotodama/config'
+import { ensureQueue } from '@kotodama/queue'
+import { ensureBucket } from '@kotodama/storage/provisioning'
 import { Effect } from 'effect'
 
 // The dev-only `ensure*` caller (prod layers only consume by URL/name and create nothing).

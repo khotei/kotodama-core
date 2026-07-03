@@ -17,7 +17,7 @@ import { FrequencyBand, SourceType, VisualKind } from './words.values'
  *   OpenAI structured output rejects `undefined` in the AST, translates every key to
  *   required-nullable, and decodes a returned `null` back to an absent key.
  * - Render-filled keys (`imageKey`, `authorImageUrl`) are required HERE: a stored word always has
- *   its images. The generation *plan* variant (`@lexiai/core-content`) omits them and the render
+ *   its images. The generation *plan* variant (`@kotodama/core-content`) omits them and the render
  *   step fills them — the plan, not this stored schema, carries the absence.
  */
 
@@ -179,7 +179,7 @@ export type SourceVersionsEntity = typeof SourceVersionsEntity.Type
  *
  * Deliberately the strict **ready-row** shape (content non-null) even though the table's content
  * columns are nullable: `ReadyWord` pins it and `WordContent`/`STAGE_SLICES` derive from it. The
- * permissive lifecycle row is decoded by the `Word` union (`@lexiai/core-words`), never by
+ * permissive lifecycle row is decoded by the `Word` union (`@kotodama/core-words`), never by
  * loosening this schema.
  */
 export const WordEntity = createSelectSchema(wordsTable, {

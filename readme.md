@@ -1,16 +1,21 @@
 <div align="center">
 
-# LexiAI
+# 言霊 · Kotodama
 
-**Words, made rich.** Request a word; an AI background job builds a full entry —
-definitions, examples, images — and surfaces it for spaced-repetition review.
+**The soul of words** — request a word; an AI background job builds a full entry
+(definitions, examples, images) and surfaces it for spaced-repetition review.
 
-[![CI](https://github.com/khotei/lexi-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/khotei/lexi-ai/actions/workflows/ci.yml)
+[![CI](https://github.com/khotei/kotodama-core/actions/workflows/ci.yml/badge.svg)](https://github.com/khotei/kotodama-core/actions/workflows/ci.yml)
 ![Bun](https://img.shields.io/badge/Bun-1.3-000?logo=bun&logoColor=fbf0df)
 ![Effect](https://img.shields.io/badge/Effect-v4_beta-5a67d8)
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6?logo=typescript&logoColor=white)
 
 </div>
+
+> *Kotodama* (言霊) — the old belief that words carry a living power that shapes reality. A fitting
+> name for **the core**: the backend that turns a bare word into a living entry. This is the whole
+> server side — the HTTP API, the asynchronous build pipeline, and the strict Effect-typed domain
+> beneath them — a Bun monorepo with the layer rule enforced at lint time.
 
 > The **why / what** is the [Tech spec](https://www.notion.so/36dfb28bd5f181988f16de6ab423eb3e)
 > (authoritative). This README is the **front door** — what this is and how to run it. Depth is
@@ -105,17 +110,17 @@ bun install
 
 # 3. Local infra in ONE command — Postgres + LocalStack + Jaeger, waits healthy, migrates the DB,
 #    provisions the SQS queue + S3 bucket.
-bun run --filter '@lexiai/infra' local:up
+bun run --filter '@kotodama/infra' local:up
 
 # 4. The two backend apps, each in its own terminal.
-bun run --filter '@lexiai/app-api' dev            # HTTP API on :3000
-bun run --filter '@lexiai/app-worker' dev         # the worker poll-loop
+bun run --filter '@kotodama/app-api' dev            # HTTP API on :3000
+bun run --filter '@kotodama/app-worker' dev         # the worker poll-loop
 
 # 5. Prove the real-engine path end to end — builds a word and polls until it reports `succeeded`.
-bun run --filter '@lexiai/infra' local:smoke      # en/lacuna by default; pass `<word> <language>` to vary
+bun run --filter '@kotodama/infra' local:smoke      # en/lacuna by default; pass `<word> <language>` to vary
 ```
 
-Traces at Jaeger **http://localhost:16686**; generated images land in the LocalStack `lexiai-images`
+Traces at Jaeger **http://localhost:16686**; generated images land in the LocalStack `kotodama-images`
 bucket. Full reset: `local:clean && local:up` (both bring-up steps are idempotent). How this differs
 across **local / test / prod** — and why — is [`docs/running.md`](docs/running.md).
 

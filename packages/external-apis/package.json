@@ -1,5 +1,5 @@
 {
-  "name": "@lexiai/external-apis",
+  "name": "@kotodama/external-apis",
   "version": "0.0.0",
   "private": true,
   "main": "./src/index.ts",

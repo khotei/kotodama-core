@@ -1,5 +1,5 @@
 import { SQSClient } from '@aws-sdk/client-sqs'
-import { awsResources } from '@lexiai/config'
+import { awsResources } from '@kotodama/config'
 import { LocalstackContainer } from '@testcontainers/localstack'
 import { ConfigProvider, Context, Data, Effect, Layer } from 'effect'
 import { ensureQueue } from './ensure-queue'
@@ -24,7 +24,7 @@ const sqs = (endpoint: string) =>
   })
 
 class QueueLocalStackContainer extends Context.Service<QueueLocalStackContainer>()(
-  '@lexiai/queue/testing/QueueLocalStackContainer',
+  '@kotodama/queue/testing/QueueLocalStackContainer',
   {
     // Unlike `PgContainer`, no `withWaitStrategy` override: the module default is log-based, not
     // the exec probe that hangs on Docker Desktop/macOS.

@@ -48,7 +48,7 @@ const StorageBroken = ImagesStoreLive.pipe(
     ConfigProvider.layer(
       ConfigProvider.fromDotEnvContents(
         [
-          'IMAGES_BUCKET=lexiai-test-visuals',
+          'IMAGES_BUCKET=kotodama-test-visuals',
           'AWS_REGION=us-east-1',
           'AWS_ENDPOINT_URL=http://127.0.0.1:1',
           'AWS_ACCESS_KEY_ID=test',

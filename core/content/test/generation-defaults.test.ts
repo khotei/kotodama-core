@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@effect/vitest'
-import type { ImageOptions } from '@lexiai/ai'
-import { enumVisualKind } from '@lexiai/database'
+import type { ImageOptions } from '@kotodama/ai'
+import { enumVisualKind } from '@kotodama/database'
 import { imageOptionsFor } from '../src/generation-defaults'
 
 // AC-12 is a compile-time contract: the `@ts-expect-error` lines fail `tsc` unless `kind`/`size` are

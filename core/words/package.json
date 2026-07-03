@@ -1,5 +1,5 @@
 {
-  "name": "@lexiai/core-words",
+  "name": "@kotodama/core-words",
   "version": "0.0.0",
   "private": true,
   "main": "./src/index.ts",
@@ -9,10 +9,10 @@
   },
   "dependencies": {
     "effect": "catalog:effect",
-    "@lexiai/ai": "workspace:*",
-    "@lexiai/core-content": "workspace:*",
-    "@lexiai/database": "workspace:*",
-    "@lexiai/repositories-words": "workspace:*"
+    "@kotodama/ai": "workspace:*",
+    "@kotodama/core-content": "workspace:*",
+    "@kotodama/database": "workspace:*",
+    "@kotodama/repositories-words": "workspace:*"
   },
   "scripts": {
     "test": "bun --bun vitest run",

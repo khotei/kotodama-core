@@ -1,6 +1,6 @@
-import { findWord } from '@lexiai/core-words'
-import type { Language } from '@lexiai/database'
-import { selectWordJobStages } from '@lexiai/repositories-async-word-jobs'
+import { findWord } from '@kotodama/core-words'
+import type { Language } from '@kotodama/database'
+import { selectWordJobStages } from '@kotodama/repositories-async-word-jobs'
 import { Effect } from 'effect'
 
 /**

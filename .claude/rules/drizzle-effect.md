@@ -25,9 +25,9 @@ Canonical implementation: `database/src/db.ts` — read it first.
 
 - `PgDrizzle.make({ relations })` over a `PgClient` layer; `PgDrizzle.DefaultServices` supplies the
   no-op logger/cache it requires.
-- `PgClient` config goes through `@lexiai/config` (`PgClient.layerConfig({ url: DatabaseUrl })`) —
+- `PgClient` config goes through `@kotodama/config` (`PgClient.layerConfig({ url: DatabaseUrl })`) —
   take the one config you need, not the whole `AppConfig` bundle. DB **tests** bypass this layer
-  entirely (ephemeral Testcontainers Postgres — `@lexiai/database/testing`).
+  entirely (ephemeral Testcontainers Postgres — `@kotodama/database/testing`).
 - Expose **layers only** (`PgClientLive`, `DBLive`, `DatabaseLive`); `repositories/*` `yield*` the
   `DB` service — **never** a bare `drizzle(...)`/driver or a hand-rolled `PgClient`.
 

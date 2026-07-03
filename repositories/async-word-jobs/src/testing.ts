@@ -1,5 +1,5 @@
-import type { JobErrorEntity, Language, WordJobStage } from '@lexiai/database'
-import { wordJobStage } from '@lexiai/database'
+import type { JobErrorEntity, Language, WordJobStage } from '@kotodama/database'
+import { wordJobStage } from '@kotodama/database'
 import { Effect } from 'effect'
 import { upsertWordJobStages } from './async-word-jobs.repo'
 import { stagePatch } from './stage-patch'

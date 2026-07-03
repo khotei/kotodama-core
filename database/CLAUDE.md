@@ -1,4 +1,4 @@
-# database — `@lexiai/database`
+# database — `@kotodama/database`
 
 Drizzle schema, relations, migrations, seed, and the `DB` layer. Schema *mechanics* (folder
 layout, `…Table` suffix, entity derivation) live in `.claude/rules/naming.md` +
@@ -24,10 +24,10 @@ layout, `…Table` suffix, entity derivation) live in `.claude/rules/naming.md` 
   the new baseline.
 - **Migrations** use the drizzle-kit rc format: one timestamped folder per migration
   (`migration.sql` + `snapshot.json`, chained via `prevIds` — no central `_journal.json`).
-- `db:*` scripts are config-driven through `@lexiai/config` (no hardcoded URLs); they target the
+- `db:*` scripts are config-driven through `@kotodama/config` (no hardcoded URLs); they target the
   **dev** DB. Tests never touch it — ephemeral Testcontainers Postgres via
-  `@lexiai/database/testing` (`TestDatabaseLive` migrates itself; `resetDb` per test — see
+  `@kotodama/database/testing` (`TestDatabaseLive` migrates itself; `resetDb` per test — see
   `.claude/rules/testing.md`).
 
-**May import:** `@lexiai/*` packages, `effect`, `@effect/sql-pg`, drizzle. **Never** `core/*`,
+**May import:** `@kotodama/*` packages, `effect`, `@effect/sql-pg`, drizzle. **Never** `core/*`,
 `repositories/*`, `apps/*`.

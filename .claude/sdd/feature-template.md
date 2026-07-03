@@ -80,7 +80,7 @@ Ordering: <which tasks are strictly sequential, which can fan out, which run las
 | 0.1 | YYYY-MM-DD | <author> | Initial draft |
 ```
 
-## Acceptance-criteria notation (LexiAI)
+## Acceptance-criteria notation (Kotodama)
 
 Write the §12 ACs in **EARS** form — *WHEN \<event\> THE SYSTEM SHALL \<behavior\>* (also WHILE /
 WHERE / IF–THEN). EARS only — do **not** mix in Gherkin's *Given/When/Then* (a different system).

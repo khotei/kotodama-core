@@ -41,7 +41,7 @@ plain query is clearer is its own smell.
 | Subtotals across several dimensions as separate queries | `GROUPING SETS` / `ROLLUP` | 15 |
 | Paging a list (numbered pages vs infinite scroll) | Offset vs keyset (seek) pagination | 16 |
 
-Domain examples use the lexi-ai schema: the **lifecycle `words` table** (F-CONT-006 — one row per
+Domain examples use the kotodama-core schema: the **lifecycle `words` table** (F-CONT-006 — one row per
 `(word, language)`, `status async_job_status NOT NULL`, content in `tiers`/`lexical`/… jsonb all
 **nullable**, a `CHECK (status <> 'succeeded' OR <content non-null>)` enforcing "ready ⇒ complete"; a
 building word is a `pending|running|failed` row, a ready one is `succeeded`) and **`async_word_jobs`** (one
@@ -87,13 +87,13 @@ FROM daily_stats WHERE user_id = $1;
 
 One pass next to the data; removes a class of TS loops. **Do NOT** reach for `count(*) OVER ()` to
 get a page total alongside a paged read — it materializes every match and defeats the paged scan's
-`LIMIT` (keyset) / index walk (offset) (§16); use a separate counts query/endpoint (lexi-ai's
+`LIMIT` (keyset) / index walk (offset) (§16); use a separate counts query/endpoint (kotodama-core's
 `searchWords` runs a standalone `count(*)` for its `total`). Docs: <https://www.postgresql.org/docs/current/tutorial-window.html>.
 
 ## 2. Several conditional counters at once → `FILTER`
 
 Symptom: 3–4 separate `COUNT(...)`/`AVG(...)` with different `WHERE` for one stats card. **This is the
-lexi-ai `/counts` endpoint** — `{total, pending, running, succeeded, failed}` in one scan of one query,
+kotodama-core `/counts` endpoint** — `{total, pending, running, succeeded, failed}` in one scan of one query,
 from the *same* `wordSearchFilter` the list uses (consistency is structural, not by convention). An
 unfiltered call is just the empty filter over the whole language — same scan, no separate counter path.
 
@@ -131,7 +131,7 @@ day we want "last activity per word" inline. Docs:
 ## 4. Nested JSON payload → `jsonb_build_object` / `jsonb_agg`
 
 Symptom: several selects hand-stitched into a nested object (and an N+1 with it). **Read** operators
-(`->`, `->>`, `@>`, `jsonb_path_query`, `@@`) are how lexi-ai reads content — e.g. `tiers->'quick'->>'title'`
+(`->`, `->>`, `@>`, `jsonb_path_query`, `@@`) are how kotodama-core reads content — e.g. `tiers->'quick'->>'title'`
 (gloss), `lexical->>'partOfSpeech'` (pos). **But do NOT assemble the response shape in SQL when a TS
 view already owns the vocabulary** — building the status union in `jsonb_build_object` would fork the
 `enumAsyncJobStatus` vocabulary away from the single-word `WordStateView`/`collapseWordState` path. Read
@@ -139,7 +139,7 @@ jsonb in SQL; shape the union in TS. Docs: <https://www.postgresql.org/docs/curr
 
 ## 5. Get-or-create without races → `ON CONFLICT` / **[PG19]** `DO SELECT`
 
-lexi-ai's `upsertWord` is an insert-or-patch on `UNIQUE(word, language)` — `INSERT … ON CONFLICT DO
+kotodama-core's `upsertWord` is an insert-or-patch on `UNIQUE(word, language)` — `INSERT … ON CONFLICT DO
 UPDATE` with the conflict set derived from the content's own keys (`patchOnConflict`); admission
 (which states may be re-seeded) lives in the `ensureWordBuildable` gate, not a `WHERE` guard. The **[PG19]** `DO SELECT` gives
 true atomic get-or-create (return the existing row,
@@ -235,7 +235,7 @@ structurally.
 CREATE VIEW some_summary AS …;   -- Drizzle: pgView('some_summary').as((qb) => …)
 ```
 
-> **lexi-ai no longer uses a `pgView` here (F-CONT-006, supersedes the F-PLAT-005 design).** The Unified
+> **kotodama-core no longer uses a `pgView` here (F-CONT-006, supersedes the F-PLAT-005 design).** The Unified
 > Word Query list/counts *did* read a `word_summaries` pgView that unioned `words ∪ async_word_jobs` (a
 > `jobs_agg` CTE + `UNION ALL` + `NOT EXISTS` dedup + `status` `CASE`) — needed only because `words` was
 > then pristine (a row existed ⇔ ready), so building words lived solely in `async_word_jobs`. F-CONT-006
@@ -312,7 +312,7 @@ key as an opaque cursor and seeks past it, so page N costs the same as page 1; t
 with `LIMIT n` — `(created_at, word)` is a unique sort key (`word` is unique per language-scoped branch),
 so no surrogate tiebreaker is needed.
 
-> **lexi-ai's `searchWords` uses OFFSET, not keyset (supersedes the F-CONT-005 keyset design).** The
+> **kotodama-core's `searchWords` uses OFFSET, not keyset (supersedes the F-CONT-005 keyset design).** The
 > Unified Word Query search serves a **numbered-page UI** (1, 2, … *last*), which needs a total and the
 > ability to jump to an arbitrary/last page — neither of which a forward-only cursor can do. So it pages
 > with `LIMIT/OFFSET` over the `words_language_created_at_word_idx` btree (the `DESC NULLS LAST` DDL

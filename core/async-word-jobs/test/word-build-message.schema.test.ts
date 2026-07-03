@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@effect/vitest'
-import { enumLanguage } from '@lexiai/database'
+import { enumLanguage } from '@kotodama/database'
 import { Schema } from 'effect'
 import { WordBuildMessageFromJson } from '../src/word-build-message.schema'
 

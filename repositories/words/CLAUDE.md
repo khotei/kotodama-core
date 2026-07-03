@@ -1,4 +1,4 @@
-# repositories/words — `@lexiai/repositories-words`
+# repositories/words — `@kotodama/repositories-words`
 
 Bare persistence functions over the `words` lifecycle table — no `WordsRepo` service (owns no
 resource, never test-swapped; the swap point is `DB` — see "Service vs plain function" in
@@ -52,6 +52,6 @@ code can't show.
 
 - Return `WordRow` (`$inferSelect`), never a derived schema — `effect-schema` erases the jsonb
   `$type` (see `.claude/rules/drizzle-effect.md`). Error channel is `EffectDrizzleQueryError` only.
-- May import `@lexiai/database`, other `@lexiai/*`, `effect`, `drizzle-orm` query helpers — never a
+- May import `@kotodama/database`, other `@kotodama/*`, `effect`, `drizzle-orm` query helpers — never a
   bare `drizzle()`/driver, never `core/*` or `apps/*`.
-- Tests are DB-backed (Testcontainers — needs Docker): `bun run --filter '@lexiai/repositories-words' test`.
+- Tests are DB-backed (Testcontainers — needs Docker): `bun run --filter '@kotodama/repositories-words' test`.

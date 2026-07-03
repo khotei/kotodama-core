@@ -9,7 +9,7 @@ paths:
 
 - **Runner:** `@effect/vitest` — import test helpers from it, **not** `vitest`; prefer
   `it.effect`/`it.scoped` for Effect code.
-- **Run:** `bun run test` (never `bun test`); per package `bun run --filter '@lexiai/<name>' test`.
+- **Run:** `bun run test` (never `bun test`); per package `bun run --filter '@kotodama/<name>' test`.
   The `--bun` flag and the ban on aggregate multi-project `vitest run` are explained in
   `.claude/rules/tooling.md` — don't restructure the test scripts without reading it.
 - **Files:** `*.test.ts` in each workspace's `test/` folder (sibling of `src/`, mirroring its
@@ -41,11 +41,11 @@ pointer at the site.
 
 - DB tests run against an **ephemeral Testcontainers Postgres**, never the dev DB — the URL is
   generated per container, so there is **no `.env.test`** and structurally no way to hit dev.
-  Requires a Docker daemon. Surface: `@lexiai/database/testing` — `TestDatabaseLive` (migrates
+  Requires a Docker daemon. Surface: `@kotodama/database/testing` — `TestDatabaseLive` (migrates
   itself at layer build) + `resetDb` (TRUNCATEs every `public` table, enumerated dynamically).
 - **Prefer the real adapter over a hand-written fake wherever a container is feasible.** Queue and
   storage tests run the real `*Live` layers over per-file LocalStack containers
-  (`@lexiai/queue/testing`, `@lexiai/storage/testing`); the in-memory fakes were removed. A suite
+  (`@kotodama/queue/testing`, `@kotodama/storage/testing`); the in-memory fakes were removed. A suite
   that does no S3 I/O provides the no-op `UnusedStorage` instead of booting a container.
 - LocalStack image is pinned to `localstack/localstack:4.4.0` (the last free, no-token community
   release — do not float to `:latest`). Unlike `PgContainer`, its default wait strategy needs no

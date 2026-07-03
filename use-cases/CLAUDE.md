@@ -1,4 +1,4 @@
-# use-cases — `@lexiai/use-cases`
+# use-cases — `@kotodama/use-cases`
 
 The top application tier below `apps/*`: user-flow composers that aggregate core decisions + repo
 functions into one end-to-end flow any entrypoint can bind. A use case owns **no primitive
@@ -31,5 +31,5 @@ transport adapters.
   committed word is never journalled `timed_out`. A transient journal-write error on the success
   path is swallowed (the word is ready — no redrive); a commit-path error propagates.
 
-**May import:** `core/*`, `repositories/*`, `@lexiai/database`, `@lexiai/*` packages, `effect`.
+**May import:** `core/*`, `repositories/*`, `@kotodama/database`, `@kotodama/*` packages, `effect`.
 **MUST NOT import:** `apps/*`; nothing below may import upward into this package (Biome-enforced).

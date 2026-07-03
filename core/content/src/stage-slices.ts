@@ -1,4 +1,4 @@
-import { enumWordJobStage, type WordJobStage } from '@lexiai/database'
+import { enumWordJobStage, type WordJobStage } from '@kotodama/database'
 import { type Schema, Struct } from 'effect'
 import { WordContent } from './word-content.schema'
 

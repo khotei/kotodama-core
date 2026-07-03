@@ -1,9 +1,9 @@
-import { WordBuildMessageFromJson } from '@lexiai/core-async-word-jobs'
-import { ensureWordBuildable, verifyWordInput } from '@lexiai/core-words'
-import { DB, enumAsyncJobStatus, type Language, WORD_JOB_STAGES } from '@lexiai/database'
-import { JobsQueue } from '@lexiai/queue'
-import { stagePatch, upsertWordJobStages } from '@lexiai/repositories-async-word-jobs'
-import { selectWord, upsertWord } from '@lexiai/repositories-words'
+import { WordBuildMessageFromJson } from '@kotodama/core-async-word-jobs'
+import { ensureWordBuildable, verifyWordInput } from '@kotodama/core-words'
+import { DB, enumAsyncJobStatus, type Language, WORD_JOB_STAGES } from '@kotodama/database'
+import { JobsQueue } from '@kotodama/queue'
+import { stagePatch, upsertWordJobStages } from '@kotodama/repositories-async-word-jobs'
+import { selectWord, upsertWord } from '@kotodama/repositories-words'
 import { Effect, Schema } from 'effect'
 
 /**

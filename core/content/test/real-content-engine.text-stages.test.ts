@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@effect/vitest'
-import { AiServiceTest } from '@lexiai/ai/testing'
+import { AiServiceTest } from '@kotodama/ai/testing'
 import {
   EtymologyEntity,
   enumFrequencyBand,
@@ -8,9 +8,9 @@ import {
   RelationsEntity,
   TiersEntity,
   TranslationEntity,
-} from '@lexiai/database'
-import { WikiClientTest } from '@lexiai/external-apis/testing'
-import { UnusedStorage } from '@lexiai/storage/testing'
+} from '@kotodama/database'
+import { WikiClientTest } from '@kotodama/external-apis/testing'
+import { UnusedStorage } from '@kotodama/storage/testing'
 import { Effect, Layer, Schema } from 'effect'
 import { ContentEngine, ContentEngineError } from '../src'
 import { RealContentEngineLive } from '../src/real-content-engine.service'

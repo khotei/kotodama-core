@@ -1,7 +1,7 @@
 // Re-export the `Language` vocabulary (authored in `database/`) as part of the word model surface,
 // so the API contract and other core consumers speak it through core rather than reaching into the
 // persistence package for a domain primitive.
-export { Language } from '@lexiai/database'
+export { Language } from '@kotodama/database'
 export * from './verify-word-input'
 export * from './word.schema'
 export * from './word-build-policy'
