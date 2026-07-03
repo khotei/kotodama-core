@@ -1,8 +1,9 @@
 import type { AsyncJobStatus, Language } from '@kotodama/database'
 import { Effect } from 'effect'
 import { HttpApiClient } from 'effect/unstable/httpapi'
+import { KotodamaApi } from '../src/kotodama.api'
 import type { WordStateView, WordStatus } from '../src/words/word-state.view'
-import { WORD_SEARCH_DEFAULT_LIMIT, WordsApi } from '../src/words/words.api'
+import { WORD_SEARCH_DEFAULT_LIMIT } from '../src/words/words.api'
 
 // The view arm admitting `S`, with its `status` pinned to `S`. Plain `Extract` can't do this: the
 // building arm's `status` is a `pending|running|failed` union, so it matches none of the single
@@ -30,23 +31,23 @@ export function assertStatus<S extends WordStatus>(
 }
 
 /**
- * Operation wrappers over the typed {@link WordsApi} client: each builds the client bound to the
+ * Operation wrappers over the typed {@link KotodamaApi} client: each builds the client bound to the
  * in-memory test server and issues one call, so a test reads `yield* getWord(EN, 'lacuna')` instead
- * of repeating `HttpApiClient.make(WordsApi)` + the params envelope. Require the served `WordsApi`
- * layer in context (provided by the file's `TestLayer`).
+ * of repeating `HttpApiClient.make(KotodamaApi)` + the params envelope. Require the served
+ * `KotodamaApi` layer in context (provided by the file's `TestLayer`).
  */
 export const getWord = (language: Language, word: string) =>
-  HttpApiClient.make(WordsApi).pipe(
+  HttpApiClient.make(KotodamaApi).pipe(
     Effect.flatMap((client) => client.words.getWord({ params: { language, word } })),
   )
 
 export const getWordState = (language: Language, word: string) =>
-  HttpApiClient.make(WordsApi).pipe(
+  HttpApiClient.make(KotodamaApi).pipe(
     Effect.flatMap((client) => client.words.getWordState({ params: { language, word } })),
   )
 
 export const buildWord = (language: Language, word: string) =>
-  HttpApiClient.make(WordsApi).pipe(
+  HttpApiClient.make(KotodamaApi).pipe(
     Effect.flatMap((client) => client.words.buildWord({ params: { language, word } })),
   )
 
@@ -63,7 +64,7 @@ type SearchQuery = {
 }
 
 export const search = (language: Language, query: SearchQuery = {}) =>
-  HttpApiClient.make(WordsApi).pipe(
+  HttpApiClient.make(KotodamaApi).pipe(
     Effect.flatMap((client) =>
       client.words.search({
         params: { language },
@@ -79,6 +80,6 @@ type CountsQuery = {
 }
 
 export const counts = (language: Language, query: CountsQuery = {}) =>
-  HttpApiClient.make(WordsApi).pipe(
+  HttpApiClient.make(KotodamaApi).pipe(
     Effect.flatMap((client) => client.words.counts({ params: { language }, query })),
   )
