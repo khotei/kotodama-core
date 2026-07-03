@@ -7,13 +7,13 @@ import { QueueLocalStackLive } from '@kotodama/queue/testing'
 import { Effect, Layer } from 'effect'
 import { HttpClient, HttpRouter } from 'effect/unstable/http'
 import { HttpApiBuilder, OpenApi } from 'effect/unstable/httpapi'
-import { WordsApi } from '../src/words/words.api'
+import { KotodamaApi } from '../src/kotodama.api'
 import { WordsApiLive } from '../src/words/words.handler'
 
-// The derivation is pure — `OpenApi.fromApi` reads the in-memory `WordsApi` singleton and returns a
-// plain object, so structure is asserted without a server or a container.
-describe('OpenApi.fromApi(WordsApi)', () => {
-  const spec = OpenApi.fromApi(WordsApi)
+// The derivation is pure — `OpenApi.fromApi` reads the in-memory `KotodamaApi` singleton and returns
+// a plain object, so structure is asserted without a server or a container.
+describe('OpenApi.fromApi(KotodamaApi)', () => {
+  const spec = OpenApi.fromApi(KotodamaApi)
   const paths = spec.paths
 
   it('emits an OpenAPI 3.1.0 document over all five words endpoints (AC-1)', () => {
@@ -38,7 +38,7 @@ describe('OpenApi.fromApi(WordsApi)', () => {
   })
 
   it('sets a project-meaningful info.title/version, not the generator defaults (AC-8)', () => {
-    expect(spec.info.title).toBe('Kotodama Words API')
+    expect(spec.info.title).toBe('Kotodama API')
     expect(spec.info.title).not.toBe('Api')
     expect(spec.info.version).not.toBe('0.0.1')
   })
@@ -55,7 +55,7 @@ const DomainLive = QueueLocalStackLive.pipe(
   Layer.provideMerge(TestDatabaseLive),
   Layer.provideMerge(AiServiceAdmit),
 )
-const ApiLive = HttpApiBuilder.layer(WordsApi, { openapiPath: '/api/openapi.json' }).pipe(
+const ApiLive = HttpApiBuilder.layer(KotodamaApi, { openapiPath: '/api/openapi.json' }).pipe(
   Layer.provide(WordsApiLive),
 )
 const TestLayer = HttpRouter.serve(ApiLive, { disableListenLog: true, disableLogger: true }).pipe(

@@ -1,8 +1,11 @@
 # apps/api — `@kotodama/app-api`
 
-HttpApi server (Effect v4); Bun locally, AWS Lambda via the Lambda Web Adapter. The contract
-(`src/words/words.api.ts`) + handlers (`words.handler.ts`) live here as a pair, one folder per
-resource group. Patterns: `.claude/agent-patterns/effect-httpapi.md`.
+HttpApi server (Effect v4); Bun locally, AWS Lambda via the Lambda Web Adapter. `src/kotodama.api.ts`
+is the single root `HttpApi` that composes every resource's `HttpApiGroup`; each resource is a folder
+pairing its group contract (`src/words/words.api.ts`) with its handlers (`words.handler.ts`). Adding a
+resource is one `.add(...)` on the root — the OpenAPI doc (served from `main.ts` via `openapiPath`) is
+derived from the root, so it reflects new groups automatically. Patterns:
+`.claude/agent-patterns/effect-httpapi.md`.
 
 ## What this edge owns (and why it's here, not core)
 

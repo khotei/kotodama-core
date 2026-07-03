@@ -9,7 +9,7 @@ import { JobsQueueLive, QueueClientLive } from '@kotodama/queue'
 import { Effect, Layer } from 'effect'
 import { HttpRouter } from 'effect/unstable/http'
 import { HttpApiBuilder } from 'effect/unstable/httpapi'
-import { WordsApi } from './words/words.api'
+import { KotodamaApi } from './kotodama.api'
 import { WordsApiLive } from './words/words.handler'
 
 // Deliberately duplicates the worker's ~10-line AiServiceProd rather than sharing a layer, and
@@ -30,10 +30,10 @@ const DomainLive = Layer.mergeAll(
   AiServiceProd,
 )
 
-// `openapiPath` makes the builder derive `OpenApi.fromApi(WordsApi)` and serve it as a router-level
+// `openapiPath` makes the builder derive `OpenApi.fromApi(KotodamaApi)` and serve it as a router-level
 // GET (not an `HttpApiEndpoint`, so the doc doesn't list its own route). F-PLAT-014 fetches it live
 // at codegen time from a configurable base URL.
-const ApiLive = HttpApiBuilder.layer(WordsApi, { openapiPath: '/api/openapi.json' }).pipe(
+const ApiLive = HttpApiBuilder.layer(KotodamaApi, { openapiPath: '/api/openapi.json' }).pipe(
   Layer.provide(WordsApiLive),
 )
 

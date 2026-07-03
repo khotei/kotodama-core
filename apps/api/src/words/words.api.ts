@@ -8,7 +8,7 @@ import {
 } from '@kotodama/core-words'
 import { AsyncJobStatus, WordEntity } from '@kotodama/database'
 import { Schema } from 'effect'
-import { HttpApi, HttpApiEndpoint, HttpApiGroup, OpenApi } from 'effect/unstable/httpapi'
+import { HttpApiEndpoint, HttpApiGroup } from 'effect/unstable/httpapi'
 import { Paginated, pageQuery } from '../pagination.view'
 import { WordCountsView } from './word-counts.view'
 import { WordStateView } from './word-state.view'
@@ -66,16 +66,11 @@ const counts = HttpApiEndpoint.get('counts', '/words/:language/counts', {
   success: WordCountsView,
 })
 
+// The words resource contributes this group; the root `kotodama` HttpApi (`../kotodama.api.ts`)
+// composes it with every other resource's group.
 export const wordsGroup = HttpApiGroup.make('words')
   .add(getWord)
   .add(getWordState)
   .add(buildWord)
   .add(search)
   .add(counts)
-
-// `Title`/`Version` so the derived OpenAPI `info` is project-meaningful, not the generator defaults
-// (`"Api"` / `"0.0.1"`). The document is exposed live from `main.ts` via `openapiPath`.
-export const WordsApi = HttpApi.make('kotodama')
-  .add(wordsGroup)
-  .prefix('/api')
-  .annotateMerge(OpenApi.annotations({ title: 'Kotodama Words API', version: '0.0.0' }))
