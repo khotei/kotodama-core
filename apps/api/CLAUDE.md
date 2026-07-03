@@ -1,37 +1,46 @@
 # apps/api — `@lexiai/app-api`
 
-HttpApi server (Effect v4). Runs on Bun locally and on AWS Lambda via the Lambda Web Adapter.
+HttpApi server (Effect v4); Bun locally, AWS Lambda via the Lambda Web Adapter. The contract
+(`src/words/words.api.ts`) + handlers (`words.handler.ts`) live here as a pair, one folder per
+resource group. Patterns: `.claude/agent-patterns/effect-httpapi.md`.
 
-- **May import:** `core/*`, `use-cases/*`, `@lexiai/database` + `repositories/*` (the former both for the
-  `DatabaseLive` layer and for the row/entity vocabulary), `@lexiai/*` packages, `effect`,
-  `@effect/platform-bun`. `@lexiai/database/factories` (pulls faker, a devDependency) belongs in tests,
-  not `src/**`.
-- **MUST NOT import:** `apps/web` or another app.
-- **Owns the HTTP boundary** — `src/words/words.api.ts` (the `HttpApi` contract, composed from
-  `WordEntity` (`@lexiai/database`), `Language` + `InvalidWordInputError` + the two build-policy 409s
-  (`@lexiai/core-words`), and the local `WordStateView`) and
-  `src/words/words.handler.ts` (the bindings) live here as a pair, one folder per resource group.
-- **Owns the build-state view** — `src/words/word-state.view.ts` (`WordStateView`, the
-  `succeeded|running|failed` view model) + `src/words/word-state-collapse.ts` (`collapseWordState`, its
-  pure single author). The view collapse is presentation, so it lives at this edge, not in `core/`; the
-  use-case returns raw rows and the handler collapses them. The pure `collapseWordState` is unit-tested
-  here (`test/word-state-collapse.test.ts`); `assertStatus` (the variant-narrowing test helper) lives in
-  `test/words-api-test-utils.ts`.
-- Entrypoint: `src/main.ts` → `BunRuntime.runMain`; serves `WordsApi` over Bun on `PORT` (config,
-  default 3000). The handler flows are plain functions (repos are bare functions, `requestWordBuild`
-  is a function), so `main.ts` provides only the two **boundary** services they bottom out at —
-  `JobsQueueLive` (over `QueueClientLive`) + `DatabaseLive` (`DomainLive = Layer.mergeAll(JobsQueueLive.pipe(Layer.provide(QueueClientLive)), DatabaseLive)`).
-- **Three handlers** bind the `words` group: `getWord` → `selectWord` (`Word | null`); `getWordState`
-  reads a `{ word, stages }` snapshot via `readWordBuildSnapshot` (`@lexiai/core-async-word-jobs`) then collapses it with the
-  local `collapseWordState` (the `WordStateView` union `succeeded|running|failed`, or `null`); and
-  `buildWord` → `requestWordBuild` (which returns the seeded rows) collapsed here into the running
-  `WordStateView` (+ three typed errors). The handler `R` bottoms out at `DB` / `JobsQueue`.
-- **Handlers send infrastructure faults** (repo/queue unreachable) to a 500: the reads `orDie`, and
-  `buildWord` `catchTags`-`die`s `EffectDrizzleQueryError`/`QueueError`. The reads' absence is `null`
-  (`Option.getOrNull`); `buildWord` **declares** `WordAlreadyReadyError` (409), `WordBuildInProgressError`
-  (409), `InvalidWordInputError` (422) on the endpoint, so those pass through as typed HTTP errors instead of 500s.
-- **Gotcha — provide handler deps *after* `HttpRouter.serve`.** HttpApi wraps each handler's service
-  requirement (e.g. `DB`) in a `HttpRouter.Request<"Requires", …>` marker that only
-  `serve` unwraps; providing the domain layer to the pre-serve `HttpApiBuilder.layer` does **not**
-  satisfy it (the `R` won't reduce to `never`). Provide it to the served layer.
-- Effect/HttpApi patterns: `.claude/agent-patterns/effect-httpapi.md`, `.claude/agent-patterns/effect-context-and-layer.md`.
+## What this edge owns (and why it's here, not core)
+
+- **The computed view models** (`word-state.view.ts`, `word-counts.view.ts`) — presentation shapes
+  with no backing row; their leaf payloads derive from `WordEntity`/the content schemas so they
+  can't drift. The collapse is this edge's concern — the use-case and repos return raw rows.
+  **`/search` has no view of its own** — it returns the core `Word` union verbatim (same shape
+  `getWord`/`getWordState` speak), never an edge-only summary. A renamed/flattened list projection
+  was deleted: a field rename is not a storage transform, so by `core/words`' "no per-row model"
+  rule it doesn't earn a projection; trim (if ever needed) by *picking* `WordEntity` fields into a
+  `Word`-derived leaf, never by renaming.
+- **Offset paging is `pagination.view.ts`** — the shared reuse across resource groups: `pageQuery`
+  builds the `page`/`limit` query fields, `Paginated(items)` the response envelope (only the item
+  schema varies). `pageQuery` self-defaults `page`/`limit` at decode via `withDecodingDefaultKey`,
+  so the handler reads both as required (no `?? default`). Consequence: the field is required on the
+  decoded `Type`, so the **typed Effect client must pass `page`/`limit`** (the default only fills an
+  omitting *wire* caller); the constants (`WORD_SEARCH_DEFAULT_LIMIT`, `WORD_SEARCH_MAX_LIMIT`) are
+  this edge's policy, passed into `pageQuery`. `counts` and `search` read the same `wordSearchFilter`,
+  so counts always equal what the list can page.
+
+## Wire semantics that aren't guessable
+
+- Absence is 200 `null`; an existing-but-building word is the declared `WordNotReadyError` **409,
+  not 404** (404 would read as non-existence while the word exists and is building).
+- Handlers `die` infrastructure faults (`EffectDrizzleQueryError`, `QueueError`, `SqlError`,
+  decode `SchemaError` on a succeeded row = impossible state) into 500s; only the declared typed
+  errors (409/422) pass through.
+
+## Gotchas
+
+- **Provide handler deps *after* `HttpRouter.serve`** — HttpApi wraps each handler's service
+  requirement in a `HttpRouter.Request<"Requires", …>` marker that only `serve` unwraps; providing
+  the domain layer to the pre-serve `HttpApiBuilder.layer` does NOT satisfy it.
+- `main.ts` provides only boundary services (`DatabaseLive`, `JobsQueueLive`, `AiServiceProd`) —
+  handler flows are plain functions whose `R` bottoms out there. The API's `AiServiceProd`
+  deliberately duplicates the worker's (~10 lines) and omits its resilience decorator: the input
+  judge is fail-open, so retry buys little and would pull image-path tuning into a text-only app.
+
+**May import:** `core/*`, `use-cases/*`, `@lexiai/database` + `repositories/*`, `@lexiai/*`
+packages, `effect`, `@effect/platform-bun`. **MUST NOT import:** another app.
+`@lexiai/database/factories` belongs in tests, not `src/**`.

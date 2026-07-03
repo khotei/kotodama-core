@@ -18,27 +18,13 @@ export interface QueueClientShape {
 }
 
 /**
- * Multi-queue transport: a message-agnostic SQS port (`send` / `receive` / `delete`-ack) with the
- * **queue URL passed per call** instead of bound at layer build — so one client serves many queues.
- * The bound {@link JobsQueue} wrapper (and a future second-queue wrapper) delegate here, each fixing
- * one URL. Implemented by {@link QueueClientLive}; tests run that layer over a LocalStack container
- * (`@lexiai/queue/testing`'s `QueueClientLocalStackLive`).
- *
- * @see `packages/queue/CLAUDE.md`
+ * The parameterized base — message-agnostic, queue URL passed per call, so one client serves any
+ * number of queues.
  */
 export class QueueClient extends Context.Service<QueueClient, QueueClientShape>()(
   '@lexiai/queue/QueueClient',
 ) {}
 
-/**
- * `QueueClient` over `@aws-sdk/client-sqs`, configured through `@lexiai/config`'s
- * {@link AwsClientConfig} (never raw `process.env`) — region, the optional LocalStack endpoint, and
- * credentials arrive pre-resolved, so the client is `new SQSClient(aws)`. The client is owned by the
- * layer scope and `destroy()`ed on release. It reads **no** `JobsQueueUrl`: the queue is a per-call
- * argument — the bound {@link JobsQueueLive} binds that config instead.
- *
- * @see `.claude/rules/config.md`
- */
 export const QueueClientLive = Layer.effect(
   QueueClient,
   Effect.gen(function* () {

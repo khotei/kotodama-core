@@ -1,1 +1,0 @@
-ALTER TYPE "language" ADD VALUE 'uk';

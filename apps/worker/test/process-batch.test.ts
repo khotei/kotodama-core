@@ -9,6 +9,7 @@ import { enumLanguage } from '@lexiai/database'
 import { resetDb, TestDatabaseLive } from '@lexiai/database/testing'
 import { selectWordJobStages } from '@lexiai/repositories-async-word-jobs'
 import { selectWords } from '@lexiai/repositories-words'
+import { seedUnreadyWord } from '@lexiai/repositories-words/testing'
 import { Effect, Layer, Schema } from 'effect'
 import { processBatch } from '../src/process-batch'
 
@@ -46,6 +47,12 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
     Effect.gen(function* () {
       yield* resetDb
 
+      // Seed each buildable word's `pending` `words` row, exactly as `requestWordBuild` does in one tx
+      // before enqueueing (F-CONT-006 — `buildWord` flips/promotes an *existing* row, it never seeds).
+      // Driving `processBatch` directly here skips the request tier, so the seed must be reproduced.
+      yield* seedUnreadyWord(EN, 'lacuna')
+      yield* seedUnreadyWord(EN, 'serein')
+
       const records = [
         { id: 'ok-1', body: encode({ language: EN, word: 'lacuna' }) },
         { id: 'foreign-1', body: JSON.stringify({ kind: 'something-else' }) },
@@ -69,6 +76,12 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
     () =>
       Effect.gen(function* () {
         yield* resetDb
+
+        // Seed the two buildable words' `pending` rows (as `requestWordBuild` would). BOOM is left
+        // unseeded on purpose — its generation `die`s before any promote, so it must end with no
+        // `words` row (asserted below), proving the defect was isolated to its own record.
+        yield* seedUnreadyWord(EN, 'lacuna')
+        yield* seedUnreadyWord(EN, 'serein')
 
         const records = [
           { id: 'ok-1', body: encode({ language: EN, word: 'lacuna' }) },

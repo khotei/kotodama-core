@@ -194,30 +194,6 @@
           }
         }
       }
-    },
-    {
-      "includes": ["apps/web/**"],
-      "linter": {
-        "rules": {
-          "style": {
-            "noRestrictedImports": {
-              "level": "error",
-              "options": {
-                "patterns": [
-                  {
-                    "group": ["@lexiai/*", "@lexiai/*/**"],
-                    "message": "Frontend lockdown: apps/web must not import any internal @lexiai/* package. The domain/contract surface for the FE is to be re-established when the UI returns (packages/schemas was deprecated)."
-                  },
-                  {
-                    "group": ["**/repos/**"],
-                    "message": "Do not import from repos/ \u2014 it is vendored, read-only reference material. Import the published package (effect, @effect/*) instead."
-                  }
-                ]
-              }
-            }
-          }
-        }
-      }
     }
   ]
 }

@@ -1,16 +1,16 @@
 import { createHash } from 'node:crypto'
 import { type AiError, AiService } from '@lexiai/ai'
 import {
-  AuthorExample,
-  CulturalGuide,
+  AuthorExampleEntity,
+  CulturalGuideEntity,
   enumVisualKind,
   enumWordJobStage,
   type Language,
-  type SourceVersions,
+  type SourceVersionsEntity,
   type StorageKey,
-  Visual,
+  VisualEntity,
   type VisualKind,
-  type Visuals,
+  type VisualsEntity,
   type WordJobStage,
 } from '@lexiai/database'
 import { WikiClient } from '@lexiai/external-apis'
@@ -40,28 +40,18 @@ import {
 } from './prompts'
 import { STAGE_SLICES, type StageSlice, type WordGrounding } from './stage-slices'
 
-/**
- * The model's `fetch_source` output. `isReal` is a **transient** not-found discriminant — the model
- * sets it when the word isn't real; it is read to decide `not_found` and then stripped, so it never
- * reaches the persisted slice (which carries only the authored slice keys — {@link STAGE_SLICES}).
- * Encodes to a plain object, the shape `AiService.generateObject` requires.
- */
+// `isReal` is a transient not-found discriminant — read to decide `not_found`, then stripped, so
+// it never reaches the persisted slice.
 const FetchSourceOutput = Schema.Struct({
   isReal: Schema.Boolean,
   ...STAGE_SLICES[enumWordJobStage.fetch_source].fields,
 })
 
-/**
- * The two media stages' **generation schemas** — what the model is asked to plan, which differs from the
- * stored slice by exactly the **render-filled keys**: `Visual.imageKey` / `AuthorExample.authorImageUrl`
- * are absent here (the model can't know an S3 key while planning; the render step adds them, so the
- * stored {@link Visuals}/{@link AuthorExample} require them). The leaf plans drop that one key from the
- * stored schema; the stage plans restate the (tiny, stable) slice partition — `tsc` flags any drift,
- * since each handler's return must still satisfy `StageSlice<S>` ({@link STAGE_SLICES}). The four text
- * stages have no such split — they generate their slice verbatim, straight off `STAGE_SLICES`.
- */
-const VisualPlan = Visual.mapFields(Struct.omit(['imageKey']))
-const AuthorExamplePlan = AuthorExample.mapFields(Struct.omit(['authorImageUrl']))
+// The media *plans* differ from the stored slices by exactly the render-filled keys (`imageKey`,
+// `authorImageUrl`) — the model can't know an S3 key while planning; the render step fills them.
+// Each handler's return must still satisfy `StageSlice<S>`, so `tsc` flags any drift.
+const VisualPlan = VisualEntity.mapFields(Struct.omit(['imageKey']))
+const AuthorExamplePlan = AuthorExampleEntity.mapFields(Struct.omit(['authorImageUrl']))
 
 const EnrichVisualsPlan = Schema.Struct({
   visuals: Schema.Struct({
@@ -73,17 +63,11 @@ const EnrichVisualsPlan = Schema.Struct({
 
 const EnrichAuthorsPlan = Schema.Struct({
   authorExamples: Schema.Array(AuthorExamplePlan),
-  culturalGuide: CulturalGuide,
+  culturalGuide: CulturalGuideEntity,
 })
 
-/**
- * Stable hash of **every prompt surface** the pipeline emits — `sourceVersions.promptHash` at promotion.
- * A sha256 over the six stage prompts plus the author-portrait prompt, the no-text directive, and the
- * image profile (`imageOptionsFor` per role — model/size/quality), all rendered for one **fixed** sample
- * `(en, "lacuna")` with **no grounding**. So the digest tracks the *template text + image config* — it
- * shifts whenever any of them changes — and is identical for every real word. Computed once at module
- * load; fed into {@link PROVENANCE}.
- */
+// sha256 over every prompt template + the image config, rendered for one fixed sample with no
+// grounding — so the digest tracks the recipe, not the word, and is identical across all words.
 const SOURCE_VERSIONS_PROMPT_HASH: string = createHash('sha256')
   .update(
     [
@@ -100,33 +84,19 @@ const SOURCE_VERSIONS_PROMPT_HASH: string = createHash('sha256')
   )
   .digest('hex')
 
-/**
- * This engine's build provenance, read by the worker at promotion ({@link ContentEngine.sourceVersions})
- * and stamped onto `words.sourceVersions`. Build identity, not a content pass — so it is an engine
- * property, not a key smuggled through a slice.
- */
-const PROVENANCE: SourceVersions = {
+// Build identity, not a content pass — an engine property, never a key smuggled through a slice.
+const PROVENANCE: SourceVersionsEntity = {
   model: PROVENANCE_MODEL,
   promptHash: SOURCE_VERSIONS_PROMPT_HASH,
   pipeline: 'real-content-engine@0.1',
   stageModels: PROVENANCE_STAGE_MODELS,
 }
 
-/**
- * Map an {@link AiError} to a `failed` {@link ContentEngineError}, copying its already-serializable
- * `message`/`cause` (the `cause` lands in the persisted `async_word_jobs.error` jsonb column). The text
- * analogue of {@link mediaFailure}: every text-stage `generateObject` failure maps through it, and
- * `mediaFailure` delegates its own `AiError` branch here, so the `AiError → failed` mapping has one author.
- */
 const textFailure = (error: AiError): ContentEngineError =>
   new ContentEngineError({ type: 'failed', message: error.message, cause: error.cause })
 
-/**
- * Map a media-stage failure to a `failed` {@link ContentEngineError}, keeping `cause` JSON-serializable
- * (it lands in the persisted `async_word_jobs.error` jsonb column). An {@link AiError} reuses
- * {@link textFailure}; a {@link StorageError}'s `cause` is a **live** S3 rejection, so it is dropped for a
- * `{ tag, key }` snapshot instead of being threaded through.
- */
+// Keeps `cause` JSON-serializable for the `async_word_jobs.error` jsonb column: an AiError's cause
+// is already a snapshot, but a StorageError's is a LIVE S3 rejection — dropped for `{ tag, key }`.
 const mediaFailure = (error: AiError | StorageError): ContentEngineError =>
   error._tag === 'AiError'
     ? textFailure(error)
@@ -137,17 +107,9 @@ const mediaFailure = (error: AiError | StorageError): ContentEngineError =>
       })
 
 /**
- * The real `ContentEngine` over {@link AiService} + {@link WikiClient} + {@link ImagesStore}, all
- * captured at layer build. Every stage is implemented behind one typed {@link produce}: the text stages
- * (`fetch_source`, `enrich_etymology`, `enrich_tiers`, `final_review`) and the two media stages —
- * `enrich_visuals` (plan → render hero/infographic/memes) and `enrich_authors` (plan → render one
- * portrait per author) — which share the {@link renderToStorage} image→S3 seam. The text/media handlers
- * thread `fetch_source`'s {@link WordGrounding} into their prompts so the entry stays one consistent sense.
- *
- * Wall-clock timeouts are deliberately **not** handled here — `timed_out` is the worker's concern; this
- * engine maps only `not_found` and `failed`.
- *
- * @see `core/content/CLAUDE.md`
+ * The real `ContentEngine` over `AiService` + `WikiClient` + `ImagesStore`. Wall-clock timeouts
+ * are deliberately NOT handled here — `timed_out` is the worker's concern; this engine maps only
+ * `not_found` and `failed`.
  */
 export const RealContentEngineLive: Layer.Layer<
   ContentEngine,
@@ -160,12 +122,11 @@ export const RealContentEngineLive: Layer.Layer<
     const wiki = yield* WikiClient
     const storage = yield* ImagesStore
 
-    // One throttle shared across both media stages' fan-outs — caps total concurrent image renders so a
-    // build's ~11 images don't burst past the gpt-image rate limit. See {@link IMAGE_CONCURRENCY}.
+    // One throttle across BOTH media stages' fan-outs — see IMAGE_CONCURRENCY.
     const imageThrottle = Semaphore.makeUnsafe(IMAGE_CONCURRENCY)
 
-    // Best-effort grounding: Wikipedia absence (Option.none) AND any WikiError both degrade to "no
-    // grounding", so the source endpoint can never fail the stage (AC-5).
+    // Best-effort: Wikipedia absence AND any WikiError both degrade to "no grounding" — the
+    // source endpoint can never fail the stage.
     const ground = (language: Language, word: string): Effect.Effect<Option.Option<WikiFacts>> =>
       wiki.summary(language, word).pipe(
         Effect.map(
@@ -202,11 +163,8 @@ export const RealContentEngineLive: Layer.Layer<
         return slice
       })
 
-    // The plain text-enrichment stages (etymology, tiers, final_review) share one shape: no Wiki
-    // grounding fetch, no transient discriminant — generate the typed slice and return it, mapping any
-    // AiError to `failed`. `STAGE_SLICES[stage]`'s keys ARE the slice keys, so the decoded output *is*
-    // the slice; `A` is inferred as that stage's `StageSlice`. `Record<string, unknown>` widens the
-    // struct to the encode-to-object shape generateObject accepts.
+    // `Record<string, unknown>` widens the struct to the encode-to-object shape generateObject
+    // accepts; the decoded output IS the stage's slice.
     const textStage = <A>(
       schema: Schema.Codec<A, Record<string, unknown>>,
       config: TextGenConfig,
@@ -214,14 +172,9 @@ export const RealContentEngineLive: Layer.Layer<
     ): Effect.Effect<A, ContentEngineError> =>
       ai.generateObject(schema, prompt, config).pipe(Effect.mapError(textFailure))
 
-    /**
-     * Render one image prompt and store the PNG under `key`, returning that key. The single
-     * image→storage seam the media stages share — `enrich_visuals` (the {@link imageKey} scheme) and
-     * `enrich_authors` (the {@link authorKey} scheme). The caller builds the key (the scheme stays in
-     * `@lexiai/storage`) and names the image `kind`; the render request (model-by-role, size, quality)
-     * comes from {@link imageOptionsFor}, the prompt gets the text-free directive, and the shared
-     * {@link imageThrottle} paces it. So the model/quality decision lives solely in `generation-defaults.ts`.
-     */
+    // The one image→storage seam both media stages share. The CALLER builds the key, so the path
+    // scheme stays solely in @lexiai/storage; the model/size/quality decision stays in
+    // generation-defaults.
     const renderToStorage = (
       key: StorageKey,
       prompt: string,
@@ -247,15 +200,13 @@ export const RealContentEngineLive: Layer.Layer<
           visual: typeof VisualPlan.Type,
           kind: VisualKind,
           index?: number,
-        ): Effect.Effect<Visual, AiError | StorageError> =>
+        ): Effect.Effect<VisualEntity, AiError | StorageError> =>
           renderToStorage(imageKey({ language, word, kind, index }), visual.prompt, kind).pipe(
             Effect.map((key) => ({ ...visual, imageKey: key })),
           )
 
-        // Every image is independent — render hero, infographic and all memes concurrently. Done
-        // sequentially each `gpt-image-2` call is ~1min, so a multi-image plan blew the per-stage
-        // budget (the `enrich_visuals` timeout); in parallel the stage costs ~one image. hero and
-        // infographic are always present (the plan requires both) — no null-skip branch.
+        // Concurrent renders: sequentially, each image call is ~1min and a multi-image plan blew
+        // the per-stage budget; in parallel the stage costs ~one image.
         const [hero, infographic, memes] = yield* Effect.all(
           [
             renderInto(visuals.hero, enumVisualKind.hero),
@@ -269,13 +220,11 @@ export const RealContentEngineLive: Layer.Layer<
           { concurrency: 'unbounded' },
         )
 
-        return { visuals: { hero, infographic, memes } satisfies Visuals }
+        return { visuals: { hero, infographic, memes } satisfies VisualsEntity }
       }).pipe(Effect.mapError(mediaFailure))
 
-    // This stage owns BOTH the author text AND the portraits: `authorImageUrl` lives in the
-    // `authorExamples` slice, so the image→S3 path runs here to keep stage→slice keys disjoint (G5).
-    // The text step plans authors (`authorImageUrl: null`); the portrait step renders one image per
-    // author under the `authorKey` scheme and fills each key.
+    // Owns BOTH the author text AND the portraits: `authorImageUrl` lives in the `authorExamples`
+    // slice, so the image→S3 path runs in this stage to keep stage→slice keys disjoint.
     const enrichAuthors = (
       language: Language,
       word: string,
@@ -288,12 +237,9 @@ export const RealContentEngineLive: Layer.Layer<
           TEXT_GEN.authors,
         )
 
-        // One portrait per author, rendered concurrently — independent `gpt-image-2` calls, same
-        // reason as enrich_visuals (sequential image renders overrun the per-stage budget).
         const withPortraits = yield* Effect.forEach(
           authorExamples,
           (author, index) =>
-            // 'author' is a non-hero role, so it renders on the secondary image model (generation-defaults).
             renderToStorage(
               authorKey({ language, word, index }),
               authorPortraitPrompt(author.author),
@@ -305,9 +251,8 @@ export const RealContentEngineLive: Layer.Layer<
         return { authorExamples: withPortraits, culturalGuide }
       }).pipe(Effect.mapError(mediaFailure))
 
-    // One handler per stage, keyed by `wordJobStage` — the mapped type makes the record exhaustive
-    // (a new stage fails `tsc` here) and each entry is checked to return its own `StageSlice`. `produce`
-    // is the generic façade: it dispatches on `stage` without a `switch`, so the per-stage type survives.
+    // Exhaustive by construction (a new stage fails tsc here); dispatch through a record, not a
+    // `switch`, so the per-stage generic type survives.
     const handlers: {
       readonly [S in WordJobStage]: (
         language: Language,

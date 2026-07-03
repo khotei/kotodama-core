@@ -1,98 +1,54 @@
 # Code comments
 
-**Always-loaded rule.** The default is **no comment**. Code is read far more than written, it is the
-source of truth, and every comment is read-cost the reader pays whether or not it pays off — and an
-agent acts on a stale comment with full confidence, so a bad comment is worse than none. Earn each
-one. Comment the **WHY**; let the code state the WHAT. (Same family as `.claude/rules/claude-md.md`:
-code says *what*, prose says *why*.)
+**Always-loaded rule.** The default is **no comment** — code is the source of truth, and an agent
+acts on a stale comment with full confidence, so a bad comment is worse than none. Comment the
+**WHY**; let the code state the WHAT.
 
-This rule has two gates: **(A)** should this comment exist at all (be strict — most shouldn't); and
-**(B)** if it survives, write it as real documentation, not a scattered note.
+## Gate A — should it exist?
 
-## Gate A — should it exist? (the litmus)
+Ask: **"Could a competent reader of this stack get this from the code itself?"** (types,
+signatures, control flow, a test name, a rule/`CLAUDE.md`). If yes → delete it — on sight, when
+reviewing existing code. Only four reasons to keep a comment:
 
-1. **"Could a competent reader of this stack get this from the code itself?"** (types, signatures,
-   control flow, a test name, a `CLAUDE.md`/rule). If yes → delete it.
-2. **"Would they get it wrong, or trip on a hidden coupling, without it?"** If yes → it may survive.
-
-When reviewing existing code, **delete on sight** anything that fails (1). The only four reasons to
-keep a comment:
-
-- **A non-obvious DECISION + the rejected alternative** — "barrel entry, not the dir glob — globbing
-  double-counts re-exported tables." Stops an agent "fixing" it back.
-- **A GOTCHA or non-local coupling**, surprising from a distance — dotenv last-key-wins;
-  `snakeCase.table` ⇒ do NOT also set `transformQueryNames`; the test Postgres must wait on the
-  healthcheck, not `forListeningPorts` (its exec hangs on Docker Desktop).
+- **A non-obvious DECISION + the rejected alternative** — "barrel entry, not the dir glob —
+  globbing double-counts re-exported tables." Stops an agent "fixing" it back.
+- **A GOTCHA or non-local coupling** surprising from a distance — e.g. `snakeCase.table` ⇒ do NOT
+  also set `transformQueryNames`.
 - **An INVARIANT the type can't express** — "`pending` rows legitimately have null content."
 - **A usage CONSTRAINT on an exported symbol** — "provide `ConfigProviderLive` first."
 
-If it isn't one of these four, **delete it.**
+Never write: line narration or step markers (`// map rows`, `// then validate`), a doc block that
+re-says the function name, a `@param` restating a type, or provenance tags (`(T0N)`, feature §refs —
+traceability lives in the commit `Refs:` footer, not on lines; keep a §-ref only when the reader
+must open it to act).
 
-## Delete-on-sight gallery (the obvious comment)
-
-The comments most often written and least often earned — each **restates the line it sits on.** This is
-the single biggest source of comment noise; write none of them. (The idiom is this repo's; the pattern
-is universal.)
-
-```ts
-import { wordsTable } from '@lexiai/database'    // import the words table        ← the import says it
-const running = status === enumAsyncJobStatus.running // true when it's running   ← reads identically
-attempts: sql`${table.attempts} + 1`             // increment attempts by one     ← the expression IS the sentence
-if (!row) return yield* Effect.die(err)          // if there's no row, die         ← narration
-return rows.map(toWord)                           // map each row to a domain word  ← narration
-yield* repo.create(content)                       // create the word               ← the call says it
-for (const stage of stages) { … }                 // loop over the stages          ← `for` already means "loop"
-```
-
-Same offense, other forms: a `/** … */` block that only re-says the function name; a `@param word The
-word` that restates the type; step narration (`// then fetch it`, `// now validate the input`); a
-provenance tag (`(T0N)`, `(Feature §14 #5)` — traceability lives in the commit `Refs:` footer, not each
-line; keep a `§`-ref *only* when the reader must open it to act); anything a rule/`CLAUDE.md`/test name
-already states — **link to it, don't restate.**
-
-> **Pre-write test (do this every time):** write the comment, then delete it and re-read the code. If
-> the code still tells you the same thing, keep it deleted. A comment earns its place *only* by saying
-> what the code **cannot** — Gate A's four: decision, gotcha, invariant, usage-constraint.
+> **Pre-write test:** write the comment, delete it, re-read the code. If the code still tells you
+> the same thing, keep it deleted.
 
 ## Gate B — write the survivor as documentation
 
-A comment that earns its place is **documentation**, so give it a documented form. Default to a
-**multiline `/** … */` TSDoc block on the symbol it describes** — this is the *interface comment*
-(the deep-modules idea): written so a caller can use the symbol **without reading its body**. If you
-can't write that one sentence, the interface is too complex — fix it before documenting. Reserve a
-single-line `//` for a pinpoint gotcha *inside* a body, at the exact line it warns about.
+**An export does NOT get a doc block by default** — most exported symbols need none; only a
+comment that passed Gate A gets written up. A surviving comment defaults to a **TSDoc `/** … */`
+block on the symbol** — the *interface
+comment*: one declarative sentence a caller can use the symbol from **without reading its body**
+(if you can't write that sentence, fix the interface first), plus an optional second paragraph only
+for the gotcha/invariant/alternative that got it past Gate A. A single-line `//` is for a pinpoint
+gotcha *inside* a body, at the exact line it warns about.
 
-**Shape** (modelled on Drizzle's pragmatic style, not Effect's docgen-heavy one):
+Tags: `{@link Symbol}` for internal cross-refs; `@see` for a rule/spec pointer; `@example` (fenced
+```ts) only for genuinely non-obvious usage; `@param`/`@returns` only when name + type don't
+already say it. Never `@since`/`@category`/docgen tags — LexiAI isn't a published library. The
+Gate-A bar is unchanged in this form: one strong sentence beats a paragraph.
 
-```ts
-/**
- * One declarative sentence: what it is / why it exists / the contract it upholds. Lead with this;
- * a reader who stops here can still use it correctly.
- *
- * Optional second paragraph only for a real gotcha, invariant, or the rejected alternative — the
- * reason this comment passed Gate A. Reference symbols as {@link OtherThing} and values in
- * `backticks`.
- *
- * @example
- * ```ts
- * const stages = yield* selectWordJobStages({ language: enumLanguage.en, word: 'lacuna' })
- * ```
- * @see `.claude/rules/drizzle-effect.md`
- */
-```
+## Maintenance — a comment is never "kept in sync"
 
-**Tag discipline:**
-- `{@link Symbol}` for internal cross-refs (gives IDE hover-nav); `@see` for a rule/file/spec pointer.
-- `@example` (fenced ```ts) only when usage is genuinely non-obvious — not for the trivial call.
-- `@param` / `@returns` only when the **name and type don't already say it**. Never restate a type.
-- **Never `@since` / `@category` / `@deprecated`-for-docgen** — those generate published-library API
-  docs; LexiAI isn't published. Use `@internal` to mark a non-public helper if it aids a reader.
-
-**Still tight.** Documentation form does not license padding: the Gate-A bar is unchanged. One strong
-sentence beats a paragraph; expand to multiple lines only when a `@param`, `@example`, or a real
-gotcha genuinely needs the room. Comment intent (stable) and rationale (untestable), never mechanics.
+If a code change makes a comment wrong, the comment was restating the code — **delete it, don't
+update it** (the same sharp signal as `claude-md.md`). Never write or touch comments on
+exploratory edits. Never narrate architecture/ownership/layering in a comment — that lives in the
+rules/`CLAUDE.md`; at most point there. Calibration: most files need **zero** comments; the most
+heavily-commented file in this repo earns ~15 lines of measured gotchas, not 50 of narration.
 
 ## Not comments — never strip these
 
-Directive/functional lines are code, not prose: `biome-ignore`, `@ts-expect-error`, `@ts-ignore`,
-`eslint-disable`, shebangs, and build-tool pragmas. They stay regardless of the rules above.
+`biome-ignore`, `@ts-expect-error`, `@ts-ignore`, `eslint-disable`, shebangs, and build pragmas are
+code, not prose. They stay regardless of the rules above.

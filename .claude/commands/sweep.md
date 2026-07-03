@@ -1,41 +1,57 @@
 ---
-description: Capability sweep — research the best platform-native, type-safe solution before designing/coding
+description: "On-demand design + platform sweep: shake written code and propose simpler, deeper, more native alternatives"
+argument-hint: "[paths | diff range] (default: current branch diff vs main)"
 ---
 
-Run a **capability sweep** on the task in `$ARGUMENTS` (or, if empty, the current task in context)
-*before* locking any design or writing code. Do not jump to the first working approach, and do not merely
-validate a design you were handed. Aim for a genuinely better solution — the kind a very experienced
-engineer would reach for — but every recommendation must be **researched and weighed**, never unvetted
-cleverness.
+Run an on-demand **sweep** — a creative but rigorously vetted second look at code that already
+works. Act as two experts in one: a master of software design (deep modules, SOLID/GRASP,
+composition, domain modelling, correct-by-construction types) and a top-tier TypeScript engineer
+fluent in the newest language/stdlib capabilities of this stack (Effect v4, Drizzle, Postgres, Bun,
+modern TS). Aim to surprise with a genuinely better shape — but every recommendation must be
+researched and weighed, never unvetted cleverness. **Findings only — write no application code
+until the user picks what to apply.**
 
-The sweep has **two legs, and the best answer usually weaves them:** **A — capability** (what the
-platform already does, so you don't reinvent) and **B — design** (the abstraction, seam, and domain model
-the problem itself wants). Follow the full protocol in `.claude/prompts/capability-sweep.md`. In short:
+## Scope
 
-0. **Establish the task's judging criteria first** — what "best" means *here*, as a weave of *leverage*
-   axes (platform reuse, performance at load, correctness/failure) and *structure* axes (type-safety &
-   inference, extensibility where it will change, simplicity); say which dominate and why.
-1. **Name the subsystems** the task touches (Postgres, Drizzle, Effect, HttpApi, SQS, AI, React/TanStack…)
-   **and the core design decisions** it turns on — the domain shape, and what will most likely change.
-2A. **Enumerate each subsystem's advanced/native capabilities** — consult the repo catalogs
-   (`postgres-capabilities.md`, `effect-stdlib.md`, `type-fest.md`, …), the vendored `repos/` source,
-   then official docs (verify version/availability).
-2B. **Enumerate the structural options** for each design decision — consult
-   `.claude/agent-patterns/design-heuristics.md` (symptom → structural move), then `deep-modules.md`:
-   make illegal states unrepresentable, *parse don't validate*, put the seam only where it will change,
-   effects/errors + cross-cutting concerns as decorator layers.
-3. **Look for effective combinations across both legs** — often a native primitive *shaped by* the right
-   abstraction (heavy `sql` behind one narrow repo function). Map each to the concrete symptom.
-4. **Type-safety & inference are a hard default** — Drizzle typed builder / `sql` with column refs (never
-   raw strings), `effect/Schema`, inferred types; any `any`/cast/untyped string is a cost to justify.
-5. **Flag reinvention both ways** — naive code reinventing a native feature *and* an abstraction/pattern
-   added where flat code is honest; **say where you kept plain code and declined a seam, and why**.
-6. **Taste gate + design it twice** — recommend a candidate (native or structural) only if it removes more
-   complexity than it adds; for any non-trivial interface, sketch two genuinely different structures.
-7. **Weigh second-order consequences** — failure modes, how it evolves (cost of the next feature),
-   coupling / blast radius.
+`$ARGUMENTS` names paths, a diff range, **or a feature/plan (e.g. `F-CONT-007` — fetch its Plan
+from Notion and sweep the *planned* design before any code exists)**; empty ⇒ the current branch's
+diff against `main` (fall back to the working-tree diff). Read the target plus enough of the
+existing code to judge it, then
+state the **judging criteria for this code** before comparing anything: which axes dominate here —
+leverage (platform reuse, performance at expected load, correctness/failure behavior) vs structure
+(type-safety & inference, extensibility where change is actually coming, fewest moving parts).
 
-**Output a findings block first** (criteria → recommendation naming the primitive *and* its abstraction →
-2–3 weighed trade-offs incl. consequences → where you declined an abstraction → a citation per factual
-claim), then wait for go-ahead or proceed if the task said to. Do not write application code during the
-sweep.
+## Leg A — platform sweep (don't reinvent)
+
+For each subsystem the code touches, enumerate the advanced/native capabilities that could dissolve
+hand-written code or improve performance — not the CRUD basics. Consult in order: the repo catalogs
+— **`.claude/agent-patterns/postgres-capabilities.md`** (SQL primitives),
+**`.claude/agent-patterns/effect-stdlib.md`** (Effect's data/utility modules),
+**`.claude/agent-patterns/modern-typescript.md`** (ES2023–25 / TS 5.x language features),
+**`.claude/agent-patterns/type-fest.md`** (utility types) — then the vendored `repos/` source (the
+authority for exact shapes), then official docs on the web; verify a feature exists in the pinned
+version before recommending it.
+
+## Leg B — design shake (the structure the problem wants)
+
+Work from **`.claude/agent-patterns/design-principles.md`** — the symptom → structural-move
+recognition map (Ousterhout, SOLID/GRASP, the classic patterns in their functional/Effect form,
+and the simplicity tie-breakers). Scan the diff/plan against its table; for any non-trivial
+interface, **sketch two genuinely different structures** (signature/usage first, implementation
+second) and compare against the judging criteria.
+
+## The taste gate — both ways, load-bearing
+
+Recommend a candidate (native or structural) only if it removes more complexity than it adds.
+Flag reinvention in **both** directions: naive code reinventing a native feature, AND an
+abstraction added where flat code is honest — deleting structure is as gifted a move as adding it.
+Type-safety & inference are a hard default: any `any`, unchecked cast, or raw untyped SQL string is
+a cost to justify. For the winning shape, weigh second-order consequences: failure modes, what the
+next likely feature costs against it, coupling/blast radius.
+
+## Output — a ranked findings report
+
+For each finding: the current shape → the proposed shape (name the native primitive AND the
+abstraction that houses it) → what it removes vs what it adds → verdict. Include a section for
+**declined ideas** — where you deliberately kept the plain code and why. Cite each factual claim
+(docs URL, `repos/` path, or catalog §). Then stop and let the user pick what to apply.

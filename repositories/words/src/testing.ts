@@ -1,15 +1,24 @@
 import type { Language, WordInsert } from '@lexiai/database'
+import { enumAsyncJobStatus } from '@lexiai/database'
 import { makeWordInsert } from '@lexiai/database/factories'
-import { upsertWords } from './words.repo'
+import { upsertWord } from './words.repo'
 
-/**
- * Seed a ready `words` row — the `succeeded` ground truth a higher-layer test reads. Returns the
- * saved {@link import('@lexiai/database').WordRow} so the test can assert against generated ids /
- * content; `overrides` extend the faker content (e.g. a fixed `coreDefinition`). Requires the `DB`
- * service in context (`upsertWords` `yield*`s it).
- */
+/** A non-`succeeded` `status` — the states an unready `words` row can carry (content NULL). */
+type UnreadyStatus = 'pending' | 'running' | 'failed'
+
+/** Seed a ready (`succeeded`, full-content) row via the real write path. */
 export const seedReadyWord = (
   language: Language,
   word: string,
   overrides: Partial<WordInsert> = {},
-) => upsertWords(makeWordInsert({ word, language, ...overrides }))
+) => upsertWord(language, word, makeWordInsert({ word, language, ...overrides }))
+
+/**
+ * Seed a content-NULL building row — what makes a building word appear in list/counts (they read
+ * the `words` table directly); legal because the CHECK only requires content when `succeeded`.
+ */
+export const seedUnreadyWord = (
+  language: Language,
+  word: string,
+  status: UnreadyStatus = enumAsyncJobStatus.pending,
+) => upsertWord(language, word, { status })

@@ -1,12 +1,12 @@
 import { describe, expect, it } from '@effect/vitest'
+import type { ReadyWord, UnreadyWord, Word } from '@lexiai/core-words'
 import {
   type AsyncWordJobRow,
   enumAsyncJobStatus,
   enumJobErrorType,
   enumWordJobStage,
-  type JobError,
+  type JobErrorEntity,
   type WordJobStage,
-  type WordRow,
 } from '@lexiai/database'
 import { Option } from 'effect'
 import { collapseWordState } from '../src/words/word-state-collapse'
@@ -17,7 +17,7 @@ import { assertStatus } from './words-api-test-utils'
 const stageRow = (
   stage: WordJobStage,
   status: AsyncWordJobRow['status'],
-  error: JobError | null = null,
+  error: JobErrorEntity | null = null,
 ): AsyncWordJobRow => ({
   id: `id-${stage}`,
   word: 'lacuna',
@@ -32,9 +32,17 @@ const stageRow = (
   updatedAt: new Date('2026-06-11T00:00:00.000Z'),
 })
 
-// The succeeded branch only embeds + reads `.word`, so a minimal cast suffices — no full-entity fixture.
-const READY = Option.some({ word: 'lacuna' } as WordRow)
-const NO_WORD = Option.none<WordRow>()
+// The collapse now keys the discriminant off the decoded `Word` union's `status`, so a `succeeded`
+// fixture must carry `status: 'succeeded'` (it is a `ReadyWord`); the succeeded branch only embeds +
+// reads `.word`, so a minimal cast suffices — no full-entity fixture.
+const READY = Option.some({ word: 'lacuna', status: enumAsyncJobStatus.succeeded } as ReadyWord)
+// A present-but-unready row (`pending`/`running`/`failed`) must NOT collapse to succeeded — the
+// discriminant is the row's `status`, not the mere presence of a row (F-CONT-006, AC-14).
+const BUILDING = Option.some({
+  word: 'lacuna',
+  status: enumAsyncJobStatus.running,
+} as UnreadyWord)
+const NO_WORD = Option.none<Word>()
 
 describe('collapseWordState', () => {
   it('succeeded: a ready word wins over any stage rows, carrying the word row', () => {
@@ -46,6 +54,22 @@ describe('collapseWordState', () => {
     )
     assertStatus(state, 'succeeded')
     expect(state.word.word).toBe('lacuna')
+  })
+
+  it('discriminant from status: a present non-succeeded row collapses off its stages, not to succeeded (AC-14)', () => {
+    const state = Option.getOrThrow(
+      collapseWordState({
+        word: BUILDING,
+        stages: [stageRow(enumWordJobStage.fetch_source, enumAsyncJobStatus.running)],
+      }),
+    )
+    // The row exists but its `status` is `running`, so the state is the stage-derived `running` view —
+    // presence alone must not win the succeeded branch (the pre-F-CONT-006 behaviour).
+    assertStatus(state, 'running')
+    expect(state.stages).toContainEqual({
+      stage: enumWordJobStage.fetch_source,
+      status: enumAsyncJobStatus.running,
+    })
   })
 
   it('absent: no word and no stages → Option.none', () => {

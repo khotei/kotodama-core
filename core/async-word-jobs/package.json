@@ -9,13 +9,13 @@
   },
   "dependencies": {
     "effect": "catalog:effect",
+    "@lexiai/core-words": "workspace:*",
     "@lexiai/database": "workspace:*",
     "@lexiai/queue": "workspace:*",
-    "@lexiai/repositories-async-word-jobs": "workspace:*",
-    "@lexiai/repositories-words": "workspace:*"
+    "@lexiai/repositories-async-word-jobs": "workspace:*"
   },
   "scripts": {
-    "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "test": "bun --bun vitest run",
+    "typecheck": "bun --bun tsc --noEmit"
   }
 }

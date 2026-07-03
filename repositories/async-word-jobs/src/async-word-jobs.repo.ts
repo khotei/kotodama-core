@@ -8,18 +8,11 @@ import type {
 import { asyncWordJobsTable, DB, patchOnConflict } from '@lexiai/database'
 import { and, eq, inArray } from 'drizzle-orm'
 import { Array as Arr, Effect } from 'effect'
-import type { StagePatch } from './stage-patch'
 
-/** A single value or a readonly batch of them — the repo's single-or-array filter/payload idiom. */
 type Arrayable<T> = T | readonly T[]
 
-/**
- * A read over one word's stages: always scoped to `(language, word)`, optionally narrowed by `stage`
- * and/or `status` (each a single value or an array). Rows come back **unordered** — sort at the call
- * site (e.g. by `wordJobStage` declaration order) if a stepper needs it. The single flexible read
- * behind every API/core question.
- */
-export type AsyncWordJobsQuery = {
+// Rows come back UNORDERED — a stepper sorts by the `wordJobStage` declaration order.
+export type AsyncWordJobQuery = {
   readonly language: Language
   readonly word: string
   readonly stage?: Arrayable<WordJobStage>
@@ -27,31 +20,34 @@ export type AsyncWordJobsQuery = {
 }
 
 /**
- * `upsertWordJobStages`' input-inferred shape: a single patch returns the one upserted row; an array
- * returns a row per patch — each with its own payload, by its own `INSERT … ON CONFLICT DO UPDATE`.
+ * Merge-patch payload: an **absent** field leaves the stored column untouched, an explicit
+ * **`null` clears it** (so a `succeeded` patch can't erase the `startedAt` its `running`
+ * predecessor stamped — it simply doesn't carry the key). Author payloads through `stagePatch` —
+ * the single owner of the status ⇄ timestamp pairing.
  */
+export type AsyncWordJobUpsert = {
+  readonly stage: AsyncWordJobRow['stage']
+  readonly status: AsyncWordJobRow['status']
+  readonly result?: AsyncWordJobRow['result']
+  readonly error?: AsyncWordJobRow['error']
+  readonly startedAt?: AsyncWordJobRow['startedAt']
+  readonly finishedAt?: AsyncWordJobRow['finishedAt']
+}
+
 type UpsertWordJobStages = {
   (
     language: Language,
     word: string,
-    patch: StagePatch,
+    patch: AsyncWordJobUpsert,
   ): Effect.Effect<AsyncWordJobRow, EffectDrizzleQueryError, DB>
   (
     language: Language,
     word: string,
-    patches: readonly StagePatch[],
+    patches: readonly AsyncWordJobUpsert[],
   ): Effect.Effect<readonly AsyncWordJobRow[], EffectDrizzleQueryError, DB>
 }
 
-/**
- * Read one word's stage rows from the flat `async_word_jobs` table, scoped to `(language, word)` and
- * narrowed by `stage`/`status`. **Unordered** (a stepper sorts by `wordJobStage` declaration order);
- * absence is an empty array. A raw `SELECT` over `DB` (which it `yield*`s). A bare persistence function
- * (the `select` verb marks the layer), not a `Context.Service`.
- *
- * @see `repositories/async-word-jobs/CLAUDE.md`
- */
-export const selectWordJobStages = Effect.fnUntraced(function* (query: AsyncWordJobsQuery) {
+export const selectWordJobStages = Effect.fnUntraced(function* (query: AsyncWordJobQuery) {
   const db = yield* DB
   const stages = query.stage === undefined ? [] : Arr.ensure(query.stage)
   const statuses = query.status === undefined ? [] : Arr.ensure(query.status)
@@ -69,30 +65,20 @@ export const selectWordJobStages = Effect.fnUntraced(function* (query: AsyncWord
 })
 
 /**
- * Upsert one stage state or many — each {@link StagePatch} names its row and carries its own payload;
- * the upsert on `UNIQUE(word, language, stage)` inserts the row if it never existed, patches it
- * otherwise (merge-patch: a carried field lands verbatim — explicit `null` clears the column — an
- * absent field leaves it untouched). Payloads come from {@link stagePatch} — never hand-roll the
- * status ⇄ timestamp pairing. Seeding/reset is the same call (a run starts, and a regen re-runs, by
- * upserting `stagePatch.pending` patches that reset the rows in place). An array runs one statement
- * per patch (no transaction), so a batch is **not** atomic across patches; the same stage twice in one
- * batch is last-write-wins, not an error. A bare persistence function (the `upsert` verb marks the
- * layer), not a `Context.Service` — it checks no domain invariant and fails with no domain error.
- *
- * @see `repositories/async-word-jobs/CLAUDE.md`
+ * A never-initialized stage is **created** by the upsert, so seeding/reset is this same call (a
+ * regen re-runs by upserting `stagePatch.pending` patches, whose explicit nulls reset the rows in
+ * place). The same stage twice in one batch is last-write-wins, not an error.
  */
 export const upsertWordJobStages = ((
   language: Language,
   word: string,
-  patch: Arrayable<StagePatch>,
+  patch: Arrayable<AsyncWordJobUpsert>,
 ) =>
   Effect.gen(function* () {
     const db = yield* DB
     const rows: AsyncWordJobRow[] = []
-    // One statement per patch. A single ON CONFLICT statement carries one shared SET, but each
-    // patch sets only the columns it carries (merge-patch via `patchOnConflict`), so two patches
-    // of different shape can't share a statement — a per-patch loop scopes every SET to its own
-    // row. No transaction: a failing patch leaves earlier ones applied (CLAUDE.md).
+    // One statement per patch — differently-shaped patches can't share one SET. No transaction:
+    // a failing patch leaves earlier ones applied.
     for (const p of Arr.ensure(patch)) {
       const value = { language, word, ...p }
       rows.push(

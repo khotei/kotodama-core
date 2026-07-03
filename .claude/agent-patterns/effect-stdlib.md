@@ -87,7 +87,6 @@ key; dual) · `combine`/`combineAll` (tie-breakers) · `flip` · `Tuple`/`Struct
 
 ## When NOT to reuse
 
-The taste gate (`.claude/rules/deep-modules.md`) still applies — reuse only when it removes more than it
-adds. A correct, idiomatic JS one-liner is not "reinvention": e.g. `arr.filter(Boolean)` (drop falsy
+The taste gate still applies — reuse only when it removes more than it adds. A correct, idiomatic JS one-liner is not "reinvention": e.g. `arr.filter(Boolean)` (drop falsy
 incl. `''`) has no clean Effect equivalent — `Array.getSomes` is for `Option`s and `Predicate.isString`
 keeps empty strings. Don't force a worse combinator to "use Effect"; flag the call, pick the simpler form.

@@ -19,17 +19,12 @@ class SmokeTimeout extends Data.TaggedError('SmokeTimeout')<{
 }> {}
 class SmokeBuildFailed extends Data.TaggedError('SmokeBuildFailed')<{ readonly stages: unknown }> {}
 
-/** The bits of `WordStateView` this smoke reads off the wire (it asserts the discriminant, not the schema). */
+// Asserts the discriminant only, deliberately not the schema.
 interface WireState {
   readonly status?: 'succeeded' | 'running' | 'failed'
   readonly stages?: unknown
 }
 
-/**
- * One JSON request against the local API. A transport failure or any non-2xx becomes a
- * {@link SmokeHttpError} carrying the status, so the caller can tolerate a specific one (the build's 409)
- * and fail on the rest.
- */
 const request = (method: 'GET' | 'POST', url: string) =>
   Effect.tryPromise({
     try: async () => {
@@ -46,11 +41,7 @@ const request = (method: 'GET' | 'POST', url: string) =>
     ),
   )
 
-/**
- * Poll `GET …/state` until the build's discriminant is `succeeded`, sleeping {@link POLL_DELAY} between
- * polls. A `failed` state ends immediately ({@link SmokeBuildFailed}); exhausting {@link MAX_POLLS} ends
- * with {@link SmokeTimeout}. The explicit return type is required — the function is self-recursive.
- */
+// The explicit return type is required — the function is self-recursive.
 const pollUntilSucceeded = (
   base: string,
   attempt = 1,
@@ -70,13 +61,8 @@ const pollUntilSucceeded = (
     return yield* pollUntilSucceeded(base, attempt + 1)
   })
 
-/**
- * The local end-to-end smoke: POST a word build then poll its state to `succeeded` — one command that
- * proves the real-engine run path (needs `local:up` + both `dev` apps running, and a real
- * `OPENAI_API_KEY`). The host comes from `@lexiai/config`'s {@link Port} (not a literal), so it tracks
- * the same `PORT` the API binds. A 409 on POST means the word is already building or Ready — a success
- * for a smoke, so it is tolerated and the poll proceeds.
- */
+// Needs `local:up` + both dev apps + a real OPENAI_API_KEY. A 409 on POST (already building /
+// Ready) is a success for a smoke, so it is tolerated and the poll proceeds.
 const program = Effect.gen(function* () {
   const port = yield* Port
   const base = `http://localhost:${port}/api/words/${LANGUAGE}/${WORD}`

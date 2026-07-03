@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@effect/vitest'
 import { AiError, AiService } from '@lexiai/ai'
-import { AuthorExample, CulturalGuide, enumLanguage } from '@lexiai/database'
+import { AuthorExampleEntity, CulturalGuideEntity, enumLanguage } from '@lexiai/database'
 import { WikiClientTest } from '@lexiai/external-apis/testing'
 import { bucketObjects, resetBucket, StorageLocalStackLive } from '@lexiai/storage/testing'
 import { Effect, Layer, Schema } from 'effect'
@@ -65,8 +65,8 @@ const engineLayer = (object: unknown, image: Uint8Array | undefined) =>
   )
 
 const AuthorsResult = Schema.Struct({
-  authorExamples: Schema.Array(AuthorExample),
-  culturalGuide: CulturalGuide,
+  authorExamples: Schema.Array(AuthorExampleEntity),
+  culturalGuide: CulturalGuideEntity,
 })
 
 it.layer(StorageLocalStackLive, { timeout: '120 seconds' })((it) => {

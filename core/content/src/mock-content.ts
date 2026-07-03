@@ -1,54 +1,49 @@
 import {
-  type AuthorExample,
-  type CulturalGuide,
-  type Etymology,
+  type AuthorExampleEntity,
+  type CulturalGuideEntity,
+  type EtymologyEntity,
   enumFrequencyBand,
   enumSourceType,
   enumVisualKind,
-  type Frequency,
+  type FrequencyEntity,
   type Language,
-  type Lexical,
-  type Pronunciation,
-  type Relations,
-  type Source,
-  type Tier,
-  type Tiers,
-  type Translation,
-  type Visual,
-  type Visuals,
-  type WordContent,
+  type LexicalEntity,
+  type PronunciationEntity,
+  type RelationsEntity,
+  type SourceEntity,
+  type TierEntity,
+  type TiersEntity,
+  type TranslationEntity,
+  type VisualEntity,
+  type VisualsEntity,
   type WordJobStage,
 } from '@lexiai/database'
 import { STAGE_SLICES, type StageSlice } from './stage-slices'
+import type { WordContent } from './word-content.schema'
 
 /**
- * Deterministic, schema-valid mock word content, keyed only by the word. No `faker`, clock, or
- * randomness — `@lexiai/database/factories` pulls faker (a devDependency that must stay out of prod
- * source), and a reproducible mock is what tests and the local demo want. `makeWordInsert` is the
- * *shape* model:
- * every field below mirrors a `words.content` shape and decodes against the `WordEntity`
- * (`@lexiai/database`). The per-stage slices are disjoint and collectively cover the entity (minus
- * the build identity `word`/`language`, which the worker supplies).
+ * Deterministic, schema-valid mock content keyed only by the word — no faker (a devDependency that
+ * must stay out of prod source), no clock, no randomness, so tests and the local demo reproduce.
  */
 
 const cap = (word: string): string => word.charAt(0).toUpperCase() + word.slice(1)
 
 const storageKey = (word: string, kind: string): string => `mock/${kind}/${word}.bin`
 
-const lexical = (word: string): Lexical => ({
+const lexical = (word: string): LexicalEntity => ({
   partOfSpeech: 'noun',
   countable: true,
   plural: { primary: `${word}s`, also: [`${word}es`] },
   register: ['literary', 'formal'],
 })
 
-const pronunciation = (word: string): Pronunciation => ({
+const pronunciation = (word: string): PronunciationEntity => ({
   ipa: `/ˈ${word}/`,
   respelling: word.toUpperCase(),
   audio: { uk: storageKey(word, 'audio/uk'), us: storageKey(word, 'audio/us') },
 })
 
-const tier = (word: string, depth: string): Tier => ({
+const tier = (word: string, depth: string): TierEntity => ({
   title: `${cap(depth)} sense of ${word}`,
   body: `A ${depth} reading of “${word}”.`,
   examples: [
@@ -57,14 +52,14 @@ const tier = (word: string, depth: string): Tier => ({
   ],
 })
 
-const tiers = (word: string): Tiers => ({
+const tiers = (word: string): TiersEntity => ({
   quick: tier(word, 'quick'),
   everyday: tier(word, 'everyday'),
   deep: tier(word, 'deep'),
   cultural: tier(word, 'cultural'),
 })
 
-const etymology = (word: string): Etymology => ({
+const etymology = (word: string): EtymologyEntity => ({
   summary: `“${word}” descends through several attested forms.`,
   firstAttested: { year: 1500, language: 'Latin' },
   origin: { from: `${word}-`, to: word, gloss: `relating to ${word}` },
@@ -80,7 +75,7 @@ const etymology = (word: string): Etymology => ({
   ],
 })
 
-const authorExamples = (word: string, language: Language): AuthorExample[] => [
+const authorExamples = (word: string, language: Language): AuthorExampleEntity[] => [
   {
     author: 'A. Writer',
     authorImageUrl: storageKey(word, 'authors'),
@@ -99,7 +94,7 @@ const authorExamples = (word: string, language: Language): AuthorExample[] => [
   },
 ]
 
-const culturalGuide = (word: string): CulturalGuide => ({
+const culturalGuide = (word: string): CulturalGuideEntity => ({
   timeline: [
     { date: '1900', text: `“${word}” enters common use.` },
     { date: '2000', text: `“${word}” spreads online.` },
@@ -108,18 +103,18 @@ const culturalGuide = (word: string): CulturalGuide => ({
   notes: [`A usage note on ${word}.`],
 })
 
-const relations = (word: string): Relations => ({
+const relations = (word: string): RelationsEntity => ({
   synonyms: [{ term: `${word}-like`, note: 'near synonym' }],
   antonyms: [{ term: `un-${word}` }],
   family: [`${word}ness`, `${word}ful`],
 })
 
-const translations = (word: string): Translation[] => [
+const translations = (word: string): TranslationEntity[] => [
   { language: 'fr', term: `${word} (fr)` },
   { language: 'de', term: `${word} (de)` },
 ]
 
-const visual = (word: string, kind: Visual['kind']): Visual => ({
+const visual = (word: string, kind: VisualEntity['kind']): VisualEntity => ({
   kind,
   imageKey: storageKey(word, `visuals/${kind}`),
   prompt: `A ${kind} illustrating “${word}”.`,
@@ -129,13 +124,13 @@ const visual = (word: string, kind: Visual['kind']): Visual => ({
   height: 1024,
 })
 
-const visuals = (word: string): Visuals => ({
+const visuals = (word: string): VisualsEntity => ({
   hero: visual(word, enumVisualKind.hero),
   infographic: visual(word, enumVisualKind.infographic),
   memes: [visual(word, enumVisualKind.meme)],
 })
 
-const sources = (word: string): Source[] => [
+const sources = (word: string): SourceEntity[] => [
   {
     index: 0,
     type: enumSourceType.wiktionary,
@@ -148,7 +143,7 @@ const sources = (word: string): Source[] => [
   { index: 1, type: enumSourceType.dictionary, title: `Dictionary entry: ${word}`, year: 2020 },
 ]
 
-const frequency = (): Frequency => ({
+const frequency = (): FrequencyEntity => ({
   band: enumFrequencyBand.uncommon,
   trendNote: 'steady use over the last decade',
   series: [
@@ -159,12 +154,7 @@ const frequency = (): Frequency => ({
   changeNote: 'slight rise',
 })
 
-/**
- * The full mock `WordContent` — every field a `words` row carries. Typed as {@link WordContent}, so a
- * new content field fails `tsc` here until the mock provides it. {@link mockStageContent} slices this
- * through {@link STAGE_SLICES} instead of re-listing which keys each stage owns, so the mock can't drift
- * from the real engine's per-stage partition.
- */
+// Typed as WordContent so a new content field fails tsc here until the mock provides it.
 const fullMockContent = (word: string, language: Language): WordContent => ({
   coreDefinition: `${cap(word)}: a deliberately mock definition of “${word}”.`,
   lexical: lexical(word),
@@ -180,12 +170,8 @@ const fullMockContent = (word: string, language: Language): WordContent => ({
   frequency: frequency(),
 })
 
-/**
- * The typed {@link StageSlice} a given pass writes for `(word, language)` — the stage's keys
- * ({@link STAGE_SLICES}, the real engine's own partition) picked off {@link fullMockContent}. Pure and
- * deterministic. The cast bridges the runtime key-pick to the static slice type; the keys come from
- * `STAGE_SLICES[stage]` itself, so the pick always yields exactly that stage's slice.
- */
+// Sliced through STAGE_SLICES (never a re-listed partition), so the mock can't drift from the
+// real engine's stage → keys mapping; the cast bridges the runtime pick to the static slice type.
 export const mockStageContent = <S extends WordJobStage>(
   stage: S,
   word: string,

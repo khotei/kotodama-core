@@ -9,4 +9,4 @@
 - **Transport stays in `R`:** `WikiClientLive` requires `HttpClient.HttpClient` (from `effect/unstable/http`,
   v4 — *not* `@effect/platform`); the app provides `BunHttpClient.layer`, tests provide a fake-fetch
   one. So this leaf depends on no concrete platform client — only `effect`.
-- **May import:** `effect`. **MUST NOT** be imported by `apps/web`.
+- **May import:** `effect`.

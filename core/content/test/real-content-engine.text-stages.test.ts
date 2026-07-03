@@ -1,13 +1,13 @@
 import { describe, expect, it } from '@effect/vitest'
 import { AiServiceTest } from '@lexiai/ai/testing'
 import {
-  Etymology,
+  EtymologyEntity,
   enumFrequencyBand,
   enumLanguage,
-  Frequency,
-  Relations,
-  Tiers,
-  Translation,
+  FrequencyEntity,
+  RelationsEntity,
+  TiersEntity,
+  TranslationEntity,
 } from '@lexiai/database'
 import { WikiClientTest } from '@lexiai/external-apis/testing'
 import { UnusedStorage } from '@lexiai/storage/testing'
@@ -17,15 +17,15 @@ import { RealContentEngineLive } from '../src/real-content-engine.service'
 
 /**
  * The three text-enrichment slices, rebuilt from the same content schemas the engine decodes
- * through — each stage's `StageResult` must validate against the slice keyed exactly to it.
+ * through — each stage's `StageResultEntity` must validate against the slice keyed exactly to it.
  */
-const EtymologySlice = Schema.Struct({ etymology: Etymology })
+const EtymologySlice = Schema.Struct({ etymology: EtymologyEntity })
 const TiersSlice = Schema.Struct({
-  tiers: Tiers,
-  relations: Relations,
-  translations: Schema.Array(Translation),
+  tiers: TiersEntity,
+  relations: RelationsEntity,
+  translations: Schema.Array(TranslationEntity),
 })
-const FrequencySlice = Schema.Struct({ frequency: Frequency })
+const FrequencySlice = Schema.Struct({ frequency: FrequencyEntity })
 
 /** A canned `enrich_etymology` object, shaped like the engine's etymology struct. */
 const etymologyObject = (word: string) => ({

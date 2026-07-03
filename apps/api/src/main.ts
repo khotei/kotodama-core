@@ -1,5 +1,8 @@
-import { BunHttpServer, BunRuntime } from '@effect/platform-bun'
-import { ConfigProviderLive, Port } from '@lexiai/config'
+import * as OpenAiClient from '@effect/ai-openai/OpenAiClient'
+import * as OpenAiClientGenerated from '@effect/ai-openai/OpenAiClientGenerated'
+import { BunHttpClient, BunHttpServer, BunRuntime } from '@effect/platform-bun'
+import { AiServiceLive } from '@lexiai/ai'
+import { ConfigProviderLive, OpenaiApiKey, Port } from '@lexiai/config'
 import { DatabaseLive } from '@lexiai/database'
 import { TracingLive } from '@lexiai/observability'
 import { JobsQueueLive, QueueClientLive } from '@lexiai/queue'
@@ -9,15 +12,23 @@ import { HttpApiBuilder } from 'effect/unstable/httpapi'
 import { WordsApi } from './words/words.api'
 import { WordsApiLive } from './words/words.handler'
 
-/**
- * What every handler needs, composed once: the two boundary services the handler flows bottom out at
- * — the live SQS `JobsQueue` (`requestWordBuild`'s enqueue, the bound wrapper over `QueueClientLive`)
- * and the live `DB` (every repo call, `yield*`ed by `selectWord` / `selectWordJobStages` /
- * `requestWordBuild`). The repos + use-case flows are now plain functions taking these from the `R`
- * channel, so there are no per-repo or per-use-case layers to wire — just the boundaries. Their
- * residual `ConfigError` closes against `ConfigProviderLive`.
- */
-const DomainLive = Layer.mergeAll(JobsQueueLive.pipe(Layer.provide(QueueClientLive)), DatabaseLive)
+// Deliberately duplicates the worker's ~10-line AiServiceProd rather than sharing a layer, and
+// omits its AiServiceResilient decorator: the verifier's judge is fail-open, so retry buys little
+// and would pull image-path tuning into a text-only app.
+const AiServiceProd = AiServiceLive.pipe(
+  Layer.provide([
+    OpenAiClient.layerConfig({ apiKey: OpenaiApiKey }),
+    OpenAiClientGenerated.layerConfig({ apiKey: OpenaiApiKey }),
+  ]),
+  Layer.provide(BunHttpClient.layer),
+)
+
+// Only the boundary services — repos and flows are plain functions whose `R` bottoms out here.
+const DomainLive = Layer.mergeAll(
+  JobsQueueLive.pipe(Layer.provide(QueueClientLive)),
+  DatabaseLive,
+  AiServiceProd,
+)
 
 const ApiLive = HttpApiBuilder.layer(WordsApi).pipe(Layer.provide(WordsApiLive))
 

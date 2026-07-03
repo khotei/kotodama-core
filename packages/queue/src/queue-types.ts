@@ -1,9 +1,6 @@
 import { Data } from 'effect'
 
-/**
- * A message pulled off the queue: its raw `body` plus the `handle` used to ack it via the queue's
- * `delete`. The body is opaque to this layer — the build-message schema is owned by the enqueuer.
- */
+// The body is opaque to this layer — the message schema is owned by the enqueuer.
 export interface QueueMessage {
   readonly body: string
   readonly handle: string
@@ -17,5 +14,4 @@ export interface ReceiveOptions {
   readonly waitSeconds?: number
 }
 
-/** The underlying queue transport rejected (e.g. the SQS API errored or is unreachable). */
 export class QueueError extends Data.TaggedError('QueueError')<{ cause: unknown }> {}

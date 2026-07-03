@@ -1,31 +1,29 @@
 import { readWordBuildSnapshot } from '@lexiai/core-async-word-jobs'
-import { selectWord } from '@lexiai/repositories-words'
+import { decodeWord, ensureReadyWord, findWord, type Word } from '@lexiai/core-words'
+import { searchWords, selectWordCounts } from '@lexiai/repositories-words'
 import { requestWordBuild } from '@lexiai/use-cases'
 import { Effect, Option } from 'effect'
 import { HttpApiBuilder } from 'effect/unstable/httpapi'
+import { paginate } from '../pagination.view'
 import { collapseWordState } from './word-state-collapse'
 import { WordsApi } from './words.api'
 
-/**
- * Binds the `words` group to the `core/*` reads + {@link requestWordBuild}. The state read pairs
- * {@link readWordBuildSnapshot} (the one imperative fetch) with the pure {@link collapseWordState} (its single
- * author, a view model owned here at the API edge); the build read collapses the rows
- * {@link requestWordBuild} hands back (`{ word: none, stages: seeded }` ⇒ `running`). A repo or queue
- * fault is infrastructure, not a domain outcome the reader recovers from, so it's `die`d to a 500 rather
- * than declared on the endpoint. `getWord`'s and `getWordState`'s absence is `null` (mapped with
- * `Option.getOrNull`); `buildWord`'s rejections (`WordAlreadyReadyError`/`InvalidWordInputError`) are
- * declared on the endpoint and pass through, while its infra faults are `catchTags`-`die`d.
- */
+// Throughout: infra faults (repo/queue unreachable, impossible-state decode failures) are `die`d
+// to 500s; only the errors declared on each endpoint pass through as typed 4xx.
 export const WordsApiLive = HttpApiBuilder.group(WordsApi, 'words', (handlers) =>
   handlers
     .handle('getWord', (ctx) =>
       Effect.gen(function* () {
-        const found = yield* selectWord(ctx.params.language, ctx.params.word)
-        return Option.getOrNull(found)
-      }).pipe(Effect.orDie),
+        // Absence settles here (200 null); the pure gate is the single author of the 409.
+        const word = yield* findWord(ctx.params.language, ctx.params.word)
+        if (Option.isNone(word)) return null
+        return yield* ensureReadyWord(word.value)
+      }).pipe(Effect.catchTags({ EffectDrizzleQueryError: Effect.die, SchemaError: Effect.die })),
     )
     .handle('getWordState', (ctx) =>
       Effect.gen(function* () {
+        // The snapshot's word is already the decoded `Option<Word>` — collapse reads the row's own
+        // `status`, so no decode juggling here.
         const snapshot = yield* readWordBuildSnapshot(ctx.params.language, ctx.params.word)
         return Option.getOrNull(collapseWordState(snapshot))
       }).pipe(Effect.orDie),
@@ -41,8 +39,29 @@ export const WordsApiLive = HttpApiBuilder.group(WordsApi, 'words', (handlers) =
             }),
           ),
         ),
-        // Only infra faults 500; the declared domain rejections pass through as typed 4xx.
-        Effect.catchTags({ EffectDrizzleQueryError: Effect.die, QueueError: Effect.die }),
+        Effect.catchTags({
+          EffectDrizzleQueryError: Effect.die,
+          QueueError: Effect.die,
+          SqlError: Effect.die,
+        }),
       ),
+    )
+    .handle('search', (ctx) =>
+      Effect.gen(function* () {
+        const { language } = ctx.params
+        // `page`/`limit` are decode-defaulted by the query schema — always present here.
+        const { q, status, page, limit } = ctx.query
+        const result = yield* searchWords({ language, q, status, page, limit })
+        const items: Word[] = yield* Effect.forEach(result.items, (row) => decodeWord(row))
+        return paginate(items, { page, limit, total: result.total })
+      }).pipe(Effect.catchTags({ EffectDrizzleQueryError: Effect.die, SchemaError: Effect.die })),
+    )
+    .handle('counts', (ctx) =>
+      Effect.gen(function* () {
+        const { language } = ctx.params
+        const { q, status } = ctx.query
+        // Counts read the same `wordSearchFilter` the list pages, so they always agree.
+        return yield* selectWordCounts({ language, q, status })
+      }).pipe(Effect.orDie),
     ),
 )

@@ -55,16 +55,6 @@
     "ai": {
       "openai": "^4.77.0"
     },
-    "client": {
-      "react": "^19.0.0",
-      "react-dom": "^19.0.0",
-      "@types/react": "^19.0.0",
-      "@types/react-dom": "^19.0.0",
-      "babel-plugin-react-compiler": "beta",
-      "@tanstack/react-router": "^1.95.0",
-      "@effect/atom-react": "beta",
-      "tailwindcss": "^4.0.0"
-    },
     "types": {
       "type-fest": "^5.7.0",
       "@types/aws-lambda": "^8.10.0"
@@ -85,7 +75,7 @@
     "format": "biome format --write .",
     "lint": "biome lint .",
     "tsc": "bun run --filter '*' typecheck",
-    "test": "bun --bun run --filter '*' test",
+    "test": "bun run --filter '*' test",
     "check": "bun run lint && bun run tsc",
     "vendor:effect:add": "git subtree add --prefix=repos/effect-smol https://github.com/Effect-TS/effect-smol.git main --squash",
     "vendor:effect:update": "git subtree pull --prefix=repos/effect-smol https://github.com/Effect-TS/effect-smol.git main --squash",

@@ -57,7 +57,6 @@ Identity only — exact versions are pinned centrally in Bun **catalogs**
 | **Drizzle + `@effect/sql-pg`** | Schema + migrations; the Effect-native Postgres layer |
 | **`@effect/ai-openai`** | Word text + image generation |
 | **SQS + S3** (LocalStack locally) | Async job queue + generated-image storage |
-| **React 19 + Vite** | The `apps/web` SPA |
 | **Biome + Husky** | Lint/format + the pre-commit gate; encodes the layer rule |
 | **`@effect/vitest`** | Tests, one smoke per workspace |
 | **OpenTelemetry → Jaeger** | Traces, local and prod, from one wiring |
@@ -69,7 +68,7 @@ detail.
 
 | Layer | Owns | Why it's here |
 |---|---|---|
-| `apps/{api,worker,web}` | HTTP-contract server · SQS consumer · React SPA | the process boundaries |
+| `apps/{api,worker}` | HTTP-contract server · SQS consumer | the process boundaries |
 | `use-cases/` | end-to-end flow composers (`requestWordBuild`, `buildWord`) | one place a flow is assembled |
 | `core/{words,content,async-word-jobs}` | domain logic + the `ContentEngine` swap seam | the rules a flow runs |
 | `repositories/` | bare persistence functions over the DB layer | the only SQL surface |
@@ -78,8 +77,7 @@ detail.
 | `infra/` | Docker Compose (local) · Pulumi (later) · `local:*` scripts | dev/ops, never imported by app code |
 
 **Dependency direction** (enforced by Biome): `apps → use-cases → core → repositories → database`,
-and everything → `packages`. The frontend (`apps/web`) imports **no** internal package — the single
-most-protected rule. The full rule + enforcement lives in
+and everything → `packages`. The full rule + enforcement lives in
 [`.claude/rules/dependency-hierarchy.md`](.claude/rules/dependency-hierarchy.md); the topology map is
 [`docs/architecture.md`](docs/architecture.md).
 

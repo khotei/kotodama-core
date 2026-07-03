@@ -8,10 +8,10 @@ import { Context, Data, Effect, Layer, Redacted } from 'effect'
 import { Wait } from 'testcontainers'
 import { DB, DBLive } from './db'
 
+class ContainerError extends Data.TaggedError('ContainerError')<{ cause: unknown }> {}
+
 // Resolved from this file's location, not `cwd`, to stay robust to the invoking dir.
 const migrationsFolder = join(dirname(fileURLToPath(import.meta.url)), '..', 'migrations')
-
-class ContainerError extends Data.TaggedError('ContainerError')<{ cause: unknown }> {}
 
 class PgContainer extends Context.Service<PgContainer>()('@lexiai/database/testing/PgContainer', {
   make: Effect.acquireRelease(

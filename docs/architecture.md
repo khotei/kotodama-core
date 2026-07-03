@@ -25,8 +25,7 @@ returns the row once Ready. The composer functions that assemble this — `reque
 ## The layers
 
 Direction (top calls down; `packages/*` are leaves): `apps → use-cases → core → repositories →
-database`, and everything → `packages`. The **rule and its enforcement** — including the `apps/web`
-import lockdown — are owned by
+database`, and everything → `packages`. The **rule and its enforcement** are owned by
 [`.claude/rules/dependency-hierarchy.md`](../.claude/rules/dependency-hierarchy.md); the README has the
 [layer responsibility table](../readme.md#repository-layers). Each layer's detail is its own
 `CLAUDE.md`:
@@ -34,7 +33,7 @@ import lockdown — are owned by
 | Concern | Read |
 |---|---|
 | Dependency rule + enforcement | [`.claude/rules/dependency-hierarchy.md`](../.claude/rules/dependency-hierarchy.md) |
-| App entrypoints (api · worker · web) | [`apps/api`](../apps/api/CLAUDE.md) · [`apps/worker`](../apps/worker/CLAUDE.md) · [`apps/web`](../apps/web/CLAUDE.md) |
+| App entrypoints (api · worker) | [`apps/api`](../apps/api/CLAUDE.md) · [`apps/worker`](../apps/worker/CLAUDE.md) |
 | Flow composers | [`use-cases/CLAUDE.md`](../use-cases/CLAUDE.md) |
 | Domain logic + the `ContentEngine` swap seam | [`core/`](../core/content/CLAUDE.md) |
 | Persistence functions | [`repositories/`](../repositories/words/CLAUDE.md) |

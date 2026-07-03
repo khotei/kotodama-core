@@ -13,7 +13,7 @@ Read the vendored source before writing DI/wiring code.
 
 > **Not everything is a service.** A `Context.Service` + `Layer` is for things that *own* a
 > resource / are *swapped in tests* (`DB`, `ContentEngine`, the queue/AI/storage clients). Repos are
-> **bare DB-verb functions** (`selectWords` / `upsertWords`) and use-cases are **plain functions** — both
+> **bare DB-verb functions** (`selectWords` / `upsertWord`) and use-cases are **plain functions** — both
 > ride their deps on the `R` channel, no tag. See "Service vs plain function" in
 > `.claude/rules/effect-conventions.md` before reaching for the pattern below.
 
@@ -24,7 +24,7 @@ import { Context, Effect, Layer } from 'effect'
 
 export class ContentEngine extends Context.Tag('@lexiai/core-content/ContentEngine')<
   ContentEngine,
-  { readonly produce: (stage: WordJobStage, language: Language, word: string) => Effect.Effect<StageResult> }
+  { readonly produce: (stage: WordJobStage, language: Language, word: string) => Effect.Effect<StageResultEntity> }
 >() {}
 ```
 

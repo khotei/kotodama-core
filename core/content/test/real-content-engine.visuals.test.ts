@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@effect/vitest'
 import { AiError, AiService } from '@lexiai/ai'
-import { enumLanguage, enumVisualKind, Visuals } from '@lexiai/database'
+import { enumLanguage, enumVisualKind, VisualsEntity } from '@lexiai/database'
 import { WikiClientTest } from '@lexiai/external-apis/testing'
 import { bucketObjects, resetBucket, StorageLocalStackLive } from '@lexiai/storage/testing'
 import { Effect, Layer, Schema } from 'effect'
@@ -79,7 +79,9 @@ it.layer(StorageLocalStackLive, { timeout: '120 seconds' })((it) => {
         const result = yield* engine.produce('enrich_visuals', enumLanguage.en, 'lacuna')
 
         expect(new Set(Object.keys(result))).toEqual(new Set(['visuals']))
-        const { visuals } = Schema.decodeUnknownSync(Schema.Struct({ visuals: Visuals }))(result)
+        const { visuals } = Schema.decodeUnknownSync(Schema.Struct({ visuals: VisualsEntity }))(
+          result,
+        )
 
         // The engine threads each `put` key (imageKey(...)) back into the slice — asserted from the
         // result, so render order holds here.

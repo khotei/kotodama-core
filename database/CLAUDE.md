@@ -1,40 +1,33 @@
 # database — `@lexiai/database`
 
-Drizzle schema, relations, migrations, seed, and the `DB` layer. Owns the SQL layer. The schema
-*mechanics* (the `…Table` suffix, `snakeCase.table`, `<Entity>Row` = `$inferSelect`) live in
-`@.claude/rules/naming.md` + `drizzle-effect.md` — this file is the constraints and pointers those
-can't localize.
+Drizzle schema, relations, migrations, seed, and the `DB` layer. Schema *mechanics* (folder
+layout, `…Table` suffix, entity derivation) live in `.claude/rules/naming.md` +
+`.claude/rules/drizzle-effect.md` — this file is only the constraints those can't localize.
 
-- **May import:** `@lexiai/*` packages, `effect`, `@effect/sql-pg`, drizzle, `@lexiai/config`.
-  **Never** `core/*`, `repositories/*`, `apps/*`. No HTTP code.
-- **Schema is grouped by aggregate/domain, not per table** — one folder per repo boundary
-  (`schema/words/`, `schema/async-word-jobs/`; a word's generation is **one `async_word_jobs` row per
-  `(word, language, stage)`** — `StageState` flattened into columns, not a `payload` jsonb), re-exported
-  by the single `schema/index.ts` barrel that `drizzle.config.ts` points at (a directory glob would
-  double-count the barrel's re-exports).
-- **Schema authority (this is the bottom of the chain):** `database/` authors the word vocabulary
-  and persistence schemas — content effect-schemas (`<entity>.content.ts`), value tuples + `pgEnum`s
-  (`<entity>.values.ts`/`enums.ts`), and the `<Name>Entity` row schemas (`<entity>.entity.ts`,
-  `createSelectSchema` + jsonb overrides so columns are typed, not opaque `Json`). **Both tables
-  (`words`, `async_word_jobs`) follow this identically** — content schemas → entity. Consumers use the
-  rows/entities directly (the API contracts compose `WordEntity`); the consuming layers author only
-  computed view/read models whose leaves derive from the entities (`WordStateView`). One author per shape, no cycle. The
-  `<Name>EntityInsert` schemas validate untrusted writes (`assembleWord`, `@lexiai/core-words`). See `drizzle-effect.md`.
-- **Layers (`src/db.ts`):** this package *exposes* layers only — `apps/*` compose them; `DatabaseLive`
-  is the self-contained one. Wiring details: `drizzle-effect.md`.
-- **`db:*` scripts are config-driven** through `@lexiai/config` (`ConfigProviderLive` + `DatabaseUrl`)
-  — no hardcoded URLs. They target the **dev** DB (`lexiai_dev` by default; override with an exported
-  `DATABASE_URL`). `db:reset` / `db:seed` are `echo` placeholders until a feature needs them.
-- **Migrations** (`migrations/`) use the drizzle-kit rc format: one timestamped folder per migration
+- **Schema authority — entity-level ONLY:** this package authors the *storage* vocabulary (value
+  tuples + `pgEnum`s, content schemas suffixed `Entity`, the `<Name>Entity`/`<Name>EntityInsert`
+  row schemas). **Shapes *derived* from the entities live in the core package that owns them,
+  never here** — the `Word` union is `core-words`', `WordContent` is `core-content`'s, the views
+  are the API edge's. One author per shape, no cycle.
+- **`words` is one lifecycle row:** every row carries `status` (the reused `async_job_status`
+  enum — never a second enum) and all content columns are **nullable** (a row exists from the
+  moment a build is requested). The `CHECK (status <> 'succeeded' OR <every content column IS NOT
+  NULL>)` restores "ready ⇒ complete" at the engine — don't chase `NOT NULL` on content columns.
+  `frequency` stays nullable AND outside the CHECK (analytics-owned). `status` has **no column
+  default** — the write path states it. `WordEntity` stays the strict ready-row shape (the core
+  union owns storage permissiveness at decode); `WordEntityInsert` makes content columns
+  `Schema.NullOr` (carries-and-clears under merge-patch — never `optionalKey`). `async_word_jobs`
+  has no `EntityInsert` (trusted worker writes only).
+- **One schema piece is hand-authored in the baseline migration** (drizzle-kit can't emit it), so
+  a fresh `db:generate` reports no drift yet apply installs it: `CREATE EXTENSION pg_trgm` (ahead
+  of the trgm GIN indexes). If the schema changes, re-generate then **re-patch that block** into
+  the new baseline.
+- **Migrations** use the drizzle-kit rc format: one timestamped folder per migration
   (`migration.sql` + `snapshot.json`, chained via `prevIds` — no central `_journal.json`).
-- **Tests** run against an ephemeral Testcontainers Postgres (needs Docker), never the dev DB — so
-  there's no `.env.test`. Surface: `@lexiai/database/testing` — `TestDatabaseLive` (migrates itself at
-  layer build) + `resetDb`. One container per file; `resetDb` at the top of each test. See
-  `@.claude/rules/testing.md`.
+- `db:*` scripts are config-driven through `@lexiai/config` (no hardcoded URLs); they target the
+  **dev** DB. Tests never touch it — ephemeral Testcontainers Postgres via
+  `@lexiai/database/testing` (`TestDatabaseLive` migrates itself; `resetDb` per test — see
+  `.claude/rules/testing.md`).
 
-## How LexiAI uses Drizzle (pointers)
-
-- **Mandate** (the *how*): `@.claude/rules/drizzle-effect.md` — the two first-party Effect integrations
-  (`effect-schema` + `effect-postgres`), the `Context.Service` idiom, the schema-boundary rule.
-- **Cheat-sheet:** `.claude/agent-patterns/drizzle-effect.md` (the entry point — there is no Drizzle `LLMS.md`).
-- **Vendored source** (read-only, never import): `repos/drizzle/` @ `v1.0.0-rc.3`. See `@.claude/rules/vendored-sources.md`.
+**May import:** `@lexiai/*` packages, `effect`, `@effect/sql-pg`, drizzle. **Never** `core/*`,
+`repositories/*`, `apps/*`.

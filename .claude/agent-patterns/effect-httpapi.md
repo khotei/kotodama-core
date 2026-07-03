@@ -11,8 +11,7 @@ vendored source before writing endpoints.
   `HttpServer.ts`, `HttpClient.ts`, …).
 
 The contract lives with its server — `apps/api/src/words/words.api.ts` beside
-`words.handler.ts` (one folder per resource group). The FE consumption surface is re-decided
-when the first web feature lands.
+`words.handler.ts` (one folder per resource group).
 
 ## Shape
 
@@ -37,8 +36,7 @@ export const Api = HttpApi.make('lexiai').add(words)
 ## Server vs client
 
 - Server: implement with `HttpApiBuilder.*` in `apps/api`, served via `@effect/platform-bun`.
-- Client: derive a typed client with `HttpApiClient.*` — this is what `apps/web` uses (no
-  `fetch`/`axios`).
+- Client: derive a typed client with `HttpApiClient.*` (no `fetch`/`axios`) when a consumer needs one.
 
 ## Testing
 
@@ -49,4 +47,4 @@ real server in unit tests.
 
 - Guessing the import path — it's `effect/unstable/httpapi` during the beta, not a stable
   path. Confirm against the vendored `index.ts`.
-- Hand-rolled HTTP clients in `apps/web`.
+- Hand-rolled HTTP clients — derive the typed client from the contract with `HttpApiClient.*`.

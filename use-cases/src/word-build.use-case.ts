@@ -1,43 +1,63 @@
 import { createWord } from '@lexiai/core-words'
-import { enumJobErrorType, type Language, WORD_JOB_STAGES } from '@lexiai/database'
-import { stagePatch, upsertWordJobStages } from '@lexiai/repositories-async-word-jobs'
-import { Effect } from 'effect'
+import {
+  enumAsyncJobStatus,
+  enumJobErrorType,
+  type Language,
+  WORD_JOB_STAGES,
+} from '@lexiai/database'
+import {
+  type AsyncWordJobUpsert,
+  stagePatch,
+  upsertWordJobStages,
+} from '@lexiai/repositories-async-word-jobs'
+import { selectWord, upsertWord } from '@lexiai/repositories-words'
+import { Effect, Option } from 'effect'
+
+// A terminally-failed build's write, in one place: log, batch the stage journal, flip the row
+// `failed`. Both domain outcomes (timeout, generation failure) differ only in their log line and
+// stage set, so each catch builds that descriptor and this owns the identical persistence tail.
+const failWord = Effect.fnUntraced(function* (
+  language: Language,
+  word: string,
+  outcome: { logLine: string; stages: AsyncWordJobUpsert[] },
+) {
+  yield* Effect.logError(outcome.logLine)
+  yield* upsertWordJobStages(language, word, outcome.stages)
+  yield* upsertWord(language, word, { status: enumAsyncJobStatus.failed })
+})
 
 /**
- * The build-run flow the worker invokes — it manages the **job** (`async_word_jobs`) around the
- * **word** (`createWord`, `@lexiai/core-words`). `createWord` generates the content and commits the
- * `words` row uninterruptibly; this flow only **records the outcome** onto the stages. The ownership
- * line: `core` writes `words`, this use-case writes `async_word_jobs`. Build-outcome-integrity
- * invariant: **a committed word is never journalled `timed_out`** — the generation budget (the
- * `WordGenerationServiceTimed` decorator, wired at the worker entrypoint) bounds generation (which
- * commits nothing) and `createWord` commits *after* that race resolves.
- *
- * No live tracking, no resume: the stages move in **one batch at the end**. Success ⇒ every stage
- * `succeeded`; a `WordGenerationError` carries the full picture (its `succeeded` passes recorded
- * `succeeded`, its `failed` passes `failed`; passes that never ran stay `pending`); a generation timeout
- * ⇒ every stage `timed_out` (no `words` row). Per-stage `result` is no longer reused, so a succeeded
- * stage stores `{}`; the real content lives in the `words` row.
- *
- * Error handling, by tag:
- * - **`TimeoutError`** (generation overran the budget) — every stage `timed_out`; no `words` row.
- * - **`WordGenerationError`** (a pass failed) — the recorded per-stage outcome; the flow then succeeds,
- *   so it never reaches the worker edge.
- * - **`EffectDrizzleQueryError` on the *success-path* journal write** (after the commit) — swallowed:
- *   the word is ready, so a redrive (which would regenerate) is wrong. A commit-path DB error instead
- *   propagates to the edge for a redrive (no row was written — a retry should re-attempt).
- *
- * A **bare function** (not a `Context.Service`): an app-flow composer. Its dependencies —
- * `createWord`'s `WordGenerationService | DB` and the repo's `DB` — ride the `R` channel; the worker
- * entrypoint provides them (the generation budget is baked into the `WordGenerationServiceTimed`
- * decorator there, not read here).
- *
- * @see `use-cases/CLAUDE.md`
+ * The worker flow: manages the job journal and the `words` row's status lifecycle around
+ * `createWord` (which owns the content promote). No live per-stage tracking, no resume — the row +
+ * whole pipeline flip `running` in one batch before generation, and the outcome lands in one batch
+ * at the end. A committed word is never journalled `timed_out`: the generation budget (a decorator
+ * at the worker entrypoint) bounds generation only, and `createWord` commits after that race
+ * resolves.
  */
 export const buildWord = Effect.fnUntraced(function* (language: Language, word: string) {
+  // Poison-message gate: a conforming message names a row `requestWordBuild` seeded, so an absent
+  // row is a defect — die before any write (the upserts below are total and would fabricate a list
+  // entry no one requested).
+  if (Option.isNone(yield* selectWord(language, word)))
+    return yield* Effect.die(
+      new Error(`buildWord: no words row for "${word}" (${language}) — build was never requested`),
+    )
+
+  // Flip row + whole pipeline `running` before generation, so an in-flight word reads its true
+  // status (list/search read the `words` row directly). A failure here is pre-commit — propagates
+  // for a redrive.
+  yield* Effect.andThen(
+    upsertWord(language, word, { status: enumAsyncJobStatus.running }),
+    upsertWordJobStages(language, word, WORD_JOB_STAGES.map(stagePatch.running)),
+  ).pipe(
+    Effect.tapError((error) =>
+      Effect.logError(`failed to mark build running for "${word}" (${language})`, error),
+    ),
+  )
+
   yield* createWord(language, word).pipe(
-    // Generation + commit succeeded → journal every stage `succeeded`. A transient journal-write error
-    // *after* the commit is swallowed — the word is ready, so a redrive would wrongly regenerate it
-    // (#2/AC-4); a commit-path error propagates (no row → the edge redrives).
+    // A journal-write error AFTER the commit is swallowed: the word is ready, and a redrive would
+    // wrongly regenerate it. A commit-path error propagates (no row written — the edge redrives).
     Effect.andThen(
       upsertWordJobStages(
         language,
@@ -52,39 +72,38 @@ export const buildWord = Effect.fnUntraced(function* (language: Language, word: 
         ),
       ),
     ),
-    // Generation expired its budget → record every stage `timed_out`; no `words` row was committed.
-    Effect.catchTag('TimeoutError', () => {
-      const message = 'generation exceeded its build budget'
-      return Effect.logError(`word build timed out for "${word}" (${language}): ${message}`).pipe(
-        Effect.andThen(
-          upsertWordJobStages(
-            language,
-            word,
-            WORD_JOB_STAGES.map((stage) =>
-              stagePatch.failed(stage, { type: enumJobErrorType.timed_out, message }),
-            ),
+    Effect.catchTags({
+      // Budget overrun: nothing was committed — every stage `timed_out`, the row `failed` (content
+      // stays NULL; `failed` is buildable, so a re-request retries).
+      TimeoutError: () => {
+        const message = 'generation exceeded its build budget'
+        return failWord(language, word, {
+          logLine: `word build timed out for "${word}" (${language}): ${message}`,
+          stages: WORD_JOB_STAGES.map((stage) =>
+            stagePatch.failed(stage, { type: enumJobErrorType.timed_out, message }),
           ),
-        ),
-      )
-    }),
-    // A `WordGenerationError` is the *expected* domain outcome — record its full per-stage picture and
-    // succeed, so it never reaches the worker edge.
-    Effect.catchTag('WordGenerationError', ({ failures, succeeded }) =>
-      Effect.logError(
-        `word build failed for "${word}" (${language}): ${failures
-          .map(({ stage, error }) => `${stage} (${error.type})`)
-          .join(', ')}`,
-      ).pipe(
-        Effect.andThen(
-          upsertWordJobStages(language, word, [
+        })
+      },
+      // The expected domain outcome — record the full per-stage picture and succeed, so it never
+      // reaches the worker edge.
+      WordGenerationError: ({ failures, succeeded }) => {
+        // Passes that neither succeeded nor failed never completed — reset to `pending` (undoing
+        // the `running` flip), so a dead build leaves no stage stuck `running`.
+        const ran = new Set([...succeeded, ...failures.map(({ stage }) => stage)])
+        return failWord(language, word, {
+          logLine: `word build failed for "${word}" (${language}): ${failures
+            .map(({ stage, error }) => `${stage} (${error.type})`)
+            .join(', ')}`,
+          stages: [
             ...succeeded.map((stage) => stagePatch.succeeded(stage, {})),
             ...failures.map(({ stage, error }) => stagePatch.failed(stage, error)),
-          ]),
-        ),
-      ),
-    ),
-    // What remains is an infrastructure fault (a commit-path DB error) — not a recorded outcome. Log it
-    // before it leaves for the worker-edge redrive so a redrive is never silent.
+            ...WORD_JOB_STAGES.filter((stage) => !ran.has(stage)).map(stagePatch.pending),
+          ],
+        })
+      },
+    }),
+    // What remains is an infra fault — log before it leaves for the redrive, so a redrive is never
+    // silent.
     Effect.tapError((error) =>
       Effect.logError(`word build errored for "${word}" (${language})`, error),
     ),

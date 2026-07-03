@@ -1,23 +1,24 @@
 import { faker } from '@faker-js/faker'
+import { enumAsyncJobStatus } from '../../schema/async-word-jobs/async-word-jobs.values'
 import { LANGUAGES } from '../../schema/language'
 import type {
-  AuthorExample,
-  CulturalGuide,
-  Etymology,
-  EtymologyStage,
-  Frequency,
-  Lexical,
-  Pronunciation,
-  Relations,
-  Source,
-  SourceVersions,
+  AuthorExampleEntity,
+  CulturalGuideEntity,
+  EtymologyEntity,
+  EtymologyStageEntity,
+  FrequencyEntity,
+  LexicalEntity,
+  PronunciationEntity,
+  RelationsEntity,
+  SourceEntity,
+  SourceVersionsEntity,
   StorageKey,
-  Tier,
-  Tiers,
-  Translation,
-  Visual,
-  Visuals,
-} from '../../schema/words/words.content'
+  TierEntity,
+  TiersEntity,
+  TranslationEntity,
+  VisualEntity,
+  VisualsEntity,
+} from '../../schema/words/words.entity'
 import type { WordInsert } from '../../schema/words/words.table'
 import { enumVisualKind, FREQUENCY_BANDS, SOURCE_TYPES } from '../../schema/words/words.values'
 
@@ -25,20 +26,20 @@ const makeStorageKey = (prefix: string): StorageKey => `${prefix}/${faker.string
 
 const REGISTERS = ['formal', 'informal', 'literary', 'technical', 'slang'] as const
 
-const makeLexical = (): Lexical => ({
+const makeLexical = (): LexicalEntity => ({
   partOfSpeech: faker.helpers.arrayElement(['noun', 'verb', 'adjective', 'adverb']),
   countable: faker.datatype.boolean(),
   plural: { primary: faker.lorem.word(), also: [faker.lorem.word()] },
   register: faker.helpers.arrayElements(REGISTERS, { min: 1, max: 2 }),
 })
 
-const makePronunciation = (): Pronunciation => ({
+const makePronunciation = (): PronunciationEntity => ({
   ipa: `/${faker.lorem.word()}/`,
   respelling: faker.lorem.word(),
   audio: { uk: makeStorageKey('audio/uk'), us: makeStorageKey('audio/us') },
 })
 
-const makeTier = (): Tier => ({
+const makeTier = (): TierEntity => ({
   title: faker.lorem.words(2),
   body: faker.lorem.sentence(),
   examples: Array.from({ length: 2 }, () => ({
@@ -47,14 +48,14 @@ const makeTier = (): Tier => ({
   })),
 })
 
-const makeTiers = (): Tiers => ({
+const makeTiers = (): TiersEntity => ({
   quick: makeTier(),
   everyday: makeTier(),
   deep: makeTier(),
   cultural: makeTier(),
 })
 
-const makeEtymologyStage = (citation?: number): EtymologyStage => ({
+const makeEtymologyStage = (citation?: number): EtymologyStageEntity => ({
   when: `${faker.number.int({ min: 800, max: 1900 })}`,
   form: faker.lorem.word(),
   languageName: faker.helpers.arrayElement(['Latin', 'Old French', 'Proto-Germanic', 'Greek']),
@@ -62,20 +63,20 @@ const makeEtymologyStage = (citation?: number): EtymologyStage => ({
   citation,
 })
 
-const makeEtymology = (sourceCount: number): Etymology => ({
+const makeEtymology = (sourceCount: number): EtymologyEntity => ({
   summary: faker.lorem.sentence(),
   firstAttested: {
     year: faker.number.int({ min: 1200, max: 1800 }),
     language: faker.helpers.arrayElement(['Latin', 'Old French', 'Greek']),
   },
   origin: { from: faker.lorem.word(), to: faker.lorem.word(), gloss: faker.lorem.words(3) },
-  // `citation` soft-refs a Source.index — app-enforced only, no FK.
+  // `citation` soft-refs a SourceEntity.index — app-enforced only, no FK.
   descent: Array.from({ length: 2 }, () =>
     makeEtymologyStage(faker.number.int({ min: 0, max: Math.max(0, sourceCount - 1) })),
   ),
 })
 
-const makeAuthorExample = (): AuthorExample => ({
+const makeAuthorExample = (): AuthorExampleEntity => ({
   author: faker.person.fullName(),
   authorImageUrl: makeStorageKey('authors'),
   work: faker.lorem.words(3),
@@ -84,7 +85,7 @@ const makeAuthorExample = (): AuthorExample => ({
   quote: faker.lorem.sentence(),
 })
 
-const makeCulturalGuide = (): CulturalGuide => ({
+const makeCulturalGuide = (): CulturalGuideEntity => ({
   timeline: Array.from({ length: 2 }, () => ({
     date: `${faker.number.int({ min: 1900, max: 2025 })}`,
     text: faker.lorem.sentence(),
@@ -93,18 +94,18 @@ const makeCulturalGuide = (): CulturalGuide => ({
   notes: [faker.lorem.sentence()],
 })
 
-const makeRelations = (): Relations => ({
+const makeRelations = (): RelationsEntity => ({
   synonyms: [{ term: faker.lorem.word(), note: faker.lorem.words(2) }],
   antonyms: [{ term: faker.lorem.word() }],
   family: [faker.lorem.word(), faker.lorem.word()],
 })
 
-const makeTranslations = (): Translation[] => [
+const makeTranslations = (): TranslationEntity[] => [
   { language: 'fr', term: faker.lorem.word() },
   { language: 'de', term: faker.lorem.word() },
 ]
 
-const makeVisual = (kind: Visual['kind']): Visual => ({
+const makeVisual = (kind: VisualEntity['kind']): VisualEntity => ({
   kind,
   imageKey: makeStorageKey('visuals'),
   prompt: faker.lorem.sentence(),
@@ -114,13 +115,13 @@ const makeVisual = (kind: Visual['kind']): Visual => ({
   height: 1024,
 })
 
-const makeVisuals = (): Visuals => ({
+const makeVisuals = (): VisualsEntity => ({
   hero: makeVisual(enumVisualKind.hero),
   infographic: makeVisual(enumVisualKind.infographic),
   memes: Array.from({ length: 2 }, () => makeVisual(enumVisualKind.meme)),
 })
 
-const makeSources = (): Source[] =>
+const makeSources = (): SourceEntity[] =>
   Array.from({ length: 3 }, (_, index) => ({
     index,
     type: faker.helpers.arrayElement(SOURCE_TYPES),
@@ -131,7 +132,7 @@ const makeSources = (): Source[] =>
     note: faker.lorem.words(3),
   }))
 
-const makeFrequency = (): Frequency => ({
+const makeFrequency = (): FrequencyEntity => ({
   band: faker.helpers.arrayElement(FREQUENCY_BANDS),
   trendNote: faker.lorem.sentence(),
   series: Array.from({ length: 3 }, (_, i) => ({
@@ -142,14 +143,17 @@ const makeFrequency = (): Frequency => ({
 })
 
 /**
- * Complete `words` insert; deterministic under `faker.seed(n)`. `frequency` is
- * populated — override to `null` for the not-yet-analyzed state.
+ * Complete `words` insert; deterministic under `faker.seed(n)`. Defaults `status='succeeded'` with all
+ * content populated — a valid ready row under the CHECK. Override `status` (and drop content) to model
+ * the `pending`/`running`/`failed` lifecycle states. `frequency` is populated — override to `null` for
+ * the not-yet-analyzed state.
  */
 export const makeWordInsert = (overrides: Partial<WordInsert> = {}): WordInsert => {
   const sources = makeSources()
   return {
     word: faker.lorem.word(),
     language: faker.helpers.arrayElement(LANGUAGES),
+    status: enumAsyncJobStatus.succeeded,
     coreDefinition: faker.lorem.sentence(),
     lexical: makeLexical(),
     pronunciation: makePronunciation(),
@@ -165,7 +169,7 @@ export const makeWordInsert = (overrides: Partial<WordInsert> = {}): WordInsert 
       model: faker.helpers.arrayElement(['gpt-4o', 'gpt-4o-mini']),
       promptHash: faker.string.alphanumeric(16),
       pipeline: `v${faker.number.int({ min: 1, max: 3 })}`,
-    } satisfies SourceVersions,
+    } satisfies SourceVersionsEntity,
     frequency: makeFrequency(),
     ...overrides,
   }

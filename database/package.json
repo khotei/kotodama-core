@@ -10,13 +10,13 @@
     "./factories": "./src/factories/index.ts"
   },
   "scripts": {
-    "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
-    "db:push": "drizzle-kit push",
+    "db:generate": "bun --bun drizzle-kit generate",
+    "db:migrate": "bun --bun drizzle-kit migrate",
+    "db:push": "bun --bun drizzle-kit push",
     "db:reset": "echo 'TODO(db:reset): drop + recreate + migrate \u2014 wired with the deploy runner'",
     "db:seed": "bun run src/seed.ts",
-    "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "test": "bun --bun vitest run",
+    "typecheck": "bun --bun tsc --noEmit"
   },
   "dependencies": {
     "@effect/platform-bun": "catalog:effect",

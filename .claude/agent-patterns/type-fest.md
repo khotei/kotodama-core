@@ -24,7 +24,7 @@ edge-case question, fetch `github.com/sindresorhus/type-fest/blob/main/test-d/<u
 | `LiteralUnion<L, string>` | literal autocomplete without banning other strings |
 | `Tagged<T, Tag>` | nominal/opaque ids when two `string`s must not mix |
 
-## Worked example — `StagePatch`
+## Worked example — `AsyncWordJobUpsert`
 
 `repositories/async-word-jobs/src/stage-patch.ts` derives the patch from the row (one author), with
 "optional, but `null` inexpressible" payload fields (under the repo's COALESCE merge an explicit
@@ -34,7 +34,7 @@ edge-case question, fetch `github.com/sindresorhus/type-fest/blob/main/test-d/<u
 /** `Partial`, minus `null`: each field may be set or omitted, never cleared (the merge's contract). */
 type SetOnly<T> = Readonly<SetNonNullable<Partial<T>>>
 
-export type StagePatch = Readonly<Pick<AsyncWordJobRow, 'stage' | 'status'>> &
+export type AsyncWordJobUpsert = Readonly<Pick<AsyncWordJobRow, 'stage' | 'status'>> &
   SetOnly<Pick<AsyncWordJobRow, 'result' | 'error' | 'startedAt' | 'finishedAt'>>
 ```
 

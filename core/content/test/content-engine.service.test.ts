@@ -1,5 +1,11 @@
 import { describe, expect, it } from '@effect/vitest'
-import { enumLanguage, enumWordJobStage, WordEntityInsert, wordJobStage } from '@lexiai/database'
+import {
+  enumAsyncJobStatus,
+  enumLanguage,
+  enumWordJobStage,
+  WordEntityInsert,
+  wordJobStage,
+} from '@lexiai/database'
 import { Duration, Effect, Schema } from 'effect'
 import { TestClock } from 'effect/testing'
 import { ContentEngine, ContentEngineError, MockContentEngine, makeMockContentEngine } from '../src'
@@ -15,13 +21,16 @@ describe('MockContentEngine — default policy', () => {
       )
       for (const slice of slices) expect(Object.keys(slice).length).toBeGreaterThan(0)
 
-      // Mirror the worker's promotion: assemble the per-stage results + identity + provenance, and
-      // assert the whole thing validates as a `words` insert (every jsonb shape covered).
+      // Mirror the worker's promotion: assemble the per-stage results + identity + provenance +
+      // `status='succeeded'` (F-CONT-006 — a promote states the ready status alongside the content, so
+      // the entity decode asserts the full ready shape), and assert the whole thing validates as a
+      // `words` insert (every jsonb shape covered).
       const assembled = Object.assign(
         {
           word: 'lacuna',
           language: enumLanguage.en,
           sourceVersions: { model: 'mock', promptHash: 'mock' },
+          status: enumAsyncJobStatus.succeeded,
         },
         ...slices,
       )

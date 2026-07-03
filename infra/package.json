@@ -9,8 +9,8 @@
     "local:logs": "docker compose -f local/docker-compose.yml logs -f",
     "local:provision": "bun run src/local-provision.ts",
     "local:smoke": "bun run src/local-smoke.ts",
-    "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "test": "bun --bun vitest run",
+    "typecheck": "bun --bun tsc --noEmit"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "catalog:aws",

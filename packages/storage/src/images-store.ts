@@ -12,30 +12,14 @@ export interface ImagesStoreShape {
 }
 
 /**
- * The bound object store for today's single images bucket: the resource-free port business code
- * yields. Fixes `awsResources.imagesBucket` → `IMAGES_BUCKET` (the existing {@link ImagesBucket}
- * config) and exposes `put(key, bytes, opts?)`, delegating to {@link StorageClient} with that bucket —
- * so the content engine's `renderToStorage` (`storage.put(key, bytes, { contentType })`) never learns
- * the bucket parameter. The returned key is handed straight back (write → store key).
- *
- * It is **not** a deep-modules §5 pass-through: the base speaks `(bucket, …)`, this speaks `(…)` — it
- * removes a parameter by owning the *which-bucket* binding. A second bucket later (audio, separate
- * visuals) is one more such wrapper over the same base, with no base change.
- *
- * @see `packages/storage/CLAUDE.md`
+ * The bound wrapper business code yields — not a pass-through: the base speaks `(bucket, …)`, this
+ * speaks `(…)`, removing a parameter by owning the which-bucket binding. A second bucket is one
+ * more wrapper over the same base.
  */
 export class ImagesStore extends Context.Service<ImagesStore, ImagesStoreShape>()(
   '@lexiai/storage/ImagesStore',
 ) {}
 
-/**
- * {@link ImagesStore} over {@link StorageClient}: binds `IMAGES_BUCKET` at layer build and delegates
- * every `put` to the base with that bucket. Requires `StorageClient` (provide `StorageClientLive`
- * beneath it) and carries a `ConfigError` for `ImagesBucket` — closed by the entrypoint's
- * `ConfigProviderLive`.
- *
- * @see `.claude/rules/config.md`
- */
 export const ImagesStoreLive = Layer.effect(
   ImagesStore,
   Effect.gen(function* () {

@@ -2,20 +2,16 @@ import type { ImageOptions, ImageSize, ResilienceConfig } from '@lexiai/ai'
 import { enumVisualKind, enumWordJobStage, type VisualKind } from '@lexiai/database'
 import { Duration } from 'effect'
 
-/**
- * The real engine's **generation defaults** — the single home for *which model, at what depth/quality,*
- * each pass runs, the text-free render rule, and the per-call resilience tuning. Pulled out of the
- * engine so the pipeline file stays pure topology and this stays the one surface to retune for the
- * planned generation-quality experiments.
- */
+// The one surface to retune — kept out of the engine so the pipeline file stays pure topology.
+
+export type TextGenConfig = (typeof TEXT_GEN)[keyof typeof TEXT_GEN]
+
+/** The {@link VisualKind}s plus the author portrait — which is NOT a visual kind (it rides the `authorExamples` slice). */
+export type ImageRole = VisualKind | 'author'
 
 /**
- * Resilience tuning for a **text** call (`generateObject`), passed to {@link import('@lexiai/ai').resilient}.
- * Text calls finish fast (measured ≤28s even on the heaviest `gpt-5.5` stage), so a 60s cap cuts a
- * *stall* (observed: a text call hung 110s+ then never returned while a sibling finished in <28s) off
- * early and re-tries it cheaply; 2 retries (3 attempts ≈ 180s) target the flaky author/text stage and
- * stay under the whole-build budget (`DEFAULT_BUILD_TIMEOUT` / `WordGenerationServiceTimed`). The worker
- * entrypoint applies this preset via the `AiServiceResilient` decorator (no longer the engine itself).
+ * Text calls finish fast (measured ≤28s even on the heaviest stage), so 60s cuts an observed
+ * 110s+ hang off early; 3 attempts stay under the whole-build budget.
  */
 export const TEXT_RESILIENCE: ResilienceConfig = {
   method: 'generateObject',
@@ -24,11 +20,8 @@ export const TEXT_RESILIENCE: ResilienceConfig = {
 }
 
 /**
- * Resilience tuning for an **image** call (`generateImage`). A `gpt-image-2` render legitimately runs
- * up to ~84s, so the 110s cap clears that; 4 retries absorb both a transient stall AND the `gpt-image`
- * rate-limit 429 (paced by {@link IMAGE_CONCURRENCY}) — a render that slips past the throttle waits out
- * the per-minute window across the backoffs rather than failing the stage. Still under the whole-build
- * budget (a maximally-stalling image stage ≈ 220s).
+ * A `gpt-image-2` render legitimately runs to ~84s (hence 110s); 4 retries absorb both stalls and
+ * the `gpt-image` rate-limit 429s that slip past {@link IMAGE_CONCURRENCY}.
  */
 export const IMAGE_RESILIENCE: ResilienceConfig = {
   method: 'generateImage',
@@ -36,16 +29,10 @@ export const IMAGE_RESILIENCE: ResilienceConfig = {
   retries: 4,
 }
 
-/** A text pass's model + reasoning depth. The literal `reasoningEffort` flows straight to `AiService`. */
-export type TextGenConfig = (typeof TEXT_GEN)[keyof typeof TEXT_GEN]
-
 /**
- * Per-stage text config — model + `reasoningEffort` (`reasoning.effort`, the speed/depth dial for the
- * gpt-5.x reasoning models; the text analog of the image `quality` lever). The deep-reasoning content
- * stages (`enrich_etymology`, `enrich_tiers`) keep `medium` to protect quality; the structurally-shallow
- * stages — the `fetch_source` extraction, the visuals/authors **plans** (a list of concepts / known
- * quotes, not deep reasoning), and the frequency review — drop to `low`, which is faster and less exposed
- * to the `/v1/responses` stall that keeps failing the heavier calls.
+ * Deep-reasoning content stages keep `medium`; the structurally-shallow ones (extraction, the
+ * visual/author *plans*, the review) drop to `low` — faster and less exposed to the
+ * `/v1/responses` stall that keeps failing the heavier calls.
  */
 export const TEXT_GEN = {
   fetchSource: { model: 'gpt-5.4-mini', reasoningEffort: 'low' },
@@ -56,27 +43,20 @@ export const TEXT_GEN = {
   finalReview: { model: 'gpt-5.4', reasoningEffort: 'low' },
 } as const
 
-/**
- * The provenance model stamped into `sourceVersions.model` at promotion — the primary/highest-tier text
- * model the pipeline runs (Feature §16 G4), not a per-stage choice.
- */
 export const PROVENANCE_MODEL = 'gpt-5.5'
 
 /**
- * Image models, split by role. Our images are **pure illustrations** — the visible text (the word,
- * definitions, captions, author quotes) lives in separate content fields the UI overlays — so the heavy
- * text-capable model is wasted on most of them. The `hero` (the showcase lead image) keeps the top-tier
- * `gpt-image-2`; every secondary image (infographic, memes, author portraits) renders on the lighter
- * `gpt-image-1.5` — benchmarked ~10s vs ~24s text-free at near-identical fidelity.
+ * The create-path input verifier's model — cheapest tier at `reasoningEffort: 'minimal'`, because
+ * latency dominates a binary judge and a judge failure fails open (the pre-filter is the floor).
  */
+export const VERIFIER_MODEL = 'gpt-5.4-nano'
+
+// Images are pure illustrations (all visible text is separate content fields the UI overlays), so
+// only the hero earns the premium model; secondaries render ~10s vs ~24s at near-identical fidelity.
 const HERO_IMAGE_MODEL = 'gpt-image-2'
 const SECONDARY_IMAGE_MODEL = 'gpt-image-1.5'
 
-/**
- * Every model the pipeline runs, keyed by text stage and image role — stamped into
- * `sourceVersions.stageModels` (`@lexiai/database`) so swapping any per-stage text model or either image
- * model shifts provenance. `PROVENANCE_MODEL` stays the primary-tier label; this is the full picture.
- */
+// Stamped into provenance, so swapping any model shifts it.
 export const PROVENANCE_STAGE_MODELS: Record<string, string> = {
   [enumWordJobStage.fetch_source]: TEXT_GEN.fetchSource.model,
   [enumWordJobStage.enrich_etymology]: TEXT_GEN.etymology.model,
@@ -88,33 +68,16 @@ export const PROVENANCE_STAGE_MODELS: Record<string, string> = {
   secondary_image: SECONDARY_IMAGE_MODEL,
 }
 
-/** `low` is already strong for text-free art and keeps each render well under the per-attempt timeout. */
 const IMAGE_QUALITY = 'low'
 
 /**
- * **Must be set explicitly.** With no `size`, `gpt-image-1.5` returns its own native dimensions
- * (observed `1402x1122`), which the `@effect/ai-openai` response schema — it only accepts the enum
- * sizes — then **rejects on decode**, failing the whole stage. Pinning a valid square makes the model
- * return exactly it. (`gpt-image-2` happened to default to a valid size, which is why this only surfaced
- * after the model swap.)
+ * **Must be set explicitly.** With no `size`, `gpt-image-1.5` returns its native dimensions
+ * (observed `1402x1122`), which `@effect/ai-openai`'s response schema — enum sizes only —
+ * rejects on decode, failing the whole stage.
  */
 const IMAGE_SIZE: ImageSize = '1024x1024'
 
-/**
- * The render request for one image, **by role** — only `hero` earns the premium model; every other role
- * (`infographic`, `meme`, an author portrait) takes the lighter one. Size and quality are fixed. The
- * one place the image-model decision lives, so the engine never re-branches on kind. Returns the
- * authored {@link ImageOptions} ({@link import('@lexiai/ai')}) — the exact `generateImage` argument.
- */
-/**
- * The roles an image render can take: the {@link VisualKind}s (`hero` / `infographic` / `meme`) plus
- * the author **portrait** — which is not a visual kind (it rides the `authorExamples` slice, not
- * `visuals`). The closed input to {@link imageOptionsFor}, so the model-by-role branch can't be reached
- * with a typo or an out-of-set string.
- */
-export type ImageRole = VisualKind | 'author'
-
-/** Every image role the pipeline renders, in a fixed order — the basis for the provenance image digest. */
+// Fixed order — the basis for the provenance image digest.
 export const IMAGE_ROLES: readonly ImageRole[] = [
   enumVisualKind.hero,
   enumVisualKind.infographic,
@@ -122,26 +85,21 @@ export const IMAGE_ROLES: readonly ImageRole[] = [
   'author',
 ]
 
+/**
+ * A word renders ~11 images; fired at once they blow the org's `gpt-image` limit (5/min → 429).
+ * The cap paces them; {@link IMAGE_RESILIENCE} retries mop up any that still 429.
+ */
+export const IMAGE_CONCURRENCY = 2
+
+/**
+ * Appended to every image prompt — the hard no-text guarantee at the render boundary, regardless
+ * of what a plan produced (visible text lives in structured fields the UI overlays).
+ */
+export const NO_TEXT_DIRECTIVE =
+  ' The image must be a pure illustration: absolutely no text, letters, words, captions, numbers, or signage anywhere in it.'
+
 export const imageOptionsFor = (kind: ImageRole): ImageOptions => ({
   model: kind === enumVisualKind.hero ? HERO_IMAGE_MODEL : SECONDARY_IMAGE_MODEL,
   size: IMAGE_SIZE,
   quality: IMAGE_QUALITY,
 })
-
-/**
- * Cap on **concurrent image renders** across the whole build. A word renders ~11 images (visuals + one
- * portrait per author); fired all at once they blow the org's `gpt-image` rate limit (5 images/min, a
- * 429). A small cap paces the renders so few hit the limit, and the image retries ({@link IMAGE_RESILIENCE})
- * mop up any that still 429. The rate limit is the real floor (~11 images / 5-per-min ≈ ~2 min) — this
- * only trades burst-churn for steadiness.
- */
-export const IMAGE_CONCURRENCY = 2
-
-/**
- * Appended to every image prompt: the render must carry NO text. The word, its definition, captions and
- * quotes are structured fields the UI lays over/around the image — baked-in text would duplicate them,
- * render unreliably, and slow generation. The plan prompts ask for text-free concepts too; this is the
- * hard guarantee at the render boundary, regardless of what a plan produced.
- */
-export const NO_TEXT_DIRECTIVE =
-  ' The image must be a pure illustration: absolutely no text, letters, words, captions, numbers, or signage anywhere in it.'

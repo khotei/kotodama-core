@@ -12,21 +12,9 @@ import { ensureQueue } from '@lexiai/queue'
 import { ensureBucket } from '@lexiai/storage/provisioning'
 import { Effect } from 'effect'
 
-/**
- * The dev provisioning command: idempotently ensure every entry in the {@link awsResources} inventory
- * against the *already-running* LocalStack (it assumes `local:up` — it starts no containers), then
- * exit 0. This is the dev-only `ensure*` caller: the prod `*Live` layers only ever consume by
- * URL/name and create nothing, so running this twice creates-then-no-ops without touching that path.
- *
- * Both clients are built from the resolved {@link AwsClientConfig} — the same flattened
- * region/endpoint/credentials bundle `QueueClientLive`/`StorageClientLive` consume — so they hit
- * LocalStack via `AWS_ENDPOINT_URL`. S3 additionally needs `forcePathStyle` (LocalStack serves buckets
- * as path segments, not virtual-host subdomains). Each client is `acquireRelease`d so both are
- * `destroy()`ed when the program ends, success or failure.
- *
- * The `switch` on `kind` is exhaustive (the `never` default): a new {@link awsResources} entry kind
- * fails `tsc` here until it is dispatched, so the inventory and this provisioner can't silently drift.
- */
+// The dev-only `ensure*` caller (prod layers only consume by URL/name and create nothing).
+// Assumes `local:up`. S3 needs `forcePathStyle` — LocalStack serves buckets as path segments. The
+// `switch` is exhaustive: a new inventory kind fails tsc here until dispatched.
 const program = Effect.gen(function* () {
   const aws = yield* AwsClientConfig
 

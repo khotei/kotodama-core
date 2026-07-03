@@ -19,7 +19,6 @@
   │  [ ] `bun run check` passes (Biome lint + `bun run tsc`)                   │
   │  [ ] `bun run test` passes                                                 │
   │  [ ] Dependency hierarchy intact (apps -> core -> repositories -> database)│
-  │  [ ] Frontend (apps/web) imports only @lexiai/schemas + @lexiai/http       │
   │  [ ] No imports from repos/ in application code                            │
   │  [ ] Docs/rules updated if behaviour or conventions changed                │
   │                                                                            │

@@ -1,6 +1,8 @@
 import { expect, it } from '@effect/vitest'
+import { AiServiceTest } from '@lexiai/ai/testing'
 import { WordBuildMessageFromJson } from '@lexiai/core-async-word-jobs'
 import { MockContentEngine, WordGenerationServiceLive } from '@lexiai/core-content'
+import { WordVerdict } from '@lexiai/core-words'
 import { enumAsyncJobStatus, enumLanguage } from '@lexiai/database'
 import { resetDb, TestDatabaseLive } from '@lexiai/database/testing'
 import { JobsQueue } from '@lexiai/queue'
@@ -17,11 +19,16 @@ const EN = enumLanguage.en
 // layer once), so a `requestWordBuild` *enqueue* is consumable by the worker loop in the same test —
 // the real request → queue → worker → build path, not a stubbed message. The flows are plain functions
 // bottoming out at WordGenerationService (the mock engine wrapped in WordGenerationServiceLive) +
-// JobsQueue + DB, which this layer provides. `ConsumePoll` is shrunk to a 1s wait so an empty-queue
-// `consumeOnce` returns promptly instead of blocking 20s.
+// JobsQueue + DB + the verifier's AiService (`requestWordBuild`'s judge, faked to always admit so the
+// e2e path builds without a network call), which this layer provides. `ConsumePoll` is shrunk to a 1s
+// wait so an empty-queue `consumeOnce` returns promptly instead of blocking 20s.
+const AiServiceAdmit = AiServiceTest({
+  object: WordVerdict.make({ isValid: true, reason: 'admit' }),
+})
 const TestLayer = Layer.mergeAll(
   WordGenerationServiceLive.pipe(Layer.provide(MockContentEngine)),
   QueueLocalStackLive,
+  AiServiceAdmit,
 ).pipe(
   Layer.provideMerge(TestDatabaseLive),
   Layer.provideMerge(Layer.succeed(ConsumePoll, { max: 10, waitSeconds: 1 })),
@@ -36,10 +43,12 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
         yield* drainQueue
 
         // AC-3 — an explicit create request on a Not-yet-made word starts exactly one build and moves the
-        // word to Being made: stages seeded, a message enqueued, and no `words` row yet.
+        // word to Being made: a `pending` `words` row seeded (F-CONT-006 — the row IS the list entry, so
+        // it lands at once, content NULL), the 6 stages seeded, and a message enqueued.
         const seeded = yield* requestWordBuild(EN, 'lacuna')
         expect(seeded.length).toBeGreaterThan(0)
-        expect(yield* selectWords({ language: EN, word: 'lacuna' })).toHaveLength(0)
+        const [requested] = yield* selectWords({ language: EN, word: 'lacuna', limit: 1 })
+        expect(requested?.status).toBe(enumAsyncJobStatus.pending)
         expect(
           (yield* selectWordJobStages({ language: EN, word: 'lacuna' })).length,
         ).toBeGreaterThan(0)
@@ -52,8 +61,9 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
         expect(stages.every((stage) => stage.status === enumAsyncJobStatus.succeeded)).toBe(true)
 
         // AC-5 — the word is now Ready: a subsequent lookup returns it with assembled content.
+        // Content columns are nullable in storage (lifecycle table); a `succeeded` row has them all.
         const [ready] = yield* selectWords({ language: EN, word: 'lacuna', limit: 1 })
-        expect(ready?.visuals.hero).not.toBeNull()
+        expect(ready?.visuals?.hero).not.toBeNull()
 
         // The message was acked (deleted only after success) — the queue is now empty.
         expect(yield* consumeOnce).toBe(0)

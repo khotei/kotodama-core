@@ -15,7 +15,7 @@
     "effect": "catalog:effect"
   },
   "scripts": {
-    "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "test": "bun --bun vitest run",
+    "typecheck": "bun --bun tsc --noEmit"
   }
 }

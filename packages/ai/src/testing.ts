@@ -1,27 +1,13 @@
 import { Effect, Layer } from 'effect'
 import { AiError, AiService } from './ai.service'
 
-/**
- * Canned results for {@link AiServiceTest}. Omit a field to make that method fail with {@link AiError}
- * (so a downstream suite can exercise its own error handling without a real provider).
- *
- * `object` is returned verbatim for **any** `schema`/`prompt` — the fake does not decode, so the test
- * is responsible for supplying a value already shaped like the schema it passes to `generateObject`.
- */
+// Omit a field to make that method fail. `object` is returned verbatim for ANY schema/prompt —
+// the fake does not decode, so the test must supply an already-shaped value.
 export interface AiFixtures {
   readonly object?: unknown
   readonly image?: Uint8Array
 }
 
-/**
- * A fixture-backed {@link AiService} for downstream suites — no OpenAI, no network, no API key.
- *
- * @example
- * ```ts
- * it.effect('builds a word', () =>
- *   program.pipe(Effect.provide(AiServiceTest({ object: cannedEntry, image: pngBytes }))))
- * ```
- */
 export const AiServiceTest = (fixtures: AiFixtures = {}): Layer.Layer<AiService> =>
   Layer.succeed(
     AiService,

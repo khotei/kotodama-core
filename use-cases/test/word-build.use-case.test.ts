@@ -22,16 +22,16 @@ import {
 import { resetDb, TestDatabaseLive } from '@lexiai/database/testing'
 import { selectWordJobStages } from '@lexiai/repositories-async-word-jobs'
 import { seedPendingPipeline } from '@lexiai/repositories-async-word-jobs/testing'
-import { selectWords } from '@lexiai/repositories-words'
-import { Duration, Effect, Layer } from 'effect'
+import { selectWord, selectWords } from '@lexiai/repositories-words'
+import { seedUnreadyWord } from '@lexiai/repositories-words/testing'
+import { Duration, Effect, Layer, Option } from 'effect'
 import { TestClock } from 'effect/testing'
 import { buildWord } from '../src/index'
 
 // Two `it.layer` blocks for the one flow, differing only in the ContentEngine double — the mock
-// (policy-driven; exercises the stage machine) and a real-shaped fake carrying its own `sourceVersions`
-// (exercises assembleWord threading the engine's provenance onto the words row). Each block owns its own
-// container, so this costs exactly what two files would; keeping them together puts every `buildWord`
-// test in one place.
+// (policy-driven; exercises the stage machine) and a real-shaped fake carrying its own
+// `sourceVersions` (exercises provenance threading onto the words row). Each block owns its own
+// container, so this costs exactly what two files would.
 
 const EN = enumLanguage.en
 const PIPELINE_LENGTH = wordJobStage.enumValues.length
@@ -70,6 +70,8 @@ it.layer(MockEngineLayer, { timeout: '120 seconds' })((it) => {
     () =>
       Effect.gen(function* () {
         yield* resetDb
+        // Mirror requestWordBuild: a `pending` words row exists before the build runs (F-CONT-006).
+        yield* seedUnreadyWord(EN, 'lacuna')
         yield* seedPendingPipeline(EN, 'lacuna')
 
         yield* buildWord(EN, 'lacuna')
@@ -80,37 +82,69 @@ it.layer(MockEngineLayer, { timeout: '120 seconds' })((it) => {
         expect(stages).toHaveLength(PIPELINE_LENGTH)
         expect(stages.every((stage) => stage.status === enumAsyncJobStatus.succeeded)).toBe(true)
 
-        // ...and promotion produced exactly one ready word with assembled content.
+        // ...and promotion produced exactly one ready word with assembled content: the seeded `pending`
+        // row was flipped `running` at start and promoted to `succeeded` on commit (row status tracks the
+        // build lifecycle, F-CONT-006 AC-4).
         const [word] = yield* selectWords({ language: EN, word: 'lacuna', limit: 1 })
-        expect(word?.coreDefinition.length).toBeGreaterThan(0)
-        expect(word?.visuals.hero).not.toBeNull()
+        expect(word?.status).toBe(enumAsyncJobStatus.succeeded)
+        // Content is nullable in storage (lifecycle table) but a `succeeded` row has it all (the CHECK).
+        expect(word?.coreDefinition?.length).toBeGreaterThan(0)
+        expect(word?.visuals?.hero).not.toBeNull()
       }),
   )
 
-  it.effect('a pass failure records the typed error and promotes no words row (AC-4, AC-5)', () =>
-    Effect.gen(function* () {
-      yield* resetDb
-      // `kaboom` is the reserved demo word that fails at enrich_visuals.
-      yield* seedPendingPipeline(EN, 'kaboom')
+  it.effect(
+    'flips every stage running before generation — the succeeded batch keeps its startedAt',
+    () =>
+      Effect.gen(function* () {
+        yield* resetDb
+        yield* seedUnreadyWord(EN, 'lacuna')
+        yield* seedPendingPipeline(EN, 'lacuna')
 
-      yield* buildWord(EN, 'kaboom')
+        yield* buildWord(EN, 'lacuna')
 
-      const status = byStage(yield* selectWordJobStages({ language: EN, word: 'kaboom' }))
-      // fetch_source runs first (it grounds the rest); the failing pass is recorded `failed`. The
-      // enrich passes run concurrently, so the others' post-failure state is indeterminate (succeeded
-      // or interrupted) and intentionally unasserted — what matters is the failure is recorded (so a
-      // retry is admitted) and no word is promoted (AC-4/AC-5).
-      expect(status.get(enumWordJobStage.fetch_source)).toBe(enumAsyncJobStatus.succeeded)
-      expect(status.get(enumWordJobStage.enrich_visuals)).toBe(enumAsyncJobStatus.failed)
-
-      // The pristine invariant: a partial build never creates a words row (AC-5 negative).
-      expect(yield* selectWords({ language: EN, word: 'kaboom' })).toHaveLength(0)
-    }),
+        // The seed clears startedAt (pending); only the pre-generation `running` flip stamps it, and the
+        // succeeded batch preserves it (merge-patch: succeeded carries no startedAt key). So a non-null
+        // startedAt on every succeeded stage proves buildWord flipped the pipeline running first.
+        const stages = yield* selectWordJobStages({ language: EN, word: 'lacuna' })
+        expect(stages.every((stage) => stage.status === enumAsyncJobStatus.succeeded)).toBe(true)
+        expect(stages.every((stage) => stage.startedAt !== null)).toBe(true)
+      }),
   )
 
-  it.effect('the failed pass records the typed JobError (failed)', () =>
+  it.effect(
+    'a pass failure records the typed error and flips the words row failed (AC-4, AC-5)',
+    () =>
+      Effect.gen(function* () {
+        yield* resetDb
+        // Mirror requestWordBuild: a `pending` words row exists before the build runs.
+        yield* seedUnreadyWord(EN, 'kaboom')
+        // `kaboom` is the reserved demo word that fails at enrich_visuals.
+        yield* seedPendingPipeline(EN, 'kaboom')
+
+        yield* buildWord(EN, 'kaboom')
+
+        const status = byStage(yield* selectWordJobStages({ language: EN, word: 'kaboom' }))
+        // fetch_source runs first (it grounds the rest); the failing pass is recorded `failed`. The
+        // enrich passes run concurrently, so the others' post-failure state is indeterminate (succeeded
+        // or interrupted) and intentionally unasserted — what matters is the failure is recorded (so a
+        // retry is admitted) and no word is promoted (AC-4/AC-5).
+        expect(status.get(enumWordJobStage.fetch_source)).toBe(enumAsyncJobStatus.succeeded)
+        expect(status.get(enumWordJobStage.enrich_visuals)).toBe(enumAsyncJobStatus.failed)
+
+        // The seeded row is flipped `failed` with content still NULL — never promoted (AC-5 negative), and
+        // `failed` is buildable so a later re-request retries (T03b's failed-retry guard).
+        const word = yield* selectWord(EN, 'kaboom')
+        expect(Option.isSome(word)).toBe(true)
+        expect(Option.getOrThrow(word).status).toBe(enumAsyncJobStatus.failed)
+        expect(Option.getOrThrow(word).coreDefinition).toBeNull()
+      }),
+  )
+
+  it.effect('the failed pass records the typed JobErrorEntity (failed)', () =>
     Effect.gen(function* () {
       yield* resetDb
+      yield* seedUnreadyWord(EN, 'kaboom')
       yield* seedPendingPipeline(EN, 'kaboom')
 
       yield* buildWord(EN, 'kaboom')
@@ -129,6 +163,7 @@ it.layer(MockEngineLayer, { timeout: '120 seconds' })((it) => {
     () =>
       Effect.gen(function* () {
         yield* resetDb
+        yield* seedUnreadyWord(EN, SLOW_WORD)
         yield* seedPendingPipeline(EN, SLOW_WORD)
 
         // The mock delay (1s on enrich_visuals) and the build budget (200ms) are both clock-driven;
@@ -136,18 +171,23 @@ it.layer(MockEngineLayer, { timeout: '120 seconds' })((it) => {
         yield* TestClock.withLive(buildWord(EN, SLOW_WORD))
 
         // Generation overran its budget (the budget bounds generation), was interrupted before any
-        // commit, and every stage was recorded `timed_out`; nothing was committed, so no word is promoted.
+        // commit, and every stage was recorded `timed_out`; nothing was committed, so the row is never
+        // promoted — it is flipped `failed` (content NULL), retryable.
         const stages = yield* selectWordJobStages({ language: EN, word: SLOW_WORD })
         expect(stages.every((stage) => stage.status === enumAsyncJobStatus.failed)).toBe(true)
         expect(stages.every((stage) => stage.error?.type === enumJobErrorType.timed_out)).toBe(true)
 
-        expect(yield* selectWords({ language: EN, word: SLOW_WORD })).toHaveLength(0)
+        const word = yield* selectWord(EN, SLOW_WORD)
+        expect(Option.isSome(word)).toBe(true)
+        expect(Option.getOrThrow(word).status).toBe(enumAsyncJobStatus.failed)
+        expect(Option.getOrThrow(word).coreDefinition).toBeNull()
       }),
   )
 
   it.effect('a not_found pass records the typed not_found error — no words row (AC-12)', () =>
     Effect.gen(function* () {
       yield* resetDb
+      yield* seedUnreadyWord(EN, 'xyzzy')
       // `xyzzy` is the reserved demo word that fails at fetch_source (the first pass) with not_found.
       yield* seedPendingPipeline(EN, 'xyzzy')
 
@@ -161,8 +201,10 @@ it.layer(MockEngineLayer, { timeout: '120 seconds' })((it) => {
       expect(failed?.status).toBe(enumAsyncJobStatus.failed)
       expect(failed?.error?.type).toBe(enumJobErrorType.not_found)
 
-      // The first pass failed, so nothing downstream ran and no word was promoted.
-      expect(yield* selectWords({ language: EN, word: 'xyzzy' })).toHaveLength(0)
+      // The first pass failed, so nothing downstream ran and no word was promoted — the row is `failed`.
+      const word = yield* selectWord(EN, 'xyzzy')
+      expect(Option.isSome(word)).toBe(true)
+      expect(Option.getOrThrow(word).status).toBe(enumAsyncJobStatus.failed)
     }),
   )
 })
@@ -267,6 +309,7 @@ it.layer(ProvenanceLayer, { timeout: '120 seconds' })((it) => {
   it.effect('the six-stage assembly promotes with the engine sourceVersions (AC-7)', () =>
     Effect.gen(function* () {
       yield* resetDb
+      yield* seedUnreadyWord(EN, WORD)
       yield* seedPendingPipeline(EN, WORD)
 
       yield* buildWord(EN, WORD)

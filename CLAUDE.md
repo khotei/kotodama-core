@@ -25,12 +25,6 @@ apps/{api,worker} ─► use-cases/* ─► core/* ─► repositories/* ─► 
 
 `use-cases/*` is the top application tier below `apps/*`: user-flow composer functions (`requestWordBuild`,
 `buildWord`) that aggregate `core/*` functions + the repo functions into one end-to-end flow an app binds.
-
-Frontend (`apps/web`) must **not** import any internal `@lexiai/*` package — `core/`, `database/`,
-`repositories/`, the backend-only packages (`ai`, `queue`, `storage`), nor a vocabulary package
-(none exists — `packages/schemas` was deprecated). This is the single most important rule the
-scaffolding must protect. The HTTP contract lives with its server (`apps/api/src/words/`); the FE's
-domain/contract surface is re-established when the UI returns. Enforced by Biome `noRestrictedImports`.
 Details: `.claude/rules/dependency-hierarchy.md`.
 
 ## Root scripts
@@ -64,21 +58,21 @@ Cross-cutting rules load **always**; the rest are **path-scoped** via `paths:` f
 only when you touch a matching file, keeping the always-on context lean (Claude Code guidance:
 target < 200 lines of always-loaded context per file; bloat reduces adherence).
 
-- **Always:** `tech-stack` · `dependency-hierarchy` · `naming` · `deep-modules` · `capability-sweep` ·
-  `comments` · `tooling` · `commits` · `pull-requests` · `claude-md`.
+- **Always:** `tech-stack` · `dependency-hierarchy` · `naming` · `comments` · `tooling` ·
+  `commits` · `pull-requests` · `claude-md`.
 - **Path-scoped (load on match):** `effect-conventions`, `vendored-sources` → `**/*.ts` ·
   `drizzle-effect` → `database/**`, `repositories/**` · `config` → `packages/config/**`,
   `**/main.ts` · `testing` → `**/test/**`, `**/*.test.ts` · `observability` →
-  `packages/observability/**`, `apps/**` · `frontend-rules` → `apps/web/**` · `sdd` →
-  `.claude/{commands,agents,sdd}/**` · `human-docs` → `readme.md`, `docs/**`.
+  `packages/observability/**`, `apps/**` · `sdd` → `.claude/{commands,agents,sdd}/**` ·
+  `human-docs` → `readme.md`, `docs/**`.
 - **On-demand reference (pointer-loaded, NOT auto-loaded):** `.claude/agent-patterns/*.md` —
-  Effect/Drizzle cheat-sheets, `deep-modules-examples.md` (shallow→deep gallery + worked refactoring),
-  and `commit-examples.md`. Linked from the rules that need them; never put on-demand depth in
-  `.claude/rules/` (it would auto-load).
+  Effect/Drizzle/Postgres/type-fest/modern-TS/design-principles cheat-sheets and
+  `commit-examples.md`. Linked from the rules/commands that need them; never put on-demand depth
+  in `.claude/rules/` (it would auto-load).
 
 ## Per-layer context (loaded lazily when editing that subtree)
 
-`apps/{api,worker,web}/CLAUDE.md` · `use-cases/CLAUDE.md` · `core/{words,jobs}/CLAUDE.md` ·
+`apps/{api,worker}/CLAUDE.md` · `use-cases/CLAUDE.md` · `core/{words,jobs}/CLAUDE.md` ·
 `database/CLAUDE.md` · `repositories/{words,async-word-jobs}/CLAUDE.md` · `packages/*/CLAUDE.md` ·
 `infra/CLAUDE.md`.
 Ancestor `CLAUDE.md` files (this one) always load; subdirectory ones load when you touch files
@@ -97,13 +91,14 @@ code surface — is `.claude/rules/claude-md.md`.
 
 `repos/effect-smol/` holds the **Effect v4 beta source** as read-only reference material so
 coding agents read real patterns instead of guessing. **Never import from `repos/` in
-application code; never edit it.** Before writing Effect code, consult `.claude/agent-patterns/*.md`
-and the vendored source. Full rules: `.claude/rules/vendored-sources.md`. Update via
-`bun run vendor:effect:update`.
+application code; never edit it.** When unsure of an Effect API, verify there or in
+`.claude/agent-patterns/*.md` instead of guessing. Full rules: `.claude/rules/vendored-sources.md`.
+Update via `bun run vendor:effect:update`.
 
 ## Slash commands
 
-`/check` (lint+tsc+test) · `/scan-deps` (verify layer rule) · `/new-package` (scaffold a workspace).
+`/check` (lint+tsc+test) · `/scan-deps` (verify layer rule) · `/new-package` (scaffold a workspace) ·
+`/sweep` (on-demand design+platform sweep over recent changes — expensive by design, run it deliberately).
 
 **SDD toolkit** — `/sdd:{research,specify,clarify,plan,tasks,implement,verify}` drive the
 spec-driven loop (research → spec → plan → kanban tasks → TDD implement → fresh-context verify),

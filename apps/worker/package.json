@@ -5,8 +5,8 @@
   "scripts": {
     "dev": "bun --watch ./src/main.ts",
     "build": "bun build ./src/main.ts --outdir=./dist --target=bun",
-    "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "test": "bun --bun vitest run",
+    "typecheck": "bun --bun tsc --noEmit"
   },
   "dependencies": {
     "@effect/ai-openai": "catalog:effect",

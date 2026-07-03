@@ -1,8 +1,8 @@
-import type { Language } from '@lexiai/database'
+import type { AsyncJobStatus, Language } from '@lexiai/database'
 import { Effect } from 'effect'
 import { HttpApiClient } from 'effect/unstable/httpapi'
 import type { WordStateView, WordStatus } from '../src/words/word-state.view'
-import { WordsApi } from '../src/words/words.api'
+import { WORD_SEARCH_DEFAULT_LIMIT, WordsApi } from '../src/words/words.api'
 
 /**
  * Assert a {@link WordStateView} is the `status` variant, narrowing it for the rest of the test —
@@ -37,4 +37,37 @@ export const getWordState = (language: Language, word: string) =>
 export const buildWord = (language: Language, word: string) =>
   HttpApiClient.make(WordsApi).pipe(
     Effect.flatMap((client) => client.words.buildWord({ params: { language, word } })),
+  )
+
+/**
+ * The `search` query envelope — every field optional. `page`/`limit` are self-defaulted by the
+ * endpoint's query schema on the wire, but the typed client builds the resolved `Type` where both
+ * are required, so this helper fills them to keep call sites that don't page terse.
+ */
+type SearchQuery = {
+  readonly q?: string
+  readonly status?: AsyncJobStatus
+  readonly page?: number
+  readonly limit?: number
+}
+
+export const search = (language: Language, query: SearchQuery = {}) =>
+  HttpApiClient.make(WordsApi).pipe(
+    Effect.flatMap((client) =>
+      client.words.search({
+        params: { language },
+        query: { page: 1, limit: WORD_SEARCH_DEFAULT_LIMIT, ...query },
+      }),
+    ),
+  )
+
+/** The `counts` query envelope — only the count-relevant filters (no pagination). */
+type CountsQuery = {
+  readonly q?: string
+  readonly status?: AsyncJobStatus
+}
+
+export const counts = (language: Language, query: CountsQuery = {}) =>
+  HttpApiClient.make(WordsApi).pipe(
+    Effect.flatMap((client) => client.words.counts({ params: { language }, query })),
   )

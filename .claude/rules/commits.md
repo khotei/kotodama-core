@@ -71,7 +71,7 @@ downstream implication. Trivial/mechanical commits may omit it, but prefer inclu
 :sparkles: feat(schemas): Add Word and WordEntry Effect schemas
 
 Define the shared Effect Schema types for words and generated entries
-so both the API contract and the frontend decode from one source.
+so both the API contract and its consumers decode from one source.
 
 Decision: Modelled WordEntry.images as a non-empty array rather than an
 optional field — a generated entry without at least one image is invalid

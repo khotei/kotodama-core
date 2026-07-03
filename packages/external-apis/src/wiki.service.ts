@@ -2,35 +2,16 @@ import { Context, Data, Effect, Layer, Option, Schema } from 'effect'
 import { HttpClient, HttpClientResponse } from 'effect/unstable/http'
 import { type WikiSearchHit, WikiSearchResult, WikiSummary } from './wiki.schema'
 
-/**
- * The single failure of {@link WikiClient}. Reserved for what the engine genuinely *cannot* ground
- * around — a transport fault (network/DNS) or a schema-decode break — with the original wrapped in
- * `cause`. Crucially it is **not** raised for absence: a 404, a missing page, or a disambiguation
- * page is `Option.none` / `[]`, so Wikipedia grounding stays off the engine's error path.
- */
+// NOT raised for absence — a 404 or disambiguation page is `Option.none`/`[]`, so grounding
+// stays off the engine's error path; only transport/decode faults fail.
 export class WikiError extends Data.TaggedError('WikiError')<{
   readonly method: 'summary' | 'searchTitle'
   readonly cause: unknown
 }> {}
 
 /**
- * Best-effort Wikipedia/Wiktionary grounding for the word engine. Two reads, both keyed on a plain
- * language code (e.g. `"en"`):
- *
- * - `summary` — the Wikipedia REST page summary. **Absence is `Option.none`, never {@link WikiError}**:
- *   a 404 (no such page) or a `type: "disambiguation"` payload both yield `Option.none`. Only a
- *   transport fault or a malformed body fails.
- * - `searchTitle` — the MediaWiki Core REST title search; returns the hit array, `[]` when empty.
- *
- * This Option-not-error contract is the point: it keeps grounding from ever putting the engine into
- * a failure state just because Wikipedia has nothing to say about a word.
- *
- * @example
- * ```ts
- * const wiki = yield* WikiClient
- * const summary = yield* wiki.summary('en', 'lacuna') // Option<WikiSummary>
- * const hits = yield* wiki.searchTitle('en', 'lacuna', 5) // ReadonlyArray<WikiSearchHit>
- * ```
+ * Best-effort Wikipedia grounding. The Option-not-error contract is the point: Wikipedia having
+ * nothing to say about a word must never put the engine into a failure state.
  */
 export class WikiClient extends Context.Service<
   WikiClient,
@@ -52,14 +33,8 @@ export class WikiClient extends Context.Service<
 const decodeSummary = HttpClientResponse.schemaJson(Schema.Struct({ body: WikiSummary }))
 const decodeSearch = HttpClientResponse.schemaJson(Schema.Struct({ body: WikiSearchResult }))
 
-/**
- * Builds {@link WikiClient} over the {@link HttpClient.HttpClient} in context — the transport seam.
- * The app provides a real client (`BunHttpClient.layer`); tests provide a fake-fetch one. Keeping the
- * transport in `R` means this leaf package depends on no concrete platform client.
- *
- * `HttpClient.get` already returns a *successful* Effect for non-2xx statuses, so 404 is read off
- * `response.status` rather than caught — that's what lets absence land on the value channel.
- */
+// `HttpClient.get` returns a *successful* Effect for non-2xx statuses, so 404 is read off
+// `response.status` — that's what lets absence land on the value channel.
 export const WikiClientLive: Layer.Layer<WikiClient, never, HttpClient.HttpClient> = Layer.effect(
   WikiClient,
   Effect.gen(function* () {

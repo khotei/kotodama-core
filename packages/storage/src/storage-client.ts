@@ -12,33 +12,15 @@ export interface StorageClientShape {
 }
 
 /**
- * The parameterized storage base — one `Bun.S3Client` with **no bound bucket**, taking the bucket
- * **per call**. `put(bucket, key, bytes, opts?)` routes the write to the caller-supplied bucket via
- * `Bun.S3Client`'s per-call `S3Options.bucket` override, so a single client serves any number of
- * buckets without a per-bucket client pool. The bound {@link ImagesStore} wrapper (and a future
- * second-bucket wrapper) delegate here, fixing one bucket each. Reuses {@link StorageError} —
- * callers handle one tag.
- *
- * @example
- * ```ts
- * const storage = yield* StorageClient
- * const key = yield* storage.put('lexiai-images', imageKey({ language, word, kind: 'hero' }), png, {
- *   contentType: 'image/png',
- * })
- * ```
+ * The parameterized base — one `Bun.S3Client`, no bound bucket: the per-call `S3Options.bucket`
+ * override routes each write, so one client serves any number of buckets.
  */
 export class StorageClient extends Context.Service<StorageClient, StorageClientShape>()(
   '@lexiai/storage/StorageClient',
 ) {}
 
-/**
- * Concrete {@link StorageClient} over a single `Bun.S3Client` built from the shared
- * {@link AwsClientConfig} (region + credentials always, endpoint when set) — **no `bucket` bound at
- * construction**; the per-call `{ bucket }` on `client.write` is authoritative. `Bun.S3Client` is a
- * Bun runtime global, not an npm dep. A raw client rejection (network, credentials, bucket policy) is
- * wrapped in one {@link StorageError}; callers handle a single tag. Carries a `ConfigError` (config
- * resolves at layer build); `ConfigProviderLive` is supplied by the app entrypoint, not here.
- */
+// Config-resolved credentials via AwsClientConfig, never Bun.S3Client's ambient env read — the
+// client snapshots ambient creds at process start and ignores runtime injection.
 export const StorageClientLive: Layer.Layer<StorageClient, Config.ConfigError> = Layer.effect(
   StorageClient,
   Effect.gen(function* () {

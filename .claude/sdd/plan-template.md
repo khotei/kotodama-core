@@ -3,8 +3,8 @@
 # Plan template (§6.3)
 
 What `/sdd:plan` writes into the **Plan** toggle inside the feature page. The two load-bearing
-sections are **Module decomposition** (deep modules — decompose per `@.claude/rules/deep-modules.md`)
-and **Testing strategy** — don't drop them.
+sections are **Module decomposition** (prefer deep modules — narrow interface, rich
+implementation) and **Testing strategy** — don't drop them.
 
 ```markdown
 # Plan — F-NNN <title>

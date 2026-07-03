@@ -11,11 +11,10 @@ The authoritative source is the [Tech spec](https://www.notion.so/36dfb28bd5f181
 | SQL | `@effect/sql-pg` + **Drizzle** | Drizzle owns schema/migrations; the `DB` layer is a `Context.Service`, repositories are bare functions over it. |
 | AI | `@effect/ai-openai` | text + image generation. |
 | Observability | `@effect/opentelemetry` | `TracingLive` layer factory in `@lexiai/observability`; OTLP→Jaeger locally (`infra`), any OTLP backend in prod. See `.claude/rules/observability.md`. |
-| Frontend | **React 19** + **Vite 6** | React Compiler on (babel plugin), TanStack Router (file-based, deferred), Tailwind v4, `@effect/atom-react`. |
 | AWS | SQS + S3 (LocalStack locally) | `@aws-sdk/client-sqs`; storage uses `Bun.S3Client` (a Bun global). |
 | Lint/format | **Biome** | single tool; encodes the layer rule (see dependency-hierarchy). |
 | Git hook | **Husky** | pre-commit: `biome check --staged` + `bun run tsc` (per-workspace `tsc --noEmit` via Bun filter). |
-| Type utilities | **type-fest** (catalog `types`) | Types-only, zero runtime. **Before authoring any mapped/conditional/utility type by hand, consult `.claude/agent-patterns/type-fest.md`** (blessed list + gotchas) and the package readme — hand-roll only what it lacks. |
+| Type utilities | **type-fest** (catalog `types`) | Types-only, zero runtime. Prefer its utilities over hand-rolling a non-trivial mapped/conditional type — the blessed list + gotchas: `.claude/agent-patterns/type-fest.md`. |
 | Tests | **`@effect/vitest`** | `.test.ts` files; one smoke test per workspace. |
 | Editor (opt) | `@effect/language-service` | TS LSP plugin (`tsconfig.base.json` `plugins`). Editor-only — not run by `tsc`/CI. JetBrains: set TypeScript = workspace `node_modules/typescript`. |
 

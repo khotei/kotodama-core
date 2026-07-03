@@ -51,6 +51,5 @@ transformations in the vendored source over hand-rolling parsers.
 ## Avoid
 
 - Zod, `io-ts`, or ad-hoc validators — one schema lib (`effect/Schema`) only.
-- (`packages/schemas` was deprecated; there is no isomorphic FE schema package right now — the FE contract surface is re-established with the UI.)
 - Guessing v4 method names from v3 memory; the Schema API was consolidated during the beta —
   grep `Schema.ts` exports.

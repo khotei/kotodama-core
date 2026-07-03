@@ -9,12 +9,13 @@
   },
   "dependencies": {
     "effect": "catalog:effect",
+    "@lexiai/ai": "workspace:*",
     "@lexiai/core-content": "workspace:*",
     "@lexiai/database": "workspace:*",
     "@lexiai/repositories-words": "workspace:*"
   },
   "scripts": {
-    "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "test": "bun --bun vitest run",
+    "typecheck": "bun --bun tsc --noEmit"
   }
 }

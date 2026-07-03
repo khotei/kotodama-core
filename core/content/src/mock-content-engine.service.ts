@@ -2,34 +2,26 @@ import {
   enumJobErrorType,
   enumWordJobStage,
   type JobErrorType,
-  type SourceVersions,
+  type SourceVersionsEntity,
   type WordJobStage,
 } from '@lexiai/database'
 import { Duration, Effect, Layer } from 'effect'
 import { ContentEngine, ContentEngineError } from './content-engine.service'
 import { mockStageContent } from './mock-content'
 
-/**
- * The mock engine's build provenance — honest placeholder values (never the real model/hash), so a
- * mock-built `words` row truthfully records that the mock made it. Mirrors the real engine's
- * `sourceVersions`, which `buildWord` passes to `assembleWord` at promotion.
- */
-const MOCK_SOURCE_VERSIONS: SourceVersions = {
-  model: 'mock-content-engine',
-  promptHash: 'mock',
-  pipeline: 'mock-content-engine@0.1',
-}
-
-/**
- * What the mock engine should do for one `(word, stage)` pass: `produce` content (optionally after a
- * delay, to drive the worker's timeout) or `fail` with a typed error. Injecting a policy is how tests
- * exercise the not_found / failed / slow paths precisely.
- */
+/** Injecting a policy is how tests exercise the not_found / failed / slow paths precisely. */
 export type StagePlan =
   | { readonly kind: 'produce'; readonly delayMillis?: number }
   | { readonly kind: 'fail'; readonly type: JobErrorType; readonly delayMillis?: number }
 
 export type ContentPolicy = (word: string, stage: WordJobStage) => StagePlan
+
+// Honest placeholders (never the real model/hash), so a mock-built row records that the mock made it.
+const MOCK_SOURCE_VERSIONS: SourceVersionsEntity = {
+  model: 'mock-content-engine',
+  promptHash: 'mock',
+  pipeline: 'mock-content-engine@0.1',
+}
 
 /** A per-stage delay that comfortably exceeds any sane per-stage timeout the worker sets. */
 const SLOW_STAGE_DELAY_MILLIS = 30_000

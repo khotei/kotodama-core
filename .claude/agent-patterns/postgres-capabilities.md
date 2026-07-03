@@ -4,9 +4,9 @@
 the SQL sibling of `.claude/agent-patterns/effect-stdlib.md` and `.claude/agent-patterns/type-fest.md`:
 the same repo reflex — **before hand-writing a loop, a second query per row, a manual
 aggregate/dedup/collapse, or a running total in application code, check whether Postgres does it in one
-construct.** Pushing a *data-shape* concern into the engine is the deep-module move
-(`.claude/rules/deep-modules.md`): the heavy `sql` hides behind a narrow typed interface (a repo
-function or a `pgView`), and a whole class of app-side loops disappears.
+construct.** Pushing a *data-shape* concern into the engine is the deep-module move: the heavy
+`sql` hides behind a narrow typed interface (a repo function or a `pgView`), and a whole class of
+app-side loops disappears.
 
 Not a feature encyclopedia — a **recognition map**: left = the symptom you notice while coding, right =
 the primitive that dissolves it. Scan the index; dive into the section. The taste gate still applies —
@@ -39,11 +39,13 @@ plain query is clearer is its own smell.
 | Validating the same format/range differently in each service | `DOMAIN` / `CHECK` | 13 |
 | Writing several related rows as separate statements, fearing atomicity | Data-modifying CTE | 14 |
 | Subtotals across several dimensions as separate queries | `GROUPING SETS` / `ROLLUP` | 15 |
-| Paging with `OFFSET n` that slows as n grows | Keyset (seek) pagination | 16 |
+| Paging a list (numbered pages vs infinite scroll) | Offset vs keyset (seek) pagination | 16 |
 
-Domain examples use the lexi-ai schema: **pristine `words`** (a row exists ⇔ the word is *ready*;
-content in `tiers`/`lexical`/… jsonb, `UNIQUE(word, language)`) and **`async_word_jobs`** (one row per
-`(word, language, stage)`; `status ∈ pending|running|succeeded|failed`). Spaced-repetition examples
+Domain examples use the lexi-ai schema: the **lifecycle `words` table** (F-CONT-006 — one row per
+`(word, language)`, `status async_job_status NOT NULL`, content in `tiers`/`lexical`/… jsonb all
+**nullable**, a `CHECK (status <> 'succeeded' OR <content non-null>)` enforcing "ready ⇒ complete"; a
+building word is a `pending|running|failed` row, a ready one is `succeeded`) and **`async_word_jobs`** (one
+row per `(word, language, stage)`; `status ∈ pending|running|succeeded|failed`). Spaced-repetition examples
 (`reviews`, `user_words`) are illustrative — those tables don't exist yet.
 
 ## How each maps to Drizzle (`drizzle-orm/effect-postgres`)
@@ -84,22 +86,25 @@ FROM daily_stats WHERE user_id = $1;
 ```
 
 One pass next to the data; removes a class of TS loops. **Do NOT** reach for `count(*) OVER ()` to
-get a page total alongside a keyset page — it scans every match and defeats the `LIMIT` early-stop
-(§16); use a separate counts query/endpoint. Docs: <https://www.postgresql.org/docs/current/tutorial-window.html>.
+get a page total alongside a paged read — it materializes every match and defeats the paged scan's
+`LIMIT` (keyset) / index walk (offset) (§16); use a separate counts query/endpoint (lexi-ai's
+`searchWords` runs a standalone `count(*)` for its `total`). Docs: <https://www.postgresql.org/docs/current/tutorial-window.html>.
 
 ## 2. Several conditional counters at once → `FILTER`
 
 Symptom: 3–4 separate `COUNT(...)`/`AVG(...)` with different `WHERE` for one stats card. **This is the
-lexi-ai `/summary` counts endpoint** — `{total, ready, creating, failed}` in one scan of one query,
-from the *same* definition the list uses (consistency is structural, not by convention).
+lexi-ai `/counts` endpoint** — `{total, pending, running, succeeded, failed}` in one scan of one query,
+from the *same* `wordSearchFilter` the list uses (consistency is structural, not by convention). An
+unfiltered call is just the empty filter over the whole language — same scan, no separate counter path.
 
 ```sql
 SELECT
   count(*)                                          AS total,
-  count(*) FILTER (WHERE status = 'ready')          AS ready,
-  count(*) FILTER (WHERE status = 'creating')       AS creating,
+  count(*) FILTER (WHERE status = 'pending')        AS pending,
+  count(*) FILTER (WHERE status = 'running')        AS running,
+  count(*) FILTER (WHERE status = 'succeeded')      AS succeeded,
   count(*) FILTER (WHERE status = 'failed')         AS failed
-FROM word_summaries WHERE language = $1;
+FROM words WHERE language = $1;
 ```
 
 Drizzle: `sql` (`count(*) filter (where …)`). Docs (aggregate `FILTER`):
@@ -134,8 +139,10 @@ jsonb in SQL; shape the union in TS. Docs: <https://www.postgresql.org/docs/curr
 
 ## 5. Get-or-create without races → `ON CONFLICT` / **[PG19]** `DO SELECT`
 
-lexi-ai's `upsertWords` is the promotion upsert on `UNIQUE(word, language)` (`database/src/on-conflict.ts`,
-`patchOnConflict`). The **[PG19]** `DO SELECT` gives true atomic get-or-create (return the existing row,
+lexi-ai's `upsertWord` is an insert-or-patch on `UNIQUE(word, language)` — `INSERT … ON CONFLICT DO
+UPDATE` with the conflict set derived from the content's own keys (`patchOnConflict`); admission
+(which states may be re-seeded) lives in the `ensureWordBuildable` gate, not a `WHERE` guard. The **[PG19]** `DO SELECT` gives
+true atomic get-or-create (return the existing row,
 optionally `FOR UPDATE`, no dummy write) — CYBERTEC benchmarks it ~4× faster than the `DO UPDATE SET
 col = EXCLUDED.col` no-op workaround. Not usable until PG19 is GA (~Sep–Oct 2026); today the no-op-update
 or a CTE+`SELECT` stands in.
@@ -220,14 +227,22 @@ SELECT * FROM tree ORDER BY path;
 
 ## 11. One heavy query in five places → `VIEW` / materialized view
 
-**The deep-module play, and the recommended shape for Unified Word Query.** Define the combined
-`words ∪ async_word_jobs` query (the `jobs_agg` CTE + `UNION ALL` + `NOT EXISTS` dedup + `status` `CASE`)
-as a **`pgView`** (`word_summaries`). Then `selectWordSummaries` and `countWordSummaries` both read the
-*same* view → list/counts agree structurally; the repo sees a narrow typed table, not a scary UNION.
+**The deep-module play when one heavy query is copy-pasted.** Define a combined query once as a
+**`pgView`**; the repo then reads a narrow typed table, not a scary UNION, and every reader agrees
+structurally.
 
 ```sql
-CREATE VIEW word_summaries AS …;   -- Drizzle: pgView('word_summaries').as((qb) => …)
+CREATE VIEW some_summary AS …;   -- Drizzle: pgView('some_summary').as((qb) => …)
 ```
+
+> **lexi-ai no longer uses a `pgView` here (F-CONT-006, supersedes the F-PLAT-005 design).** The Unified
+> Word Query list/counts *did* read a `word_summaries` pgView that unioned `words ∪ async_word_jobs` (a
+> `jobs_agg` CTE + `UNION ALL` + `NOT EXISTS` dedup + `status` `CASE`) — needed only because `words` was
+> then pristine (a row existed ⇔ ready), so building words lived solely in `async_word_jobs`. F-CONT-006
+> merged `status` onto the `words` row (nullable content + CHECK), so a building word IS a `words` row and
+> `searchWords`/`selectWordCounts` read the **table** directly. The pgView was deleted. The
+> `VIEW`/materialized-view capability below still stands as a general technique — it just isn't the shape
+> this domain landed on.
 
 **Plain `pgView`, not materialized:** a plain view is inlined by the planner (predicate pushdown of the
 `language` filter and the keyset predicate into both `UNION ALL` branches → each uses its index, `LIMIT`
@@ -289,13 +304,25 @@ GROUP BY GROUPING SETS ((topic, level), (topic), (level), ());
 
 Docs: <https://www.postgresql.org/docs/current/queries-table-expressions.html#QUERIES-GROUPING-SETS>.
 
-## 16. Deep paging → keyset (seek) pagination
+## 16. Paging → offset (numbered pages) vs keyset (seek)
 
 `OFFSET n` re-scans and discards n rows — cost grows with the page. **Keyset** carries the last row's sort
-key as an opaque cursor and seeks past it, so page N costs the same as page 1. For the Unified Word Query
-`ORDER BY (created_at DESC, word ASC)`, the seek predicate over the CTE/view alias is
-`or(lt(created_at, $c), and(eq(created_at, $c), gt(word, $w)))` with `LIMIT n` — `(created_at, word)` is a
-unique sort key (`word` is unique per language-scoped branch), so no surrogate tiebreaker is needed.
+key as an opaque cursor and seeks past it, so page N costs the same as page 1; the seek predicate for
+`ORDER BY (created_at DESC, word ASC)` is `or(lt(created_at, $c), and(eq(created_at, $c), gt(word, $w)))`
+with `LIMIT n` — `(created_at, word)` is a unique sort key (`word` is unique per language-scoped branch),
+so no surrogate tiebreaker is needed.
+
+> **lexi-ai's `searchWords` uses OFFSET, not keyset (supersedes the F-CONT-005 keyset design).** The
+> Unified Word Query search serves a **numbered-page UI** (1, 2, … *last*), which needs a total and the
+> ability to jump to an arbitrary/last page — neither of which a forward-only cursor can do. So it pages
+> with `LIMIT/OFFSET` over the `words_language_created_at_word_idx` btree (the `DESC NULLS LAST` DDL
+> matches the ORDER BY, so the sort is index-provided — no `Sort` node) and returns `total` from a
+> **separate `count(*)`** (never `count(*) OVER()` — see §1). The accepted trade: offset page boundaries
+> drift as new rows land at the top, and deep pages re-scan. **Levers if that ever hurts:** switch back to
+> keyset for infinite-scroll, or a **deferred join** — walk the narrow index for just the page's ids
+> (`… ORDER BY … LIMIT n OFFSET m` selecting only the key), then join back to fetch the heavy jsonb for the
+> `n` rows on the page, so the discarded offset rows never read their wide columns.
+
 Refs: [Use-The-Index-Luke — No Offset](https://use-the-index-luke.com/no-offset) ·
 [Drizzle cursor pagination](https://orm.drizzle.team/docs/guides/cursor-based-pagination).
 
@@ -313,6 +340,5 @@ Refs: [Use-The-Index-Luke — No Offset](https://use-the-index-luke.com/no-offse
 ## See also
 
 - `.claude/rules/drizzle-effect.md` — the mandated Drizzle⇄Effect pattern (the *how*).
-- `.claude/rules/deep-modules.md` — the taste gate; "push complexity downward" is why this catalog exists.
 - `.claude/agent-patterns/effect-stdlib.md`, `type-fest.md` — the sibling "reach for the primitive" catalogs.
 - `repos/drizzle/` — vendored source; the authority for exact `sql`/`pgView`/`effect-postgres` shapes.

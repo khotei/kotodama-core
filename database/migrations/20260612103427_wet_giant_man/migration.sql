@@ -1,1 +1,0 @@
-ALTER TABLE "async-word-jobs" DROP COLUMN "attempts";

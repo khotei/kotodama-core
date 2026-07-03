@@ -17,8 +17,11 @@
     "@lexiai/repositories-async-word-jobs": "workspace:*",
     "@lexiai/repositories-words": "workspace:*"
   },
+  "devDependencies": {
+    "@lexiai/ai": "workspace:*"
+  },
   "scripts": {
-    "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "test": "bun --bun vitest run",
+    "typecheck": "bun --bun tsc --noEmit"
   }
 }

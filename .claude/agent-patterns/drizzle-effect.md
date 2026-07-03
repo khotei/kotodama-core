@@ -15,14 +15,14 @@ There is **no Drizzle `LLMS.md`** — this file is the entry point. The *mandate
   (createSelectSchema/Insert/Update over pg) and `repos/drizzle/integration-tests/tests/pg/`
   (real schema, relations, migrations — ignore the bare-driver connection boilerplate at the top).
 - Use `effect/Schema` for refinements — **never Zod**. Generated schemas stay in `database/`
-  (they `import 'drizzle-orm'`), never in the isomorphic `@lexiai/schemas`.
+  (they `import 'drizzle-orm'`).
 
 ## Schema derivation — `drizzle-orm/effect-schema` (NOT used in this repo)
 
 LexiAI deleted its derived `<Entity>Schema`s — `createSelectSchema` erases jsonb `$type` to opaque
-`Json`, so repos return `$inferSelect` rows and runtime validation decodes through the
-hand-authored `@lexiai/schemas` structs (`.claude/rules/drizzle-effect.md` § "Why there are NO
-derived row schemas"). The upstream API, for reading the vendored source / a future genuine need:
+`Json`, so repos return `$inferSelect` rows and runtime validation decodes through hand-authored
+`effect/Schema` structs (`.claude/rules/drizzle-effect.md` § "Why there are NO derived row
+schemas"). The upstream API, for reading the vendored source / a future genuine need:
 
 ```ts
 // Generated schemas import 'drizzle-orm' — backend-only if ever reintroduced.
@@ -123,7 +123,7 @@ Stronger storage variant: split content into a 1:1 `word_details` table (exists 
 
 - A bare `drizzle(...)` / `drizzle-orm/node-postgres` driver, or a hand-rolled `PgClient`, in
   `repositories/*` — go through the `effect-postgres` layer.
-- `import 'drizzle-orm'` (or a generated row-schema) under `@lexiai/schemas` — hand-author a
-  plain `effect/Schema` if the FE needs the shape.
+- `import 'drizzle-orm'` (or a generated row-schema) outside `database/` — hand-author a
+  plain `effect/Schema` if another layer needs the shape.
 - Copying the web docs verbatim (`@effect/sql-drizzle`, `Context.Tag('DB')`, `@effect/sql/SqlError`)
   — they are Effect v3. Read the vendored `rc` source for exact signatures.

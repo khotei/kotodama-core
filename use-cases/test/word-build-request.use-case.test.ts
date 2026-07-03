@@ -1,6 +1,9 @@
 import { expect, it } from '@effect/vitest'
+import { AiServiceTest } from '@lexiai/ai/testing'
 import { WordBuildMessageFromJson } from '@lexiai/core-async-word-jobs'
+import { WordVerdict } from '@lexiai/core-words'
 import {
+  DB,
   enumAsyncJobStatus,
   enumJobErrorType,
   enumLanguage,
@@ -11,16 +14,26 @@ import { resetDb, TestDatabaseLive } from '@lexiai/database/testing'
 import { drainQueue, QueueLocalStackLive } from '@lexiai/queue/testing'
 import { selectWordJobStages } from '@lexiai/repositories-async-word-jobs'
 import { seedFailedWord } from '@lexiai/repositories-async-word-jobs/testing'
-import { seedReadyWord } from '@lexiai/repositories-words/testing'
-import { Effect, Layer, Schema } from 'effect'
+import { searchWords, selectWord } from '@lexiai/repositories-words'
+import { seedReadyWord, seedUnreadyWord } from '@lexiai/repositories-words/testing'
+import { Effect, Layer, Option, Schema } from 'effect'
 import { requestWordBuild } from '../src/index'
+
+// The verifier's judge now rides `requestWordBuild`'s `R` (T07). Every test provides a canned
+// `AiService` (no network): the file default admits (`isValid: true`) so the pre-filter is the only
+// gate; the AC-11 test overrides it locally with an `isValid: false` verdict to exercise the judge reject.
+const admitVerdict = WordVerdict.make({ isValid: true, reason: 'admit' })
+const AiServiceAdmit = AiServiceTest({ object: admitVerdict })
 
 // requestWordBuild = readWordBuildSnapshot ▸ ensureWordBuildable (guard) ▸ its own seed+enqueue action,
 // returning the freshly-seeded stage rows (the API collapses the running view) — plain functions over
 // the repos (which `yield*` DB) + JobsQueue (real SQS via a per-file LocalStack container) ← DB.
 // Two containers per file (Postgres + LocalStack); the flow bottoms out at DB + JobsQueue, which
 // this layer provides — so a test can seed ground truths via the repos and inspect the queue.
-const TestLayer = QueueLocalStackLive.pipe(Layer.provideMerge(TestDatabaseLive))
+const TestLayer = QueueLocalStackLive.pipe(
+  Layer.provideMerge(TestDatabaseLive),
+  Layer.provideMerge(AiServiceAdmit),
+)
 
 const EN = enumLanguage.en
 const WORD = 'lacuna'
@@ -53,6 +66,62 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
       expect(stages).toHaveLength(PIPELINE_LENGTH)
       expect(stages.every((stage) => stage.status === enumAsyncJobStatus.pending)).toBe(true)
     }),
+  )
+
+  it.effect(
+    'seeds a pending words row in the same tx as the stages — the word is listable before the worker runs (AC-4)',
+    () =>
+      Effect.gen(function* () {
+        yield* resetDb
+        yield* drainQueue
+
+        yield* requestWordBuild(EN, WORD)
+
+        // The word IS a `words` row the instant the build is requested — `status='pending'`, content NULL —
+        // so it appears in list/search/counts with no aggregate. This is what preserves F-CONT-005's
+        // no-staleness guarantee by construction (the seeded row is the list entry).
+        const seededRow = yield* selectWord(EN, WORD)
+        expect(Option.isSome(seededRow)).toBe(true)
+        expect(Option.getOrThrow(seededRow).status).toBe(enumAsyncJobStatus.pending)
+        expect(Option.getOrThrow(seededRow).coreDefinition).toBeNull()
+
+        // ...and it is listable via the summaries read (what the /search endpoint serves) before any
+        // worker has run — the pending row surfaces immediately.
+        const { items } = yield* searchWords({ language: EN, limit: 20 })
+        expect(items.map((item) => item.word)).toContain(WORD)
+
+        // The seed and the 6 pending stage rows landed together (same tx).
+        const stages = yield* selectWordJobStages({ language: EN, word: WORD })
+        expect(stages).toHaveLength(PIPELINE_LENGTH)
+      }),
+  )
+
+  it.effect(
+    'a failure after the seed rolls the whole tx back — no orphan pending words row (AC-4)',
+    () =>
+      Effect.gen(function* () {
+        yield* resetDb
+
+        // The atomicity contract requestWordBuild leans on: the pending seed + the stage seed run in ONE
+        // db.transaction, so any failure in the body (a stage-write fault) unwinds the seed too — a word
+        // never appears half-registered. Reproduce the composition and fail *after* the seed; the pending
+        // row must not survive.
+        const db = yield* DB
+        const boom = yield* db
+          .transaction(() =>
+            Effect.gen(function* () {
+              yield* seedUnreadyWord(EN, WORD)
+              return yield* Effect.fail(new Error('stage write failed'))
+            }),
+          )
+          .pipe(Effect.flip)
+        expect(boom.message).toBe('stage write failed')
+
+        // Rolled back: no orphan pending row (and so nothing in list/search).
+        expect(Option.isNone(yield* selectWord(EN, WORD))).toBe(true)
+        const { items } = yield* searchWords({ language: EN, limit: 20 })
+        expect(items.map((item) => item.word)).not.toContain(WORD)
+      }),
   )
 
   it.effect(
@@ -152,20 +221,45 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
       }),
   )
 
-  it.effect('a phrase builds its first word only (AC-10)', () =>
+  it.effect(
+    'judge rejects a plausible-looking input → InvalidWordInputError: no jobs seeded, nothing enqueued (AC-11)',
+    () =>
+      Effect.gen(function* () {
+        yield* resetDb
+        yield* drainQueue
+
+        // A word that clears the deterministic pre-filter (short, in-limit) but the judge deems invalid —
+        // isolating the LLM gate from the local floor. The local AiService override wins over the file default.
+        const rejectVerdict = WordVerdict.make({ isValid: false, reason: 'not a real word' })
+        const error = yield* requestWordBuild(EN, 'asdfgh').pipe(
+          Effect.provide(AiServiceTest({ object: rejectVerdict })),
+          Effect.flip,
+        )
+        expect(error._tag).toBe('InvalidWordInputError')
+
+        // The gate fires before any seed/enqueue action.
+        expect(yield* drainQueue).toHaveLength(0)
+        expect(yield* selectWordJobStages({ language: EN, word: 'asdfgh' })).toHaveLength(0)
+      }),
+  )
+
+  it.effect('a short collocation builds verbatim, not just its first word (AC-13)', () =>
     Effect.gen(function* () {
       yield* resetDb
       yield* drainQueue
 
-      expect(yield* requestWordBuild(EN, `${WORD} ipsum`)).toHaveLength(PIPELINE_LENGTH)
+      const collocation = 'faux pas'
+      expect(yield* requestWordBuild(EN, collocation)).toHaveLength(PIPELINE_LENGTH)
 
-      // The build targets the first word; the raw phrase seeds nothing.
-      expect(yield* selectWordJobStages({ language: EN, word: WORD })).toHaveLength(PIPELINE_LENGTH)
-      expect(yield* selectWordJobStages({ language: EN, word: `${WORD} ipsum` })).toHaveLength(0)
+      // The relaxed normalizer keeps the whole collocation — the phrase itself is the built word.
+      expect(yield* selectWordJobStages({ language: EN, word: collocation })).toHaveLength(
+        PIPELINE_LENGTH,
+      )
+      expect(yield* selectWordJobStages({ language: EN, word: 'faux' })).toHaveLength(0)
       const [message] = yield* drainQueue
       expect(Schema.decodeUnknownSync(WordBuildMessageFromJson)(message?.body ?? '')).toEqual({
         language: EN,
-        word: WORD,
+        word: collocation,
       })
     }),
   )
