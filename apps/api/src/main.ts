@@ -30,7 +30,12 @@ const DomainLive = Layer.mergeAll(
   AiServiceProd,
 )
 
-const ApiLive = HttpApiBuilder.layer(WordsApi).pipe(Layer.provide(WordsApiLive))
+// `openapiPath` makes the builder derive `OpenApi.fromApi(WordsApi)` and serve it as a router-level
+// GET (not an `HttpApiEndpoint`, so the doc doesn't list its own route). F-PLAT-014 fetches it live
+// at codegen time from a configurable base URL.
+const ApiLive = HttpApiBuilder.layer(WordsApi, { openapiPath: '/api/openapi.json' }).pipe(
+  Layer.provide(WordsApiLive),
+)
 
 const program = Effect.gen(function* () {
   const port = yield* Port
