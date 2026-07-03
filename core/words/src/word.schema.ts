@@ -37,3 +37,8 @@ export type Word = typeof Word.Type
 // `decodeUnknownEffect`, not `decodeEffect`: a `WordRow`'s `status` is the plain enum string, not
 // statically the union's narrowed `Encoded` type — the union re-narrows it at decode.
 export const decodeWord = Schema.decodeUnknownEffect(Word)
+
+// Proves the ready leaf — full content, not just the `status` discriminant — so the ready-gate
+// re-validates the shape instead of trusting a `Word`'s narrowing. `Unknown` so a `Word` (whose
+// union `Encoded` isn't the ready leaf's) feeds in without a static cast.
+export const decodeReadyWord = Schema.decodeUnknownEffect(ReadyWord)

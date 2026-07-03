@@ -22,20 +22,21 @@ export const StageProgress = Schema.Struct({
 export type StageProgress = typeof StageProgress.Type
 
 /**
- * The wire state of a `(word, language)`: `succeeded` carries the rendered word; `running` /
- * `failed` carry the identical stepper shape — the discriminant alone says whether the build is
- * still advancing. `pending` is deliberately absent (an aggregate of active stages reads
- * `running`); absence (nothing requested) is not a variant — the producer returns `Option.none`
- * (`null` on the wire).
+ * The wire state of a `(word, language)`, faithful to the `words` row's own lifecycle `status` —
+ * it mirrors the `Word` union: `succeeded` carries the rendered word; `pending` / `running` /
+ * `failed` (the same `Literals` set `UnreadyWord` spans) carry the stepper, the discriminant saying
+ * where the build is. The status is never coerced, so a status the view can't represent is a
+ * `collapseWordState` compile error, not a silent relabel. Absence (nothing requested) is not a
+ * variant — the producer returns `Option.none` (`null` on the wire).
  */
 export const WordStateView = Schema.Union([
   Schema.Struct({ status: Schema.Literal(enumAsyncJobStatus.succeeded), word: WordEntity }),
   Schema.Struct({
-    status: Schema.Literal(enumAsyncJobStatus.running),
-    stages: Schema.Array(StageProgress),
-  }),
-  Schema.Struct({
-    status: Schema.Literal(enumAsyncJobStatus.failed),
+    status: Schema.Literals([
+      enumAsyncJobStatus.pending,
+      enumAsyncJobStatus.running,
+      enumAsyncJobStatus.failed,
+    ]),
     stages: Schema.Array(StageProgress),
   }),
 ])

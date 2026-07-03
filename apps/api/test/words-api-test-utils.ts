@@ -4,6 +4,17 @@ import { HttpApiClient } from 'effect/unstable/httpapi'
 import type { WordStateView, WordStatus } from '../src/words/word-state.view'
 import { WORD_SEARCH_DEFAULT_LIMIT, WordsApi } from '../src/words/words.api'
 
+// The view arm admitting `S`, with its `status` pinned to `S`. Plain `Extract` can't do this: the
+// building arm's `status` is a `pending|running|failed` union, so it matches none of the single
+// literals and Extracts to `never`; this distributes over the arms and narrows the matching one.
+type WordStateOf<S extends WordStatus> = WordStateView extends infer M
+  ? M extends { status: WordStatus }
+    ? S extends M['status']
+      ? Omit<M, 'status'> & { status: S }
+      : never
+    : never
+  : never
+
 /**
  * Assert a {@link WordStateView} is the `status` variant, narrowing it for the rest of the test —
  * replaces the per-test `if (state.status !== 'X') throw …`. Throws on a mismatch or on
@@ -12,7 +23,7 @@ import { WORD_SEARCH_DEFAULT_LIMIT, WordsApi } from '../src/words/words.api'
 export function assertStatus<S extends WordStatus>(
   state: WordStateView | null | undefined,
   status: S,
-): asserts state is Extract<WordStateView, { status: S }> {
+): asserts state is WordStateOf<S> {
   if (state?.status !== status) {
     throw new Error(`expected status "${status}", got "${state?.status ?? 'null'}"`)
   }

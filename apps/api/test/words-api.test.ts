@@ -83,6 +83,9 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
     it.effect('→ the running WordStateView round-trips over the wire', () =>
       Effect.gen(function* () {
         yield* resetDb
+        // The `words` row is the state's discriminant (seeded atomically with its stages); a stage
+        // row alone is an impossible production state, so seed the running row too.
+        yield* seedUnreadyWord(EN, 'lacuna', 'running')
         yield* seedRunningStage(EN, 'lacuna', enumWordJobStage.fetch_source)
 
         const state = yield* getWordState(EN, 'lacuna')
@@ -106,11 +109,12 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
   })
 
   describe('POST /api/words/:language/:word/build', () => {
-    it.effect('on a Not-yet-made word → the running state (AC-3)', () =>
+    it.effect('on a Not-yet-made word → the seeded pending state (AC-3)', () =>
       Effect.gen(function* () {
         yield* resetDb
         const state = yield* buildWord(EN, 'lacuna')
-        expect(state.status).toBe('running')
+        // The seed lands `pending`; the response is that state verbatim (the worker flips it later).
+        expect(state.status).toBe('pending')
       }),
     )
 

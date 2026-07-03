@@ -35,8 +35,11 @@ transforms storage (e.g. presigned URLs).
   `WordAlreadyReadyError`; `pending`/`running` ⇒ `WordBuildInProgressError`; both 409s are
   payload-less — identity is in the request URL).
 - **`word-ready-policy.ts`** — `ensureReadyWord`, pure over an already-decoded `Word` ("caller
-  fetches, gate decides"): admits only the `succeeded` leaf, else `WordNotReadyError` (409).
-  Absence never reaches it — the handler answers 200 `null` first.
+  fetches, gate decides"): **decodes the `ReadyWord` leaf** (`decodeReadyWord`) rather than
+  checking `status` alone — it proves full content instead of trusting the union's discriminant, so
+  a `succeeded` shell is a `WordNotReadyError` (409), not a broken cast. A corrupt `succeeded` row
+  never reaches it — that dies at `findWord`'s decode. Absence never reaches it either — the handler
+  answers 200 `null` first.
 - Re-exports `Language` so the API speaks the vocabulary through core.
 
 **May import:** `core/content`, `@lexiai/ai`, `repositories/*`, `@lexiai/database`, `@lexiai/*`

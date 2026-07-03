@@ -4,10 +4,8 @@ The job-side building blocks of the word-build flows (the flows themselves live 
 `@lexiai/use-cases` and compose these). Owns exactly: the snapshot read
 (`readWordBuildSnapshot` — pairs `core/words`' `findWord` (decoded `Option<Word>`) +
 `selectWordJobStages` into `{ word, stages }` for the API's `getWordState` view; a plain function,
-deps on `R`), the build-dispatch message
-(`WordBuildMessage` + its JSON codec — authored here because `@lexiai/queue` stays
-message-agnostic), and the terminal-failure policy (`isTerminallyFailed` — a domain rule over the
-status vocabulary, not storage vocabulary, hence not in `database/`).
+deps on `R`) and the build-dispatch message (`WordBuildMessage` + its JSON codec — authored here
+because `@lexiai/queue` stays message-agnostic).
 
 Not here, on purpose: the build-admission gate lives in `core/words` (a word-creation decision);
 the view collapse lives at the API edge (presentation); seed + enqueue + which stages a build

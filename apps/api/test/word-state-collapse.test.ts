@@ -32,9 +32,9 @@ const stageRow = (
   updatedAt: new Date('2026-06-11T00:00:00.000Z'),
 })
 
-// The collapse now keys the discriminant off the decoded `Word` union's `status`, so a `succeeded`
-// fixture must carry `status: 'succeeded'` (it is a `ReadyWord`); the succeeded branch only embeds +
-// reads `.word`, so a minimal cast suffices — no full-entity fixture.
+// The collapse keys every branch off the decoded `Word` union's `status` (the `words` row is
+// flipped in the same batch as its stages, so its own status is authoritative). The succeeded
+// branch only embeds + reads `.word`, so a minimal cast suffices — no full-entity fixture.
 const READY = Option.some({ word: 'lacuna', status: enumAsyncJobStatus.succeeded } as ReadyWord)
 // A present-but-unready row (`pending`/`running`/`failed`) must NOT collapse to succeeded — the
 // discriminant is the row's `status`, not the mere presence of a row (F-CONT-006, AC-14).
@@ -42,6 +42,8 @@ const BUILDING = Option.some({
   word: 'lacuna',
   status: enumAsyncJobStatus.running,
 } as UnreadyWord)
+const FAILED = Option.some({ word: 'lacuna', status: enumAsyncJobStatus.failed } as UnreadyWord)
+const PENDING = Option.some({ word: 'lacuna', status: enumAsyncJobStatus.pending } as UnreadyWord)
 const NO_WORD = Option.none<Word>()
 
 describe('collapseWordState', () => {
@@ -76,10 +78,24 @@ describe('collapseWordState', () => {
     expect(Option.isNone(collapseWordState({ word: NO_WORD, stages: [] }))).toBe(true)
   })
 
-  it('running: active stages, no terminal failure', () => {
+  it('pending: a pending row surfaces as `pending`, not folded to `running`', () => {
     const state = Option.getOrThrow(
       collapseWordState({
-        word: NO_WORD,
+        word: PENDING,
+        stages: [stageRow(enumWordJobStage.fetch_source, enumAsyncJobStatus.pending)],
+      }),
+    )
+    assertStatus(state, 'pending')
+    expect(state.stages).toContainEqual({
+      stage: enumWordJobStage.fetch_source,
+      status: enumAsyncJobStatus.pending,
+    })
+  })
+
+  it('running: a running row surfaces its stages as the running stepper', () => {
+    const state = Option.getOrThrow(
+      collapseWordState({
+        word: BUILDING,
         stages: [
           stageRow(enumWordJobStage.fetch_source, enumAsyncJobStatus.running),
           stageRow(enumWordJobStage.enrich_etymology, enumAsyncJobStatus.pending),
@@ -96,7 +112,7 @@ describe('collapseWordState', () => {
   it('orders stages by WORD_JOB_STAGES declaration order regardless of input order', () => {
     const state = Option.getOrThrow(
       collapseWordState({
-        word: NO_WORD,
+        word: BUILDING,
         stages: [
           stageRow(enumWordJobStage.final_review, enumAsyncJobStatus.pending),
           stageRow(enumWordJobStage.fetch_source, enumAsyncJobStatus.succeeded),
@@ -112,10 +128,10 @@ describe('collapseWordState', () => {
     ])
   })
 
-  it('failed: a terminal failed stage carries the FE-facing error on its own stage (no cause)', () => {
+  it('failed: a failed row carries the FE-facing error on its own stage (no cause)', () => {
     const state = Option.getOrThrow(
       collapseWordState({
-        word: NO_WORD,
+        word: FAILED,
         stages: [
           stageRow(enumWordJobStage.fetch_source, enumAsyncJobStatus.failed, {
             message: 'no source found',
@@ -135,7 +151,7 @@ describe('collapseWordState', () => {
   it('failed: every failed stage keeps its own error, not just the first', () => {
     const state = Option.getOrThrow(
       collapseWordState({
-        word: NO_WORD,
+        word: FAILED,
         stages: [
           stageRow(enumWordJobStage.enrich_tiers, enumAsyncJobStatus.failed, {
             message: 'tier timeout',
@@ -166,10 +182,10 @@ describe('collapseWordState', () => {
     ])
   })
 
-  it('a failed stage with no error payload is still terminal → failed (AC-5)', () => {
+  it('a failed stage with no error payload still maps cleanly → failed (AC-5)', () => {
     const state = Option.getOrThrow(
       collapseWordState({
-        word: NO_WORD,
+        word: FAILED,
         stages: [stageRow(enumWordJobStage.fetch_source, enumAsyncJobStatus.failed, null)],
       }),
     )

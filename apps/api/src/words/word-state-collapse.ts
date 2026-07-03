@@ -1,4 +1,3 @@
-import { isTerminallyFailed } from '@lexiai/core-async-word-jobs'
 import type { Word } from '@lexiai/core-words'
 import { type AsyncWordJobRow, enumAsyncJobStatus, WORD_JOB_STAGES } from '@lexiai/database'
 import { Array as Arr, Option, Order } from 'effect'
@@ -8,24 +7,15 @@ import type { StageProgress, WordStateView } from './word-state.view'
 const stageRank = new Map(WORD_JOB_STAGES.map((stage, index) => [stage, index] as const))
 
 /**
- * The single author of the state derivation (both handlers hand it a snapshot; neither recomputes
- * it). Pure — no I/O, unit-testable without a database. Takes the decoded {@link Word} union, not
- * a raw row, so the discriminant reads off the row's own `status` (presence alone no longer means
- * ready) and the `succeeded` branch carries a content-non-null word cast-free.
+ * The stepper payload: stage rows sorted into `WORD_JOB_STAGES` pipeline order, each carrying its
+ * FE-facing error (present iff that stage failed; `cause` dropped). Shared by {@link
+ * collapseWordState} and the `buildWord` handler, whose freshly-seeded build IS the running view.
  */
-export const collapseWordState = (snapshot: {
-  word: Option.Option<Word>
-  stages: readonly AsyncWordJobRow[]
-}): Option.Option<WordStateView> => {
-  if (Option.isSome(snapshot.word) && snapshot.word.value.status === enumAsyncJobStatus.succeeded)
-    return Option.some({ status: enumAsyncJobStatus.succeeded, word: snapshot.word.value })
-  if (snapshot.stages.length === 0) return Option.none()
-
-  const ordered = Arr.sort(
-    snapshot.stages,
+export const toStageProgress = (stages: readonly AsyncWordJobRow[]): StageProgress[] =>
+  Arr.sort(
+    stages,
     Order.mapInput(Order.Number, (row: AsyncWordJobRow) => stageRank.get(row.stage) ?? 0),
-  )
-  const stages: StageProgress[] = ordered.map((row) =>
+  ).map((row) =>
     row.error
       ? {
           stage: row.stage,
@@ -34,9 +24,26 @@ export const collapseWordState = (snapshot: {
         }
       : { stage: row.stage, status: row.status },
   )
-  const failed = ordered.some(isTerminallyFailed)
-  return Option.some({
-    status: failed ? enumAsyncJobStatus.failed : enumAsyncJobStatus.running,
-    stages,
-  })
+
+/**
+ * The single author of the state derivation for a read snapshot. Pure — no I/O, unit-testable
+ * without a database.
+ *
+ * Absence is the missing `words` row (`buildWord` seeds row + stages atomically, so no row means
+ * nothing was requested). Every present state carries the decoded {@link Word}'s own `status`
+ * verbatim (the row is flipped in the same batch as its stages, so its status is authoritative):
+ * `succeeded` carries the word, every other status carries the stepper. No status is coerced — a
+ * value the view can't hold fails to typecheck here rather than being silently relabelled.
+ */
+export const collapseWordState = (snapshot: {
+  word: Option.Option<Word>
+  stages: readonly AsyncWordJobRow[]
+}): Option.Option<WordStateView> => {
+  if (Option.isNone(snapshot.word)) return Option.none()
+  const word = snapshot.word.value
+  return Option.some(
+    word.status === enumAsyncJobStatus.succeeded
+      ? { status: word.status, word }
+      : { status: word.status, stages: toStageProgress(snapshot.stages) },
+  )
 }

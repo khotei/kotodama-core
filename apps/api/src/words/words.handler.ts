@@ -1,11 +1,12 @@
 import { readWordBuildSnapshot } from '@lexiai/core-async-word-jobs'
 import { decodeWord, ensureReadyWord, findWord, type Word } from '@lexiai/core-words'
+import { enumAsyncJobStatus } from '@lexiai/database'
 import { searchWords, selectWordCounts } from '@lexiai/repositories-words'
 import { requestWordBuild } from '@lexiai/use-cases'
 import { Effect, Option } from 'effect'
 import { HttpApiBuilder } from 'effect/unstable/httpapi'
 import { paginate } from '../pagination.view'
-import { collapseWordState } from './word-state-collapse'
+import { collapseWordState, toStageProgress } from './word-state-collapse'
 import { WordsApi } from './words.api'
 
 // Throughout: infra faults (repo/queue unreachable, impossible-state decode failures) are `die`d
@@ -30,15 +31,12 @@ export const WordsApiLive = HttpApiBuilder.group(WordsApi, 'words', (handlers) =
     )
     .handle('buildWord', (ctx) =>
       requestWordBuild(ctx.params.language, ctx.params.word).pipe(
-        // The use-case returns the seeded rows; the running view is assembled here (no `words` row yet).
-        Effect.flatMap((seeded) =>
-          collapseWordState({ word: Option.none(), stages: seeded }).pipe(
-            Option.match({
-              onNone: () => Effect.die(new Error('seeded build collapsed to no state')),
-              onSome: Effect.succeed,
-            }),
-          ),
-        ),
+        // The seed just landed `pending` (the worker flips it `running` later), so the response is
+        // that state verbatim — no collapse, assemble the stepper straight from the seeded rows.
+        Effect.map((seeded) => ({
+          status: enumAsyncJobStatus.pending,
+          stages: toStageProgress(seeded),
+        })),
         Effect.catchTags({
           EffectDrizzleQueryError: Effect.die,
           QueueError: Effect.die,
