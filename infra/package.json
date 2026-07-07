@@ -20,5 +20,8 @@
     "@kotodama/queue": "workspace:*",
     "@kotodama/storage": "workspace:*",
     "effect": "catalog:effect"
+  },
+  "devDependencies": {
+    "@kotodama/tooling": "workspace:*"
   }
 }

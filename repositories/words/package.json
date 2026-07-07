@@ -17,7 +17,8 @@
   "devDependencies": {
     "@faker-js/faker": "catalog:test",
     "@testcontainers/postgresql": "catalog:test",
-    "testcontainers": "catalog:test"
+    "testcontainers": "catalog:test",
+    "@kotodama/tooling": "workspace:*"
   },
   "scripts": {
     "test": "bun --bun vitest run",

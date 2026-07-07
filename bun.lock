@@ -32,6 +32,9 @@
         "@kotodama/use-cases": "workspace:*",
         "effect": "catalog:effect",
       },
+      "devDependencies": {
+        "@kotodama/tooling": "workspace:*",
+      },
     },
     "apps/worker": {
       "name": "@kotodama/app-worker",
@@ -55,6 +58,7 @@
         "effect": "catalog:effect",
       },
       "devDependencies": {
+        "@kotodama/tooling": "workspace:*",
         "@types/aws-lambda": "catalog:types",
       },
     },
@@ -68,6 +72,9 @@
         "@kotodama/repositories-async-word-jobs": "workspace:*",
         "effect": "catalog:effect",
       },
+      "devDependencies": {
+        "@kotodama/tooling": "workspace:*",
+      },
     },
     "core/content": {
       "name": "@kotodama/core-content",
@@ -79,6 +86,9 @@
         "@kotodama/storage": "workspace:*",
         "effect": "catalog:effect",
       },
+      "devDependencies": {
+        "@kotodama/tooling": "workspace:*",
+      },
     },
     "core/words": {
       "name": "@kotodama/core-words",
@@ -89,6 +99,9 @@
         "@kotodama/database": "workspace:*",
         "@kotodama/repositories-words": "workspace:*",
         "effect": "catalog:effect",
+      },
+      "devDependencies": {
+        "@kotodama/tooling": "workspace:*",
       },
     },
     "database": {
@@ -105,6 +118,7 @@
       },
       "devDependencies": {
         "@faker-js/faker": "catalog:test",
+        "@kotodama/tooling": "workspace:*",
         "@testcontainers/postgresql": "catalog:test",
         "testcontainers": "catalog:test",
       },
@@ -121,6 +135,9 @@
         "@kotodama/storage": "workspace:*",
         "effect": "catalog:effect",
       },
+      "devDependencies": {
+        "@kotodama/tooling": "workspace:*",
+      },
     },
     "packages/ai": {
       "name": "@kotodama/ai",
@@ -129,6 +146,9 @@
         "@effect/ai-openai": "catalog:effect",
         "effect": "catalog:effect",
       },
+      "devDependencies": {
+        "@kotodama/tooling": "workspace:*",
+      },
     },
     "packages/config": {
       "name": "@kotodama/config",
@@ -136,12 +156,18 @@
       "dependencies": {
         "effect": "catalog:effect",
       },
+      "devDependencies": {
+        "@kotodama/tooling": "workspace:*",
+      },
     },
     "packages/external-apis": {
       "name": "@kotodama/external-apis",
       "version": "0.0.0",
       "dependencies": {
         "effect": "catalog:effect",
+      },
+      "devDependencies": {
+        "@kotodama/tooling": "workspace:*",
       },
     },
     "packages/observability": {
@@ -160,6 +186,9 @@
         "@opentelemetry/semantic-conventions": "catalog:otel",
         "effect": "catalog:effect",
       },
+      "devDependencies": {
+        "@kotodama/tooling": "workspace:*",
+      },
     },
     "packages/queue": {
       "name": "@kotodama/queue",
@@ -170,6 +199,7 @@
         "effect": "catalog:effect",
       },
       "devDependencies": {
+        "@kotodama/tooling": "workspace:*",
         "@testcontainers/localstack": "catalog:test",
         "testcontainers": "catalog:test",
       },
@@ -183,9 +213,14 @@
       },
       "devDependencies": {
         "@aws-sdk/client-s3": "catalog:aws",
+        "@kotodama/tooling": "workspace:*",
         "@testcontainers/localstack": "catalog:test",
         "testcontainers": "catalog:test",
       },
+    },
+    "packages/tooling": {
+      "name": "@kotodama/tooling",
+      "version": "0.0.0",
     },
     "repositories/async-word-jobs": {
       "name": "@kotodama/repositories-async-word-jobs",
@@ -198,6 +233,7 @@
       },
       "devDependencies": {
         "@faker-js/faker": "catalog:test",
+        "@kotodama/tooling": "workspace:*",
         "@testcontainers/postgresql": "catalog:test",
         "testcontainers": "catalog:test",
       },
@@ -213,6 +249,7 @@
       },
       "devDependencies": {
         "@faker-js/faker": "catalog:test",
+        "@kotodama/tooling": "workspace:*",
         "@testcontainers/postgresql": "catalog:test",
         "testcontainers": "catalog:test",
       },
@@ -232,6 +269,7 @@
       },
       "devDependencies": {
         "@kotodama/ai": "workspace:*",
+        "@kotodama/tooling": "workspace:*",
       },
     },
   },
@@ -472,6 +510,8 @@
     "@kotodama/repositories-words": ["@kotodama/repositories-words@workspace:repositories/words"],
 
     "@kotodama/storage": ["@kotodama/storage@workspace:packages/storage"],
+
+    "@kotodama/tooling": ["@kotodama/tooling@workspace:packages/tooling"],
 
     "@kotodama/use-cases": ["@kotodama/use-cases@workspace:use-cases"],
 

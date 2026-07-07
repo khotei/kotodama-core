@@ -17,9 +17,5 @@ export default defineProject({
     // from source — matches the vendored effect-smol/drizzle layout. See
     // `@.claude/rules/testing.md`.
     include: ['test/**/*.test.ts'],
-    // Integration tests run against real Testcontainers; a cold first HTTP round-trip (apps/api) can
-    // exceed Vitest's 5s default on the slower CI runners (bun 1.3.10). The `it.layer` `{ timeout }`
-    // covers only layer build/teardown, not each test — so raise the per-test ceiling, in one place.
-    testTimeout: 30_000,
   },
 })

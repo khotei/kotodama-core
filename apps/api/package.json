@@ -22,5 +22,8 @@
     "@kotodama/repositories-words": "workspace:*",
     "@kotodama/repositories-async-word-jobs": "workspace:*",
     "@kotodama/use-cases": "workspace:*"
+  },
+  "devDependencies": {
+    "@kotodama/tooling": "workspace:*"
   }
 }

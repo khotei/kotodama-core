@@ -1,0 +1,10 @@
+{
+  "name": "@kotodama/tooling",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./vitest.base": "./vitest.base.ts",
+    "./tsconfig.base.json": "./tsconfig.base.json",
+    "./biome.base.json": "./biome.base.json"
+  }
+}

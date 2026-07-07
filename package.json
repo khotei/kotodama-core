@@ -72,8 +72,8 @@
   "scripts": {
     "prepare": "husky",
     "bootstrap": "bun install",
-    "format": "biome format --write .",
-    "lint": "biome lint .",
+    "format": "biome format --write --config-path packages/tooling/biome.base.json .",
+    "lint": "biome lint --config-path packages/tooling/biome.base.json .",
     "tsc": "bun run --filter '*' typecheck",
     "test": "bun run --filter '*' test",
     "check": "bun run lint && bun run tsc",

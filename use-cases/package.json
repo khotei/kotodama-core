@@ -18,7 +18,8 @@
     "@kotodama/repositories-words": "workspace:*"
   },
   "devDependencies": {
-    "@kotodama/ai": "workspace:*"
+    "@kotodama/ai": "workspace:*",
+    "@kotodama/tooling": "workspace:*"
   },
   "scripts": {
     "test": "bun --bun vitest run",

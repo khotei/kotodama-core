@@ -1,5 +1,6 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.4.16/schema.json",
+  "root": true,
   "vcs": {
     "enabled": true,
     "clientKind": "git",
@@ -47,7 +48,7 @@
             "patterns": [
               {
                 "group": ["**/repos/**"],
-                "message": "Do not import from repos/ \u2014 it is vendored, read-only reference material. Import the published package (effect, @effect/*) instead."
+                "message": "Do not import from repos/ — it is vendored, read-only reference material. Import the published package (effect, @effect/*) instead."
               }
             ]
           }
@@ -79,7 +80,7 @@
                   },
                   {
                     "group": ["**/repos/**"],
-                    "message": "Do not import from repos/ \u2014 it is vendored, read-only reference material. Import the published package (effect, @effect/*) instead."
+                    "message": "Do not import from repos/ — it is vendored, read-only reference material. Import the published package (effect, @effect/*) instead."
                   }
                 ]
               }
@@ -109,7 +110,7 @@
                   },
                   {
                     "group": ["**/repos/**"],
-                    "message": "Do not import from repos/ \u2014 it is vendored, read-only reference material. Import the published package (effect, @effect/*) instead."
+                    "message": "Do not import from repos/ — it is vendored, read-only reference material. Import the published package (effect, @effect/*) instead."
                   }
                 ]
               }
@@ -138,7 +139,7 @@
                   },
                   {
                     "group": ["**/repos/**"],
-                    "message": "Do not import from repos/ \u2014 it is vendored, read-only reference material. Import the published package (effect, @effect/*) instead."
+                    "message": "Do not import from repos/ — it is vendored, read-only reference material. Import the published package (effect, @effect/*) instead."
                   }
                 ]
               }
@@ -162,7 +163,7 @@
                   },
                   {
                     "group": ["**/repos/**"],
-                    "message": "Do not import from repos/ \u2014 it is vendored, read-only reference material. Import the published package (effect, @effect/*) instead."
+                    "message": "Do not import from repos/ — it is vendored, read-only reference material. Import the published package (effect, @effect/*) instead."
                   }
                 ]
               }
@@ -182,11 +183,11 @@
                 "patterns": [
                   {
                     "group": ["@kotodama/apps-*"],
-                    "message": "Layer violation: use-cases/ is the top tier below apps \u2014 it composes core, repositories, database, and packages, but must not import apps."
+                    "message": "Layer violation: use-cases/ is the top tier below apps — it composes core, repositories, database, and packages, but must not import apps."
                   },
                   {
                     "group": ["**/repos/**"],
-                    "message": "Do not import from repos/ \u2014 it is vendored, read-only reference material. Import the published package (effect, @effect/*) instead."
+                    "message": "Do not import from repos/ — it is vendored, read-only reference material. Import the published package (effect, @effect/*) instead."
                   }
                 ]
               }
