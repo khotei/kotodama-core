@@ -5,13 +5,13 @@ import { searchWords, selectWordCounts } from '@kotodama/repositories-words'
 import { requestWordBuild } from '@kotodama/use-cases'
 import { Effect, Option } from 'effect'
 import { HttpApiBuilder } from 'effect/unstable/httpapi'
+import { KotodamaApi } from '../kotodama.api'
 import { paginate } from '../pagination.view'
 import { collapseWordState, toStageProgress } from './word-state-collapse'
-import { WordsApi } from './words.api'
 
 // Throughout: infra faults (repo/queue unreachable, impossible-state decode failures) are `die`d
 // to 500s; only the errors declared on each endpoint pass through as typed 4xx.
-export const WordsApiLive = HttpApiBuilder.group(WordsApi, 'words', (handlers) =>
+export const WordsApiLive = HttpApiBuilder.group(KotodamaApi, 'words', (handlers) =>
   handlers
     .handle('getWord', (ctx) =>
       Effect.gen(function* () {

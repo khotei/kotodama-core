@@ -8,7 +8,7 @@ import {
 } from '@kotodama/core-words'
 import { AsyncJobStatus, WordEntity } from '@kotodama/database'
 import { Schema } from 'effect'
-import { HttpApi, HttpApiEndpoint, HttpApiGroup } from 'effect/unstable/httpapi'
+import { HttpApiEndpoint, HttpApiGroup } from 'effect/unstable/httpapi'
 import { Paginated, pageQuery } from '../pagination.view'
 import { WordCountsView } from './word-counts.view'
 import { WordStateView } from './word-state.view'
@@ -35,7 +35,10 @@ const getWordState = HttpApiEndpoint.get('getWordState', '/words/:language/:word
 const buildWord = HttpApiEndpoint.post('buildWord', '/words/:language/:word/build', {
   params: { language: Language, word: Schema.String },
   success: WordStateView,
-  error: Schema.Union([WordAlreadyReadyError, WordBuildInProgressError, InvalidWordInputError]),
+  // An ARRAY, not `Schema.Union` — a union wrapper carries no `httpApiStatus`, so HttpApi collapses
+  // all three to a single 500 (both the runtime encoder and `OpenApi.fromApi`); the array keeps each
+  // error's declared status (409/409/422).
+  error: [WordAlreadyReadyError, WordBuildInProgressError, InvalidWordInputError],
 })
 
 // Ordered by recency (`created_at DESC, word ASC`) — numbered-page navigation over `page`/`limit`.
@@ -63,11 +66,11 @@ const counts = HttpApiEndpoint.get('counts', '/words/:language/counts', {
   success: WordCountsView,
 })
 
+// The words resource contributes this group; the root `kotodama` HttpApi (`../kotodama.api.ts`)
+// composes it with every other resource's group.
 export const wordsGroup = HttpApiGroup.make('words')
   .add(getWord)
   .add(getWordState)
   .add(buildWord)
   .add(search)
   .add(counts)
-
-export const WordsApi = HttpApi.make('kotodama').add(wordsGroup).prefix('/api')

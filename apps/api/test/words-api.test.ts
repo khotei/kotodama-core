@@ -10,7 +10,7 @@ import { seedReadyWord, seedUnreadyWord } from '@kotodama/repositories-words/tes
 import { Effect, Layer } from 'effect'
 import { HttpRouter } from 'effect/unstable/http'
 import { HttpApiBuilder } from 'effect/unstable/httpapi'
-import { WordsApi } from '../src/words/words.api'
+import { KotodamaApi } from '../src/kotodama.api'
 import { WordsApiLive } from '../src/words/words.handler'
 import {
   assertStatus,
@@ -35,7 +35,7 @@ const DomainLive = QueueLocalStackLive.pipe(
   Layer.provideMerge(AiServiceAdmit),
 )
 
-const ApiLive = HttpApiBuilder.layer(WordsApi).pipe(Layer.provide(WordsApiLive))
+const ApiLive = HttpApiBuilder.layer(KotodamaApi).pipe(Layer.provide(WordsApiLive))
 
 // Real in-memory test server (ephemeral port) + the HttpClient bound to it; the typed client
 // round-trips request/response through the contract schemas, guarding the FE↔BE isomorphism.
