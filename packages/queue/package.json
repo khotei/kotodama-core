@@ -15,7 +15,8 @@
   },
   "devDependencies": {
     "@testcontainers/localstack": "catalog:test",
-    "testcontainers": "catalog:test"
+    "testcontainers": "catalog:test",
+    "@kotodama/tooling": "workspace:*"
   },
   "scripts": {
     "test": "bun --bun vitest run",

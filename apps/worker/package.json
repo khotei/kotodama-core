@@ -27,6 +27,7 @@
     "effect": "catalog:effect"
   },
   "devDependencies": {
-    "@types/aws-lambda": "catalog:types"
+    "@types/aws-lambda": "catalog:types",
+    "@kotodama/tooling": "workspace:*"
   }
 }

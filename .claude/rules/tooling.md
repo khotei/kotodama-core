@@ -9,10 +9,33 @@
 | `bun run test` | `bun run --filter '*' test` (each workspace's own `bun --bun vitest run`) | CI only |
 | `bun run check` | `lint` + `tsc` | manual / `/check` |
 
-**Biome:** single root `biome.json` (2-space, single quotes, semicolons as-needed, width 100).
-Encodes the layer rule via `style/noRestrictedImports` per-glob overrides — the only enforcement of
-the dependency hierarchy (transitive-import checking is deliberately out of scope; if ever needed,
-add `scripts/check-deps.ts` and note it here).
+**Shared config presets** live in the `@kotodama/tooling` workspace (`packages/tooling/`):
+`tsconfig.base.json`, `vitest.base.ts`, and the Biome config `biome.base.json` (2-space, single
+quotes, semicolons as-needed, width 100). **There is no config file in the repo root at all.**
+
+- **tsconfig / vitest** reach the presets by **package specifier** (`@kotodama/tooling/…`), so every
+  workspace carries `@kotodama/tooling` as a `workspace:*` devDependency (depth-independent — no
+  `../` juggling). `@kotodama/tooling` is config-only: no `typecheck`/`test` scripts, so the
+  `--filter '*'` gates skip it.
+- **Biome** cannot use a package specifier, and its config is NOT at the root. Two deliberate moves
+  make a root-less Biome work: (1) the file is named `biome.base.json`, **not** `biome.json`, so
+  Biome's auto-discovery never picks it up as a stray nested config on a full-tree scan; (2) every
+  Biome invocation passes `--config-path packages/tooling/biome.base.json` (the two root scripts +
+  the husky hook), and the file is `"root": true`. The layer rule is encoded via
+  `style/noRestrictedImports` per-glob overrides in it — the sole enforcement of the dependency
+  hierarchy (transitive-import checking is out of scope; if ever needed, add `scripts/check-deps.ts`
+  and note it here).
+  - **Trade-offs of the root-less Biome (chosen: clean root > these costs):** `--config-path`
+    **disables Biome's standard config resolution**, so a bare `biome …` typed without the flag
+    finds no config — always go through `bun run lint`/`format`. The editor/LSP Biome does not work
+    (it only auto-discovers a root `biome.json`; this repo edits via Claude, not in-editor Biome).
+    Biome is **reworking project-root resolution** ([biomejs/biome#8672]; `--config-path`+root
+    interplay is rough, [#7390]) — **re-verify `bun run lint` on any Biome version bump**; if it
+    breaks, the fallback is a 3-line root `biome.json` stub that `extends`
+    `@kotodama/tooling/biome.base.json`.
+
+[biomejs/biome#8672]: https://github.com/biomejs/biome/issues/8672
+[#7390]: https://github.com/biomejs/biome/issues/7390
 
 **Husky pre-commit:** `biome check --staged` + `bun run tsc`. Tests don't run on commit (too slow —
 CI only). `git commit --no-verify` bypasses it — genuine emergencies only, never on `main`. Husky
@@ -23,13 +46,13 @@ CI only). `git commit --no-verify` bypasses it — genuine emergencies only, nev
 **The package list lives in exactly one place. There is no root `tsconfig.json` and no root
 `vitest.config.ts` — never reintroduce one to hand-list packages.**
 
-- Each workspace's `tsconfig.json` extends `tsconfig.base.json` directly; packages resolve each
-  other's **source** via `workspace:*` + `moduleResolution: bundler`, so per-workspace
+- Each workspace's `tsconfig.json` extends `@kotodama/tooling/tsconfig.base.json`; packages resolve
+  each other's **source** via `workspace:*` + `moduleResolution: bundler`, so per-workspace
   `tsc --noEmit` is correct without project references (`composite`/`declaration` were removed —
   they only served the retired `tsc -b` mode). Bare `tsc`/`vitest` from the repo root is not a
   supported entrypoint.
-- Each workspace owns a one-line `vitest.config.ts` re-exporting the root `vitest.base.ts` (node
-  env + `test/**/*.test.ts`).
+- Each workspace owns a one-line `vitest.config.ts` re-exporting `@kotodama/tooling/vitest.base`
+  (node env + `test/**/*.test.ts`).
 - **A single aggregate `vitest run` over all projects is banned:** on Bun 1.3.10 + Vitest 3.2.4 it
   silently runs only ~9/16 projects **and exits 0 on failures** (verified with filesystem markers;
   the defect is Vitest's multi-project aggregation, not our config). Per-workspace runs give

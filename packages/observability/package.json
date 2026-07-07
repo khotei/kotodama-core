@@ -23,5 +23,8 @@
   "scripts": {
     "test": "bun --bun vitest run",
     "typecheck": "bun --bun tsc --noEmit"
+  },
+  "devDependencies": {
+    "@kotodama/tooling": "workspace:*"
   }
 }
