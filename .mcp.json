@@ -1,0 +1,26 @@
+{
+  "mcpServers": {
+    "postgres": {
+      "command": "docker",
+      "args": [
+        "run", "-i", "--rm",
+        "-e", "DATABASE_URI",
+        "crystaldba/postgres-mcp",
+        "--access-mode=restricted"
+      ],
+      "env": { "DATABASE_URI": "${DATABASE_URI}" }
+    },
+    "pulumi": {
+      "command": "npx",
+      "args": ["-y", "@pulumi/mcp-server@latest", "stdio"]
+    },
+    "aws": {
+      "command": "uvx",
+      "args": ["awslabs.aws-api-mcp-server@latest"],
+      "env": {
+        "AWS_PROFILE": "${AWS_PROFILE}",
+        "AWS_REGION": "${AWS_REGION:-eu-central-1}"
+      }
+    }
+  }
+}
