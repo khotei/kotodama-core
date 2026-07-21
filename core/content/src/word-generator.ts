@@ -31,7 +31,7 @@ const ENRICH_STAGES = [
  * sequential gates fail fast; the enrich fan-out runs under `Effect.partition` (every pass runs,
  * the effect never fails), so one bad enrich neither interrupts its siblings nor hides them.
  * Persists nothing — the caller decides what success/failure mean; the wall-clock budget is the
- * `WordGenerationServiceTimed` decorator's, not here.
+ * `withBuildBudget` decorator's, not here.
  */
 export const generateWordContent = Effect.fnUntraced(function* (language: Language, word: string) {
   const engine = yield* ContentEngine

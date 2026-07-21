@@ -10,7 +10,7 @@ export const DEFAULT_BUILD_TIMEOUT: Duration.Duration = Duration.minutes(5)
  * A service only so the whole-build budget can be a decorator layer instead of a `createWord`
  * parameter; `generate` bundles the engine's `sourceVersions` so provenance travels with the
  * generation that produced it. The error union is fixed at the tag — the Live layer never raises
- * `TimeoutError` (only the `…Timed` decorator does), but callers must catch both.
+ * `TimeoutError` (only the `withBuildBudget` decorator does), but callers must catch both.
  */
 export class WordGenerationService extends Context.Service<
   WordGenerationService,
@@ -44,7 +44,7 @@ export const WordGenerationServiceLive: Layer.Layer<WordGenerationService, never
  * generation only: `createWord` commits after `generate` returns, outside this race, so the budget
  * can never strand a committed word.
  */
-export const WordGenerationServiceTimed = (
+export const withBuildBudget = (
   budget: Duration.Duration,
 ): Layer.Layer<WordGenerationService, never, WordGenerationService> =>
   Layer.effect(
