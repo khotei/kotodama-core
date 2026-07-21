@@ -16,6 +16,6 @@ export {
   DEFAULT_BUILD_TIMEOUT,
   WordGenerationService,
   WordGenerationServiceLive,
-  WordGenerationServiceTimed,
+  withBuildBudget,
 } from './word-generation.service'
 export { WordGenerationError } from './word-generator'

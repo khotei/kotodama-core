@@ -1,5 +1,5 @@
 import { Effect, Layer, type Schema } from 'effect'
-import { AiService, type ImageOptions } from './ai.service'
+import { AiService, type ImageOptions, type ReasoningEffort } from './ai.service'
 import { type ResilienceConfig, resilient } from './resilient'
 
 /**
@@ -22,7 +22,7 @@ export const AiServiceResilient = (
         prompt: string,
         opts: {
           readonly model: string
-          readonly reasoningEffort: 'none' | 'minimal' | 'low' | 'medium' | 'high' | 'xhigh'
+          readonly reasoningEffort: ReasoningEffort
         },
       ) => resilient(base.generateObject(schema, prompt, opts), text)
 
