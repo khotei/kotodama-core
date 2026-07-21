@@ -41,11 +41,11 @@ pointer at the site.
 
 - DB tests run against an **ephemeral Testcontainers Postgres**, never the dev DB — the URL is
   generated per container, so there is **no `.env.test`** and structurally no way to hit dev.
-  Requires a Docker daemon. Surface: `@kotodama/database/testing` — `TestDatabaseLive` (migrates
+  Requires a Docker daemon. Surface: `@kotodama/core/database/testing` — `TestDatabaseLive` (migrates
   itself at layer build) + `resetDb` (TRUNCATEs every `public` table, enumerated dynamically).
 - **Prefer the real adapter over a hand-written fake wherever a container is feasible.** Queue and
   storage tests run the real `*Live` layers over per-file LocalStack containers
-  (`@kotodama/queue/testing`, `@kotodama/storage/testing`); the in-memory fakes were removed. A suite
+  (`@kotodama/platform/queue/testing`, `@kotodama/platform/storage/testing`); the in-memory fakes were removed. A suite
   that does no S3 I/O provides the no-op `UnusedStorage` instead of booting a container.
 - LocalStack image is pinned to `localstack/localstack:4.4.0` (the last free, no-token community
   release — do not float to `:latest`). Unlike `PgContainer`, its default wait strategy needs no

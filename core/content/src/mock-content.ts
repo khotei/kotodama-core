@@ -17,7 +17,7 @@ import {
   type VisualEntity,
   type VisualsEntity,
   type WordJobStage,
-} from '@kotodama/database'
+} from '@kotodama/core/database'
 import { STAGE_SLICES, type StageSlice } from './stage-slices'
 import type { WordContent } from './word-content.schema'
 

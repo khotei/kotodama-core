@@ -1,3 +1,4 @@
+import { AsyncJobStatus, WordEntity } from '@kotodama/core/database'
 import {
   InvalidWordInputError,
   Language,
@@ -5,8 +6,7 @@ import {
   WordAlreadyReadyError,
   WordBuildInProgressError,
   WordNotReadyError,
-} from '@kotodama/core-words'
-import { AsyncJobStatus, WordEntity } from '@kotodama/database'
+} from '@kotodama/core/words'
 import { Schema } from 'effect'
 import { HttpApiEndpoint, HttpApiGroup } from 'effect/unstable/httpapi'
 import { Paginated, pageQuery } from '../pagination.view'

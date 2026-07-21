@@ -1,4 +1,8 @@
-import { type AsyncJobStatus, type BuildStagesEntity, WORD_JOB_STAGES } from '@kotodama/database'
+import {
+  type AsyncJobStatus,
+  type BuildStagesEntity,
+  WORD_JOB_STAGES,
+} from '@kotodama/core/database'
 
 /**
  * Every pipeline stage at one status — the request seed (`pending`), the running flip, and the

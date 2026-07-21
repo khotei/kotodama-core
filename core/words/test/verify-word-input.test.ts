@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@effect/vitest'
-import { AiServiceTest } from '@kotodama/ai/testing'
+import { AiServiceTest } from '@kotodama/platform/ai/testing'
 import { Effect } from 'effect'
 import { verifyWordInput, type WordVerdict } from '../src/verify-word-input'
 

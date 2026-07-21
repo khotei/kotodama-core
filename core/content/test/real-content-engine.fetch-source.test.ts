@@ -1,9 +1,14 @@
 import { describe, expect, it } from '@effect/vitest'
-import { AiServiceTest } from '@kotodama/ai/testing'
-import { enumLanguage, LexicalEntity, PronunciationEntity, SourceEntity } from '@kotodama/database'
-import type { WikiSummary } from '@kotodama/external-apis'
-import { WikiClientTest } from '@kotodama/external-apis/testing'
-import { UnusedStorage } from '@kotodama/storage/testing'
+import {
+  enumLanguage,
+  LexicalEntity,
+  PronunciationEntity,
+  SourceEntity,
+} from '@kotodama/core/database'
+import { AiServiceTest } from '@kotodama/platform/ai/testing'
+import type { WikiSummary } from '@kotodama/platform/external-apis'
+import { WikiClientTest } from '@kotodama/platform/external-apis/testing'
+import { UnusedStorage } from '@kotodama/platform/storage/testing'
 import { Effect, Layer, Schema } from 'effect'
 import { ContentEngine, ContentEngineError } from '../src'
 import { RealContentEngineLive } from '../src/real-content-engine.service'

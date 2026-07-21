@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@effect/vitest'
-import { enumAsyncJobStatus } from '@kotodama/database'
-import { makeWordInsert } from '@kotodama/database/factories'
+import { enumAsyncJobStatus } from '@kotodama/core/database'
+import { makeWordInsert } from '@kotodama/core/database/factories'
 import { Effect } from 'effect'
 import { decodeWord } from '../src/word.schema'
 

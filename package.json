@@ -4,12 +4,10 @@
   "packageManager": "bun@1.3.10",
   "workspaces": [
     "apps/*",
-    "use-cases",
-    "core/*",
-    "database",
-    "repositories/*",
-    "packages/*",
-    "infra"
+    "core",
+    "platform",
+    "infra",
+    "tooling"
   ],
   "catalogs": {
     "runtime": {
@@ -72,8 +70,8 @@
   "scripts": {
     "prepare": "husky",
     "bootstrap": "bun install",
-    "format": "biome format --write --config-path packages/tooling/biome.base.json .",
-    "lint": "biome lint --config-path packages/tooling/biome.base.json .",
+    "format": "biome format --write --config-path tooling/biome.base.json .",
+    "lint": "biome lint --config-path tooling/biome.base.json .",
     "tsc": "bun run --filter '*' typecheck",
     "test": "bun run --filter '*' test",
     "check": "bun run lint && bun run tsc",

@@ -1,0 +1,44 @@
+{
+  "name": "@kotodama/platform",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./ai": "./ai/src/index.ts",
+    "./ai/testing": "./ai/src/testing.ts",
+    "./config": "./config/src/index.ts",
+    "./config/aws-resources": "./config/src/aws-resources.ts",
+    "./external-apis": "./external-apis/src/index.ts",
+    "./external-apis/testing": "./external-apis/src/testing.ts",
+    "./observability": "./observability/src/index.ts",
+    "./queue": "./queue/src/index.ts",
+    "./queue/testing": "./queue/src/testing.ts",
+    "./storage": "./storage/src/index.ts",
+    "./storage/provisioning": "./storage/src/provisioning.ts",
+    "./storage/testing": "./storage/src/testing.ts"
+  },
+  "dependencies": {
+    "@aws-sdk/client-sqs": "catalog:aws",
+    "@effect/ai-openai": "catalog:effect",
+    "@effect/opentelemetry": "catalog:effect",
+    "@opentelemetry/api": "catalog:otel",
+    "@opentelemetry/api-logs": "catalog:otel",
+    "@opentelemetry/exporter-trace-otlp-http": "catalog:otel",
+    "@opentelemetry/resources": "catalog:otel",
+    "@opentelemetry/sdk-logs": "catalog:otel",
+    "@opentelemetry/sdk-metrics": "catalog:otel",
+    "@opentelemetry/sdk-trace-base": "catalog:otel",
+    "@opentelemetry/sdk-trace-node": "catalog:otel",
+    "@opentelemetry/semantic-conventions": "catalog:otel",
+    "effect": "catalog:effect"
+  },
+  "devDependencies": {
+    "@aws-sdk/client-s3": "catalog:aws",
+    "@kotodama/tooling": "workspace:*",
+    "@testcontainers/localstack": "catalog:test",
+    "testcontainers": "catalog:test"
+  },
+  "scripts": {
+    "test": "bun --bun vitest run",
+    "typecheck": "bun --bun tsc --noEmit"
+  }
+}

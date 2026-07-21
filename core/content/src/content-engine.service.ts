@@ -1,4 +1,9 @@
-import type { JobErrorType, Language, SourceVersionsEntity, WordJobStage } from '@kotodama/database'
+import type {
+  JobErrorType,
+  Language,
+  SourceVersionsEntity,
+  WordJobStage,
+} from '@kotodama/core/database'
 import { Context, Data, type Effect } from 'effect'
 import type { StageSlice, WordGrounding } from './stage-slices'
 
@@ -33,4 +38,4 @@ export class ContentEngine extends Context.Service<
      */
     readonly sourceVersions: SourceVersionsEntity
   }
->()('@kotodama/core-content/ContentEngine') {}
+>()('@kotodama/core/content/ContentEngine') {}

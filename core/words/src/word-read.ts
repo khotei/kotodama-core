@@ -1,5 +1,5 @@
-import type { Language } from '@kotodama/database'
-import { selectWord } from '@kotodama/repositories-words'
+import type { Language } from '@kotodama/core/database'
+import { selectWord } from '@kotodama/core/repositories'
 import { Effect, Option } from 'effect'
 import { decodeWord } from './word.schema'
 

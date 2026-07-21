@@ -1,5 +1,4 @@
 import { createHash } from 'node:crypto'
-import { type AiError, AiService } from '@kotodama/ai'
 import {
   AuthorExampleEntity,
   CulturalGuideEntity,
@@ -12,9 +11,10 @@ import {
   type VisualKind,
   type VisualsEntity,
   type WordJobStage,
-} from '@kotodama/database'
-import { WikiClient } from '@kotodama/external-apis'
-import { authorKey, ImagesStore, imageKey, type StorageError } from '@kotodama/storage'
+} from '@kotodama/core/database'
+import { type AiError, AiService } from '@kotodama/platform/ai'
+import { WikiClient } from '@kotodama/platform/external-apis'
+import { authorKey, ImagesStore, imageKey, type StorageError } from '@kotodama/platform/storage'
 import { Effect, Layer, Option, Schema, Semaphore, Struct } from 'effect'
 import { ContentEngine, ContentEngineError } from './content-engine.service'
 import {
@@ -173,7 +173,7 @@ export const RealContentEngineLive: Layer.Layer<
       ai.generateObject(schema, prompt, config).pipe(Effect.mapError(textFailure))
 
     // The one image→storage seam both media stages share. The CALLER builds the key, so the path
-    // scheme stays solely in @kotodama/storage; the model/size/quality decision stays in
+    // scheme stays solely in @kotodama/platform/storage; the model/size/quality decision stays in
     // generation-defaults.
     const renderToStorage = (
       key: StorageKey,

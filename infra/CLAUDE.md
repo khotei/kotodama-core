@@ -4,7 +4,7 @@ Local dev infra (Docker Compose) now; Pulumi production stack later.
 
 - `local/docker-compose.yml`: **dev** Postgres (`kotodama_dev`) + LocalStack (SQS + S3) + Jaeger.
   No test DB is provisioned — DB tests use a throwaway Testcontainers Postgres
-  (`@kotodama/database/testing`), so there's no `init/` SQL to seed a `kotodama_test`.
+  (`@kotodama/core/database/testing`), so there's no `init/` SQL to seed a `kotodama_test`.
 - Scripts: `local:up` / `local:down` (stop + remove containers, **keeps** data volumes) /
   `local:clean` (`down -v` — also removes volumes) / `local:logs` / `local:provision` (idempotently
   ensures the AWS-resource inventory on the running LocalStack — see below).
@@ -15,14 +15,14 @@ Local dev infra (Docker Compose) now; Pulumi production stack later.
 
 ## How to add a new AWS resource
 
-Resource identity lives in **one** list — `awsResources` in `@kotodama/config`
+Resource identity lives in **one** list — `awsResources` in `@kotodama/platform/config`
 (`packages/config/src/aws-resources.ts`). `local:provision` (dev), the test helpers, and the future
 Pulumi stack all read it.
 
 1. **Add one entry** to `awsResources` (`{ kind, name }`). That is the whole change for another
    queue/bucket of an existing kind.
 2. **Add a new `ensure<Resource>`** (in the owning package) **only** for a genuinely new resource
-   *type* (a new `kind`) — `ensureQueue` (`@kotodama/queue`), `ensureBucket` (`@kotodama/storage`).
+   *type* (a new `kind`) — `ensureQueue` (`@kotodama/platform/queue`), `ensureBucket` (`@kotodama/platform/storage`).
 3. **To *consume* the second resource**, add its config (one `Config` value) + **one more bound
    wrapper** — another `Layer` over the **existing** `QueueClient` / `StorageClient` base, binding the
    new URL/name (the way `JobsQueue` binds `JOBS_QUEUE_URL`, `ImagesStore` binds `IMAGES_BUCKET`).
@@ -30,4 +30,4 @@ Pulumi stack all read it.
    `packages/queue/CLAUDE.md` / `packages/storage/CLAUDE.md` for the pattern.
 4. `ensure*` is **dev/test-only**: prod `*Live` layers (`QueueClientLive`, `StorageClientLive`)
    only *consume* by URL/name and never self-provision. The `@aws-sdk/client-s3` devDependency
-   boundary in `@kotodama/storage` keeps `ensureBucket` off the `Bun.S3Client` prod path.
+   boundary in `@kotodama/platform/storage` keeps `ensureBucket` off the `Bun.S3Client` prod path.

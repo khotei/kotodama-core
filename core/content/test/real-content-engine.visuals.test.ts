@@ -1,8 +1,12 @@
 import { describe, expect, it } from '@effect/vitest'
-import { AiError, AiService } from '@kotodama/ai'
-import { enumLanguage, enumVisualKind, VisualsEntity } from '@kotodama/database'
-import { WikiClientTest } from '@kotodama/external-apis/testing'
-import { bucketObjects, resetBucket, StorageLocalStackLive } from '@kotodama/storage/testing'
+import { enumLanguage, enumVisualKind, VisualsEntity } from '@kotodama/core/database'
+import { AiError, AiService } from '@kotodama/platform/ai'
+import { WikiClientTest } from '@kotodama/platform/external-apis/testing'
+import {
+  bucketObjects,
+  resetBucket,
+  StorageLocalStackLive,
+} from '@kotodama/platform/storage/testing'
 import { Effect, Layer, Schema } from 'effect'
 import { ContentEngine, ContentEngineError } from '../src'
 import { RealContentEngineLive } from '../src/real-content-engine.service'

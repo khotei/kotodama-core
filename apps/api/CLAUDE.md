@@ -44,6 +44,6 @@ derived from the root, so it reflects new groups automatically. Patterns:
   deliberately duplicates the worker's (~10 lines) and omits its resilience decorator: the input
   judge is fail-open, so retry buys little and would pull image-path tuning into a text-only app.
 
-**May import:** `core/*`, `use-cases/*`, `@kotodama/database` + `repositories/*`, `@kotodama/*`
+**May import:** `core/*`, `use-cases/*`, `@kotodama/core/database` + `repositories/*`, `@kotodama/*`
 packages, `effect`, `@effect/platform-bun`. **MUST NOT import:** another app.
-`@kotodama/database/factories` belongs in tests, not `src/**`.
+`@kotodama/core/database/factories` belongs in tests, not `src/**`.

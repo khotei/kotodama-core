@@ -4,7 +4,7 @@ import {
   type JobErrorType,
   type SourceVersionsEntity,
   type WordJobStage,
-} from '@kotodama/database'
+} from '@kotodama/core/database'
 import { Duration, Effect, Layer } from 'effect'
 import { ContentEngine, ContentEngineError } from './content-engine.service'
 import { mockStageContent } from './mock-content'

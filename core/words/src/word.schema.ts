@@ -1,4 +1,4 @@
-import { BuildStagesEntity, enumAsyncJobStatus, WordEntity } from '@kotodama/database'
+import { BuildStagesEntity, enumAsyncJobStatus, WordEntity } from '@kotodama/core/database'
 import { Schema, Struct } from 'effect'
 
 /**

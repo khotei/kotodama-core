@@ -1,4 +1,4 @@
-import { JobsQueue, type ReceiveOptions } from '@kotodama/queue'
+import { JobsQueue, type ReceiveOptions } from '@kotodama/platform/queue'
 import { Context, Effect } from 'effect'
 import { processBatch } from './process-batch'
 

@@ -5,7 +5,7 @@ import {
   enumWordJobStage,
   WORD_JOB_STAGES,
   WordEntityInsert,
-} from '@kotodama/database'
+} from '@kotodama/core/database'
 import { Duration, Effect, Schema } from 'effect'
 import { TestClock } from 'effect/testing'
 import { ContentEngine, ContentEngineError, MockContentEngine, makeMockContentEngine } from '../src'

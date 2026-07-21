@@ -49,12 +49,12 @@ export const WordSchemaInsert = createInsertSchema(wordsTable, {
 
 The real implementation is **`database/src/db.ts`** — copy from there, not from web docs
 (still Effect v3: `@effect/sql-drizzle`, `Context.Tag('DB')`). The URL comes from
-`@kotodama/config`'s `DatabaseUrl`, resolved from the active `ConfigProvider`.
+`@kotodama/platform/config`'s `DatabaseUrl`, resolved from the active `ConfigProvider`.
 
 ```ts
 // database/src/db.ts
 import { PgClient } from '@effect/sql-pg'
-import { DatabaseUrl } from '@kotodama/config'
+import { DatabaseUrl } from '@kotodama/platform/config'
 import * as PgDrizzle from 'drizzle-orm/effect-postgres'
 import { Context, Effect, Layer } from 'effect'
 import { relations } from '../schema'
@@ -67,7 +67,7 @@ const dbEffect = PgDrizzle.make({ relations }).pipe(Effect.provide(PgDrizzle.Def
 
 // Class-syntax Context.Service (NOT Context.Tag — v4 settled on Context.Service).
 export class DB extends Context.Service<DB, Effect.Success<typeof dbEffect>>()(
-  '@kotodama/database/DB',
+  '@kotodama/core/database/DB',
 ) {}
 
 export const DBLive = Layer.effect(DB, dbEffect) // needs a PgClient
