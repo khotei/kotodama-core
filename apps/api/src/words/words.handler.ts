@@ -21,12 +21,12 @@ export const WordsApiLive = HttpApiBuilder.group(KotodamaApi, 'words', (handlers
       }).pipe(Effect.catchTags({ EffectDrizzleQueryError: Effect.die, SchemaError: Effect.die })),
     )
     .handle('getWordState', (ctx) =>
-      Effect.gen(function* () {
-        // The word carries its `stages` inline, so one decoded read is the whole snapshot — collapse
-        // reads the row's own `status` and stages, no second query.
-        const word = yield* findWord(ctx.params.language, ctx.params.word)
-        return Option.getOrNull(collapseWordState(word))
-      }).pipe(Effect.orDie),
+      // The word carries its `stages` inline, so one decoded read is the whole snapshot — collapse
+      // reads the row's own `status` and stages, no second query.
+      findWord(ctx.params.language, ctx.params.word).pipe(
+        Effect.map((word) => Option.getOrNull(collapseWordState(word))),
+        Effect.orDie,
+      ),
     )
     .handle('buildWord', (ctx) =>
       requestWordBuild(ctx.params.language, ctx.params.word).pipe(
