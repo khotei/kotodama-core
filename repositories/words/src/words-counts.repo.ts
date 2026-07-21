@@ -1,35 +1,30 @@
-import type { AsyncJobStatus } from '@kotodama/database'
-import { DB, wordsTable } from '@kotodama/database'
+import { ASYNC_JOB_STATUSES, type AsyncJobStatus, DB, wordsTable } from '@kotodama/database'
 import type { SQLWrapper } from 'drizzle-orm'
 import { sql } from 'drizzle-orm'
 import { Effect } from 'effect'
 import { type WordSearchQuery, wordSearchFilter } from './words-search.repo'
 
-export type WordCounts = {
-  readonly total: number
-  readonly pending: number
-  readonly running: number
-  readonly succeeded: number
-  readonly failed: number
-}
-
-const EMPTY_COUNTS: WordCounts = {
-  total: 0,
-  pending: 0,
-  running: 0,
-  succeeded: 0,
-  failed: 0,
-}
+export type WordCounts = { readonly total: number } & Readonly<Record<AsyncJobStatus, number>>
 
 const countFilter = (statusCol: SQLWrapper, status: AsyncJobStatus) =>
   sql<number>`count(*) filter (where ${statusCol} = ${status})`.mapWith(Number)
 
+// Buckets derive from the one status vocabulary, so a new `AsyncJobStatus` grows every count by
+// construction — the single-author discipline `wordSearchFilter` uses. `fromEntries` widens keys
+// to `string`; the cast re-pins the exact status set, so dropping it silently drops buckets.
+const EMPTY_COUNTS: WordCounts = {
+  total: 0,
+  ...(Object.fromEntries(ASYNC_JOB_STATUSES.map((status) => [status, 0])) as Record<
+    AsyncJobStatus,
+    number
+  >),
+}
+
 const countBuckets = (statusCol: SQLWrapper) => ({
   total: sql<number>`count(*)`.mapWith(Number),
-  pending: countFilter(statusCol, 'pending'),
-  running: countFilter(statusCol, 'running'),
-  succeeded: countFilter(statusCol, 'succeeded'),
-  failed: countFilter(statusCol, 'failed'),
+  ...(Object.fromEntries(
+    ASYNC_JOB_STATUSES.map((status) => [status, countFilter(statusCol, status)]),
+  ) as Record<AsyncJobStatus, ReturnType<typeof countFilter>>),
 })
 
 /**
