@@ -33,6 +33,8 @@ export interface ImageOptions {
   readonly quality: 'low' | 'medium' | 'high' | 'auto'
 }
 
+export type ReasoningEffort = 'none' | 'minimal' | 'low' | 'medium' | 'high' | 'xhigh'
+
 // The image path goes through the generated client, whose errors are raw HTTP errors — a
 // gpt-image 429 is invisible to the provider's isAiError and must be classified here.
 const RETRYABLE_HTTP_STATUS: ReadonlySet<number> = new Set([408, 429, 500, 502, 503, 504])
@@ -118,7 +120,7 @@ export class AiService extends Context.Service<
       opts: {
         readonly model: string
         /** Responses-API reasoning depth — the speed/quality dial for gpt-5.x reasoning models. */
-        readonly reasoningEffort: 'none' | 'minimal' | 'low' | 'medium' | 'high' | 'xhigh'
+        readonly reasoningEffort: ReasoningEffort
       },
     ) => Effect.Effect<A, AiError>
     readonly generateImage: (
@@ -146,7 +148,7 @@ export const AiServiceLive: Layer.Layer<
       prompt: string,
       opts: {
         readonly model: string
-        readonly reasoningEffort: 'none' | 'minimal' | 'low' | 'medium' | 'high' | 'xhigh'
+        readonly reasoningEffort: ReasoningEffort
       },
     ) =>
       LanguageModel.generateObject({ schema, prompt }).pipe(
