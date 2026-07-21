@@ -1,8 +1,9 @@
 import { Language } from '@kotodama/database'
 import { Schema } from 'effect'
 
-// Lives here, not in @kotodama/queue — the transport stays message-agnostic. Always a settled
-// language: "Auto" detection is resolved client-side before any build is requested.
+// The build-request message the API enqueues and the worker consumes. Not in @kotodama/queue — the
+// transport stays message-agnostic. Always a settled language: "Auto" detection is resolved
+// client-side before any build is requested.
 export const WordBuildMessage = Schema.Struct({
   language: Language,
   word: Schema.String,

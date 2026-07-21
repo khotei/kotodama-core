@@ -4,22 +4,19 @@
  * NOT re-exported (internal helper); `language.ts` IS, so `drizzle-kit` emits the `language CREATE TYPE`.
  */
 import { defineRelations } from 'drizzle-orm'
-import { asyncWordJobsTable } from './async-word-jobs/async-word-jobs.table'
 import { wordsTable } from './words/words.table'
 
-export * from './async-word-jobs/async-word-jobs.entity'
-export * from './async-word-jobs/async-word-jobs.enums'
-export * from './async-word-jobs/async-word-jobs.table'
-export * from './async-word-jobs/async-word-jobs.values'
 export * from './language'
 export * from './to-enum'
+export * from './words/build-stages.entity'
+export * from './words/word-status'
 export * from './words/words.entity'
 export * from './words/words.table'
 export * from './words/words.values'
 
 /**
- * Neither content table carries relations: a word's generation is N `async_word_jobs` rows (one per
- * stage, keyed by `(word, language, stage)`), and `words` is one lifecycle row per `(word, language)`.
- * Both stay in the schema map so `db.query.{wordsTable,asyncWordJobsTable}` exist.
+ * `words` is one lifecycle row per `(word, language)` carrying its build progress inline
+ * (`words.stages`), so there is no second table and no relation to declare — it stays in the schema
+ * map only so `db.query.wordsTable` exists.
  */
-export const relations = defineRelations({ wordsTable, asyncWordJobsTable }, () => ({}))
+export const relations = defineRelations({ wordsTable }, () => ({}))

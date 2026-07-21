@@ -1,9 +1,4 @@
-import {
-  AsyncWordJobEntity,
-  enumAsyncJobStatus,
-  JobErrorEntity,
-  WordEntity,
-} from '@kotodama/database'
+import { enumAsyncJobStatus, JobErrorEntity, StageEntity, WordEntity } from '@kotodama/database'
 import { Schema, Struct } from 'effect'
 
 // `cause` is debugging-only and never FE-facing; omit keeps the rest from drifting.
@@ -16,7 +11,7 @@ export type JobErrorView = typeof JobErrorView.Type
  * top-level error. The consumer sorts into `WORD_JOB_STAGES` pipeline order.
  */
 export const StageProgress = Schema.Struct({
-  ...AsyncWordJobEntity.mapFields(Struct.pick(['stage', 'status'])).fields,
+  ...StageEntity.mapFields(Struct.pick(['stage', 'status'])).fields,
   error: Schema.optionalKey(JobErrorView),
 })
 export type StageProgress = typeof StageProgress.Type

@@ -29,7 +29,7 @@ export class ContentEngine extends Context.Service<
     ) => Effect.Effect<StageSlice<S>, ContentEngineError>
     /**
      * Build provenance is engine *identity*, not a content pass — it lives on the service so it is
-     * never smuggled through a `StageResultEntity`.
+     * never smuggled through a stage's produced slice.
      */
     readonly sourceVersions: SourceVersionsEntity
   }

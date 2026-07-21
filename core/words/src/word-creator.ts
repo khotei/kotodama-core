@@ -2,6 +2,7 @@ import { WordGenerationService } from '@kotodama/core-content'
 import { enumAsyncJobStatus, type Language, WordEntityInsert } from '@kotodama/database'
 import { upsertWord } from '@kotodama/repositories-words'
 import { Effect, Schema } from 'effect'
+import { stagesAll } from './build-stages'
 
 const decodeWordInsert = Schema.decodeUnknownEffect(WordEntityInsert)
 
@@ -28,6 +29,8 @@ export const createWord = Effect.fnUntraced(function* (language: Language, word:
         language,
         sourceVersions,
         status: enumAsyncJobStatus.succeeded,
+        // Content + `succeeded` + all-succeeded stages land in one write — no separate journal.
+        stages: stagesAll(enumAsyncJobStatus.succeeded),
       }).pipe(Effect.orDie)
       return yield* upsertWord(language, word, insert)
     }),

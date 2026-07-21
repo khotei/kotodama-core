@@ -75,7 +75,7 @@ detail.
 |---|---|---|
 | `apps/{api,worker}` | HTTP-contract server · SQS consumer | the process boundaries |
 | `use-cases/` | end-to-end flow composers (`requestWordBuild`, `buildWord`) | one place a flow is assembled |
-| `core/{words,content,async-word-jobs}` | domain logic + the `ContentEngine` swap seam | the rules a flow runs |
+| `core/{words,content}` | domain logic + the `ContentEngine` swap seam | the rules a flow runs |
 | `repositories/` | bare persistence functions over the DB layer | the only SQL surface |
 | `database/` | Drizzle schema + the word vocabulary + `WordEntity` | the bottom; authors the row shapes |
 | `packages/{ai,queue,storage,config,observability,…}` | boundary adapters + leaf infra | import nothing internal |

@@ -1,13 +1,12 @@
 import { expect, it } from '@effect/vitest'
-import { WordBuildMessageFromJson } from '@kotodama/core-async-word-jobs'
 import {
   MockContentEngine,
   WordGenerationService,
   WordGenerationServiceLive,
 } from '@kotodama/core-content'
+import { WordBuildMessageFromJson } from '@kotodama/core-words'
 import { enumLanguage } from '@kotodama/database'
 import { resetDb, TestDatabaseLive } from '@kotodama/database/testing'
-import { selectWordJobStages } from '@kotodama/repositories-async-word-jobs'
 import { selectWords } from '@kotodama/repositories-words'
 import { seedUnreadyWord } from '@kotodama/repositories-words/testing'
 import { Effect, Layer, Schema } from 'effect'
@@ -63,11 +62,10 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
 
       // Every valid build succeeded and the foreign body was skipped — nothing to redrive (AC-5).
       expect(failedIds).toEqual([])
-      // The valid words built (stage rows + a ready row); the foreign body triggered no build.
-      expect((yield* selectWordJobStages({ language: EN, word: 'lacuna' })).length).toBeGreaterThan(
-        0,
-      )
-      expect(yield* selectWords({ language: EN, word: 'lacuna' })).toHaveLength(1)
+      // The valid words built (stages advanced on the word row); the foreign body triggered no build.
+      const lacunaRows = yield* selectWords({ language: EN, word: 'lacuna' })
+      expect(lacunaRows).toHaveLength(1)
+      expect(lacunaRows[0]?.stages.length).toBeGreaterThan(0)
     }),
   )
 

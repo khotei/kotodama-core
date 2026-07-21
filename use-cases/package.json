@@ -9,12 +9,10 @@
   },
   "dependencies": {
     "effect": "catalog:effect",
-    "@kotodama/core-async-word-jobs": "workspace:*",
     "@kotodama/core-content": "workspace:*",
     "@kotodama/core-words": "workspace:*",
     "@kotodama/database": "workspace:*",
     "@kotodama/queue": "workspace:*",
-    "@kotodama/repositories-async-word-jobs": "workspace:*",
     "@kotodama/repositories-words": "workspace:*"
   },
   "devDependencies": {

@@ -38,6 +38,7 @@ const buildingRow = (status: 'pending' | 'running' | 'failed') => ({
   word: 'lacuna',
   language: 'en' as const,
   status,
+  stages: [],
   ...Object.fromEntries(CONTENT_KEYS.map((k) => [k, null])),
 })
 

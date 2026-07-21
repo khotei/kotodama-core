@@ -3,14 +3,8 @@ import { faker } from '@faker-js/faker'
 import { ConfigProviderLive } from '@kotodama/config'
 import { Effect } from 'effect'
 import { DatabaseLive, DB } from './db'
-import { makeAsyncWordJobInsert, makeWordInsert } from './factories'
-import {
-  asyncWordJobsTable,
-  enumAsyncJobStatus,
-  enumLanguage,
-  wordJobStage,
-  wordsTable,
-} from './index'
+import { makeWordInsert } from './factories'
+import { enumLanguage, wordsTable } from './index'
 
 // Dev seed. Idempotent via `onConflictDoNothing` on `UNIQUE(word, language)`.
 // Run: `bun run --filter '@kotodama/database' db:seed`.
@@ -27,25 +21,7 @@ const program = Effect.gen(function* () {
       .values(makeWordInsert({ word, language: enumLanguage.en }))
       .onConflictDoNothing()
       .returning()
-    if (!row) {
-      yield* Effect.log(`seed: ${word} already present, skipping`)
-      continue
-    }
-
-    // A completed generation: every stage row succeeded.
-    yield* db.insert(asyncWordJobsTable).values(
-      wordJobStage.enumValues.map((stage) =>
-        makeAsyncWordJobInsert({
-          word,
-          language: enumLanguage.en,
-          stage,
-          status: enumAsyncJobStatus.succeeded,
-          result: { note: faker.lorem.sentence() },
-        }),
-      ),
-    )
-
-    yield* Effect.log(`seed: ${word} + completed run`)
+    yield* Effect.log(row ? `seed: ${word}` : `seed: ${word} already present, skipping`)
   }
 
   yield* Effect.log('seed: done')

@@ -25,7 +25,7 @@
 
 `AiError.fromCause(method, raw)` derives `message` (drilled single line), `cause` (a compact
 `CauseSnapshot`, recursed a few levels), and `isRetryable` **before the live provider object is
-discarded** — the error is persisted into the `async_word_jobs.error` jsonb column, so it must
+discarded** — the error is persisted into a `words.stages[].error` jsonb field, so it must
 round-trip `JSON.stringify`. **Never store the live `Error`/provider object as a field** (live
 objects carry non-enumerable getters / circular refs).
 

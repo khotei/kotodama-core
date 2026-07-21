@@ -24,18 +24,17 @@ edge-case question, fetch `github.com/sindresorhus/type-fest/blob/main/test-d/<u
 | `LiteralUnion<L, string>` | literal autocomplete without banning other strings |
 | `Tagged<T, Tag>` | nominal/opaque ids when two `string`s must not mix |
 
-## Worked example — `AsyncWordJobUpsert`
+## Worked example — a merge-patch payload
 
-`repositories/async-word-jobs/src/stage-patch.ts` derives the patch from the row (one author), with
-"optional, but `null` inexpressible" payload fields (under the repo's COALESCE merge an explicit
-`null` would silently mean *keep*, so the type forbids it):
+When a row's merge treats an explicit `null` as *keep* (a COALESCE upsert), the patch type must make
+each field settable-or-omitted but never `null`. Compose `SetNonNullable` with `Partial`, derived
+from the row so it has one author:
 
 ```ts
 /** `Partial`, minus `null`: each field may be set or omitted, never cleared (the merge's contract). */
 type SetOnly<T> = Readonly<SetNonNullable<Partial<T>>>
 
-export type AsyncWordJobUpsert = Readonly<Pick<AsyncWordJobRow, 'stage' | 'status'>> &
-  SetOnly<Pick<AsyncWordJobRow, 'result' | 'error' | 'startedAt' | 'finishedAt'>>
+type ExampleUpsert<Row> = Readonly<Pick<Row, 'id'>> & SetOnly<Omit<Row, 'id'>>
 ```
 
 ## Gotchas
