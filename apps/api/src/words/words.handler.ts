@@ -1,4 +1,3 @@
-import { readWordBuildSnapshot } from '@kotodama/core-async-word-jobs'
 import { decodeWord, ensureReadyWord, findWord, type Word } from '@kotodama/core-words'
 import { enumAsyncJobStatus } from '@kotodama/database'
 import { searchWords, selectWordCounts } from '@kotodama/repositories-words'
@@ -23,24 +22,23 @@ export const WordsApiLive = HttpApiBuilder.group(KotodamaApi, 'words', (handlers
     )
     .handle('getWordState', (ctx) =>
       Effect.gen(function* () {
-        // The snapshot's word is already the decoded `Option<Word>` — collapse reads the row's own
-        // `status`, so no decode juggling here.
-        const snapshot = yield* readWordBuildSnapshot(ctx.params.language, ctx.params.word)
-        return Option.getOrNull(collapseWordState(snapshot))
+        // The word carries its `stages` inline, so one decoded read is the whole snapshot — collapse
+        // reads the row's own `status` and stages, no second query.
+        const word = yield* findWord(ctx.params.language, ctx.params.word)
+        return Option.getOrNull(collapseWordState(word))
       }).pipe(Effect.orDie),
     )
     .handle('buildWord', (ctx) =>
       requestWordBuild(ctx.params.language, ctx.params.word).pipe(
         // The seed just landed `pending` (the worker flips it `running` later), so the response is
-        // that state verbatim — no collapse, assemble the stepper straight from the seeded rows.
+        // that state verbatim — no collapse, assemble the stepper straight from the seeded row's stages.
         Effect.map((seeded) => ({
           status: enumAsyncJobStatus.pending,
-          stages: toStageProgress(seeded),
+          stages: toStageProgress(seeded.stages),
         })),
         Effect.catchTags({
           EffectDrizzleQueryError: Effect.die,
           QueueError: Effect.die,
-          SqlError: Effect.die,
         }),
       ),
     )

@@ -44,8 +44,9 @@ plain query is clearer is its own smell.
 Domain examples use the kotodama-core schema: the **lifecycle `words` table** (F-CONT-006 — one row per
 `(word, language)`, `status async_job_status NOT NULL`, content in `tiers`/`lexical`/… jsonb all
 **nullable**, a `CHECK (status <> 'succeeded' OR <content non-null>)` enforcing "ready ⇒ complete"; a
-building word is a `pending|running|failed` row, a ready one is `succeeded`) and **`async_word_jobs`** (one
-row per `(word, language, stage)`; `status ∈ pending|running|succeeded|failed`). Spaced-repetition examples
+building word is a `pending|running|failed` row, a ready one is `succeeded`, and per-stage build
+progress rides inline on the **`words.stages`** jsonb (`{stage,status,error?}[]`), not a second
+table). Spaced-repetition examples
 (`reviews`, `user_words`) are illustrative — those tables don't exist yet.
 
 ## How each maps to Drizzle (`drizzle-orm/effect-postgres`)

@@ -1,13 +1,11 @@
 import { expect, it } from '@effect/vitest'
 import { AiServiceTest } from '@kotodama/ai/testing'
-import { WordBuildMessageFromJson } from '@kotodama/core-async-word-jobs'
 import { MockContentEngine, WordGenerationServiceLive } from '@kotodama/core-content'
-import { WordVerdict } from '@kotodama/core-words'
+import { WordBuildMessageFromJson, WordVerdict } from '@kotodama/core-words'
 import { enumAsyncJobStatus, enumLanguage } from '@kotodama/database'
 import { resetDb, TestDatabaseLive } from '@kotodama/database/testing'
 import { JobsQueue } from '@kotodama/queue'
 import { drainQueue, QueueLocalStackLive } from '@kotodama/queue/testing'
-import { selectWordJobStages } from '@kotodama/repositories-async-word-jobs'
 import { selectWords } from '@kotodama/repositories-words'
 import { requestWordBuild } from '@kotodama/use-cases'
 import { Effect, Layer, Schema } from 'effect'
@@ -46,19 +44,20 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
         // word to Being made: a `pending` `words` row seeded (F-CONT-006 — the row IS the list entry, so
         // it lands at once, content NULL), the 6 stages seeded, and a message enqueued.
         const seeded = yield* requestWordBuild(EN, 'lacuna')
-        expect(seeded.length).toBeGreaterThan(0)
+        expect(seeded.stages.length).toBeGreaterThan(0)
         const [requested] = yield* selectWords({ language: EN, word: 'lacuna', limit: 1 })
         expect(requested?.status).toBe(enumAsyncJobStatus.pending)
-        expect(
-          (yield* selectWordJobStages({ language: EN, word: 'lacuna' })).length,
-        ).toBeGreaterThan(0)
+        expect(requested?.stages.length).toBeGreaterThan(0)
 
         // The worker consumes the one message and drives the build to completion.
         expect(yield* consumeOnce).toBe(1)
 
-        // AC-4 — every ordered pass advanced to succeeded (observable progress through the pipeline).
-        const stages = yield* selectWordJobStages({ language: EN, word: 'lacuna' })
-        expect(stages.every((stage) => stage.status === enumAsyncJobStatus.succeeded)).toBe(true)
+        // AC-4 — every ordered pass advanced to succeeded (observable progress through the pipeline),
+        // now read off the word row's `stages` jsonb rather than a per-stage job table.
+        const [built] = yield* selectWords({ language: EN, word: 'lacuna', limit: 1 })
+        expect(built?.stages.every((stage) => stage.status === enumAsyncJobStatus.succeeded)).toBe(
+          true,
+        )
 
         // AC-5 — the word is now Ready: a subsequent lookup returns it with assembled content.
         // Content columns are nullable in storage (lifecycle table); a `succeeded` row has them all.

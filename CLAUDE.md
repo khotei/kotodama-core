@@ -72,8 +72,8 @@ target < 200 lines of always-loaded context per file; bloat reduces adherence).
 
 ## Per-layer context (loaded lazily when editing that subtree)
 
-`apps/{api,worker}/CLAUDE.md` · `use-cases/CLAUDE.md` · `core/{words,jobs}/CLAUDE.md` ·
-`database/CLAUDE.md` · `repositories/{words,async-word-jobs}/CLAUDE.md` · `packages/*/CLAUDE.md` ·
+`apps/{api,worker}/CLAUDE.md` · `use-cases/CLAUDE.md` · `core/{words,content}/CLAUDE.md` ·
+`database/CLAUDE.md` · `repositories/words/CLAUDE.md` · `packages/*/CLAUDE.md` ·
 `infra/CLAUDE.md`.
 Ancestor `CLAUDE.md` files (this one) always load; subdirectory ones load when you touch files
 in that folder.

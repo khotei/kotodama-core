@@ -1,6 +1,7 @@
 import { faker } from '@faker-js/faker'
-import { enumAsyncJobStatus } from '../../schema/async-word-jobs/async-word-jobs.values'
 import { LANGUAGES } from '../../schema/language'
+import { WORD_JOB_STAGES } from '../../schema/words/build-stages.entity'
+import { enumAsyncJobStatus } from '../../schema/words/word-status'
 import type {
   AuthorExampleEntity,
   CulturalGuideEntity,
@@ -154,6 +155,7 @@ export const makeWordInsert = (overrides: Partial<WordInsert> = {}): WordInsert 
     word: faker.lorem.word(),
     language: faker.helpers.arrayElement(LANGUAGES),
     status: enumAsyncJobStatus.succeeded,
+    stages: WORD_JOB_STAGES.map((stage) => ({ stage, status: enumAsyncJobStatus.succeeded })),
     coreDefinition: faker.lorem.sentence(),
     lexical: makeLexical(),
     pronunciation: makePronunciation(),

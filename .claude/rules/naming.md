@@ -3,8 +3,8 @@
 ## Packages
 
 `@kotodama/<folder>`, nested folders flatten with a dash: `core/words` → `@kotodama/core-words`,
-`repositories/async-word-jobs` → `@kotodama/repositories-async-word-jobs`, `database` →
-`@kotodama/database`. Apps drop the plural: `apps/api` → `@kotodama/app-api`.
+`repositories/words` → `@kotodama/repositories-words`, `database` → `@kotodama/database`. Apps drop
+the plural: `apps/api` → `@kotodama/app-api`.
 
 ## Files
 

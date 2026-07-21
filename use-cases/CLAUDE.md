@@ -23,8 +23,8 @@ transport adapters.
   once and `die`s on absence *before any write*, so a queue message naming a never-seeded word
   fabricates no row — every later write can then safely be a plain upsert. Ownership line: `core`
   *promotes* `words` (the content write); this flow owns the `running`/`failed` status flips and
-  the `async_word_jobs` journal. **No live per-stage tracking:** the row + whole pipeline flip
-  `running` in one batch before generation, and the outcome lands in one batch at the end
+  the inline `words.stages` progress. **No live per-stage tracking:** the row + whole pipeline flip
+  `running` in one write before generation, and the outcome lands in one write at the end
   (generation failure ⇒ row `failed`, never-ran passes reset to `pending`; generation timeout ⇒
   every stage `timed_out` — content stays NULL, no promote ran). The generation budget is a
   decorator layer at the worker entrypoint — this flow only *reacts* to its `TimeoutError`, so a

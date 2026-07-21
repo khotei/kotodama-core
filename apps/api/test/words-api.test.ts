@@ -5,7 +5,6 @@ import { WordVerdict } from '@kotodama/core-words'
 import { enumAsyncJobStatus, enumLanguage, enumWordJobStage } from '@kotodama/database'
 import { resetDb, TestDatabaseLive } from '@kotodama/database/testing'
 import { QueueLocalStackLive } from '@kotodama/queue/testing'
-import { seedRunningStage } from '@kotodama/repositories-async-word-jobs/testing'
 import { seedReadyWord, seedUnreadyWord } from '@kotodama/repositories-words/testing'
 import { Effect, Layer } from 'effect'
 import { HttpRouter } from 'effect/unstable/http'
@@ -21,7 +20,7 @@ import {
   search,
 } from './words-api-test-utils'
 
-// `requestWordBuild` + the reads (selectWord / selectWordJobStages + collapseWordState) are plain
+// `requestWordBuild` + the reads (selectWord + collapseWordState, stages carried inline) are plain
 // functions over the repos (which `yield*` DB) + JobsQueue — a LocalStack SQS queue + an ephemeral
 // Postgres — plus the verifier's `AiService` (the judge behind `requestWordBuild`, faked with a
 // standing `isValid: true` verdict so `buildWord` admits without a network call; `main.ts` provides
@@ -83,10 +82,11 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
     it.effect('→ the running WordStateView round-trips over the wire', () =>
       Effect.gen(function* () {
         yield* resetDb
-        // The `words` row is the state's discriminant (seeded atomically with its stages); a stage
-        // row alone is an impossible production state, so seed the running row too.
-        yield* seedUnreadyWord(EN, 'lacuna', 'running')
-        yield* seedRunningStage(EN, 'lacuna', enumWordJobStage.fetch_source)
+        // The `words` row is the state's discriminant, seeded atomically with its inline `stages`
+        // (F-CONT-006: build progress lives on the word row, not a separate stage table).
+        yield* seedUnreadyWord(EN, 'lacuna', 'running', [
+          { stage: enumWordJobStage.fetch_source, status: enumAsyncJobStatus.running },
+        ])
 
         const state = yield* getWordState(EN, 'lacuna')
         // The API owns only that the union discriminant + stage shape survive the contract encoding;

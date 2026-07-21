@@ -1,4 +1,4 @@
-import { WordBuildMessageFromJson } from '@kotodama/core-async-word-jobs'
+import { WordBuildMessageFromJson } from '@kotodama/core-words'
 import { buildWord } from '@kotodama/use-cases'
 import { Array as Arr, Context, Effect, Option, Schema } from 'effect'
 

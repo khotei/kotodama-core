@@ -8,6 +8,15 @@ import { Struct } from 'effect'
  * vocabulary.
  */
 export const WordContent = WordEntity.mapFields(
-  Struct.omit(['id', 'word', 'language', 'sourceVersions', 'status', 'createdAt', 'updatedAt']),
+  Struct.omit([
+    'id',
+    'word',
+    'language',
+    'stages',
+    'sourceVersions',
+    'status',
+    'createdAt',
+    'updatedAt',
+  ]),
 )
 export type WordContent = typeof WordContent.Type

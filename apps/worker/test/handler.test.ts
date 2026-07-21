@@ -1,6 +1,6 @@
 import { expect, it } from '@effect/vitest'
-import { WordBuildMessageFromJson } from '@kotodama/core-async-word-jobs'
 import { MockContentEngine, WordGenerationServiceLive } from '@kotodama/core-content'
+import { WordBuildMessageFromJson } from '@kotodama/core-words'
 import { enumLanguage } from '@kotodama/database'
 import { resetDb, TestDatabaseLive } from '@kotodama/database/testing'
 import { seedUnreadyWord } from '@kotodama/repositories-words/testing'

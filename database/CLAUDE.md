@@ -16,8 +16,9 @@ layout, `…Table` suffix, entity derivation) live in `.claude/rules/naming.md` 
   `frequency` stays nullable AND outside the CHECK (analytics-owned). `status` has **no column
   default** — the write path states it. `WordEntity` stays the strict ready-row shape (the core
   union owns storage permissiveness at decode); `WordEntityInsert` makes content columns
-  `Schema.NullOr` (carries-and-clears under merge-patch — never `optionalKey`). `async_word_jobs`
-  has no `EntityInsert` (trusted worker writes only).
+  `Schema.NullOr` (carries-and-clears under merge-patch — never `optionalKey`). Per-stage build
+  progress rides inline on `words.stages` (`BuildStagesEntity`, `NOT NULL DEFAULT '[]'`) — there is
+  no second table; a transition co-writes `stages` with `status`.
 - **One schema piece is hand-authored in the baseline migration** (drizzle-kit can't emit it), so
   a fresh `db:generate` reports no drift yet apply installs it: `CREATE EXTENSION pg_trgm` (ahead
   of the trgm GIN indexes). If the schema changes, re-generate then **re-patch that block** into

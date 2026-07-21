@@ -22,12 +22,10 @@
         "@effect/platform-bun": "catalog:effect",
         "@kotodama/ai": "workspace:*",
         "@kotodama/config": "workspace:*",
-        "@kotodama/core-async-word-jobs": "workspace:*",
         "@kotodama/core-words": "workspace:*",
         "@kotodama/database": "workspace:*",
         "@kotodama/observability": "workspace:*",
         "@kotodama/queue": "workspace:*",
-        "@kotodama/repositories-async-word-jobs": "workspace:*",
         "@kotodama/repositories-words": "workspace:*",
         "@kotodama/use-cases": "workspace:*",
         "effect": "catalog:effect",
@@ -44,14 +42,12 @@
         "@effect/platform-bun": "catalog:effect",
         "@kotodama/ai": "workspace:*",
         "@kotodama/config": "workspace:*",
-        "@kotodama/core-async-word-jobs": "workspace:*",
         "@kotodama/core-content": "workspace:*",
         "@kotodama/core-words": "workspace:*",
         "@kotodama/database": "workspace:*",
         "@kotodama/external-apis": "workspace:*",
         "@kotodama/observability": "workspace:*",
         "@kotodama/queue": "workspace:*",
-        "@kotodama/repositories-async-word-jobs": "workspace:*",
         "@kotodama/repositories-words": "workspace:*",
         "@kotodama/storage": "workspace:*",
         "@kotodama/use-cases": "workspace:*",
@@ -60,20 +56,6 @@
       "devDependencies": {
         "@kotodama/tooling": "workspace:*",
         "@types/aws-lambda": "catalog:types",
-      },
-    },
-    "core/async-word-jobs": {
-      "name": "@kotodama/core-async-word-jobs",
-      "version": "0.0.0",
-      "dependencies": {
-        "@kotodama/core-words": "workspace:*",
-        "@kotodama/database": "workspace:*",
-        "@kotodama/queue": "workspace:*",
-        "@kotodama/repositories-async-word-jobs": "workspace:*",
-        "effect": "catalog:effect",
-      },
-      "devDependencies": {
-        "@kotodama/tooling": "workspace:*",
       },
     },
     "core/content": {
@@ -222,22 +204,6 @@
       "name": "@kotodama/tooling",
       "version": "0.0.0",
     },
-    "repositories/async-word-jobs": {
-      "name": "@kotodama/repositories-async-word-jobs",
-      "version": "0.0.0",
-      "dependencies": {
-        "@effect/sql-pg": "catalog:effect",
-        "@kotodama/database": "workspace:*",
-        "drizzle-orm": "catalog:db",
-        "effect": "catalog:effect",
-      },
-      "devDependencies": {
-        "@faker-js/faker": "catalog:test",
-        "@kotodama/tooling": "workspace:*",
-        "@testcontainers/postgresql": "catalog:test",
-        "testcontainers": "catalog:test",
-      },
-    },
     "repositories/words": {
       "name": "@kotodama/repositories-words",
       "version": "0.0.0",
@@ -258,12 +224,10 @@
       "name": "@kotodama/use-cases",
       "version": "0.0.0",
       "dependencies": {
-        "@kotodama/core-async-word-jobs": "workspace:*",
         "@kotodama/core-content": "workspace:*",
         "@kotodama/core-words": "workspace:*",
         "@kotodama/database": "workspace:*",
         "@kotodama/queue": "workspace:*",
-        "@kotodama/repositories-async-word-jobs": "workspace:*",
         "@kotodama/repositories-words": "workspace:*",
         "effect": "catalog:effect",
       },
@@ -489,8 +453,6 @@
 
     "@kotodama/config": ["@kotodama/config@workspace:packages/config"],
 
-    "@kotodama/core-async-word-jobs": ["@kotodama/core-async-word-jobs@workspace:core/async-word-jobs"],
-
     "@kotodama/core-content": ["@kotodama/core-content@workspace:core/content"],
 
     "@kotodama/core-words": ["@kotodama/core-words@workspace:core/words"],
@@ -504,8 +466,6 @@
     "@kotodama/observability": ["@kotodama/observability@workspace:packages/observability"],
 
     "@kotodama/queue": ["@kotodama/queue@workspace:packages/queue"],
-
-    "@kotodama/repositories-async-word-jobs": ["@kotodama/repositories-async-word-jobs@workspace:repositories/async-word-jobs"],
 
     "@kotodama/repositories-words": ["@kotodama/repositories-words@workspace:repositories/words"],
 

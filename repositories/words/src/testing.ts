@@ -1,4 +1,4 @@
-import type { Language, WordInsert } from '@kotodama/database'
+import type { BuildStagesEntity, Language, WordInsert } from '@kotodama/database'
 import { enumAsyncJobStatus } from '@kotodama/database'
 import { makeWordInsert } from '@kotodama/database/factories'
 import { upsertWord } from './words.repo'
@@ -15,10 +15,12 @@ export const seedReadyWord = (
 
 /**
  * Seed a content-NULL building row — what makes a building word appear in list/counts (they read
- * the `words` table directly); legal because the CHECK only requires content when `succeeded`.
+ * the `words` table directly); legal because the CHECK only requires content when `succeeded`. Pass
+ * `stages` to model a specific stepper (default `[]` — the column's own default).
  */
 export const seedUnreadyWord = (
   language: Language,
   word: string,
   status: UnreadyStatus = enumAsyncJobStatus.pending,
-) => upsertWord(language, word, { status })
+  stages: BuildStagesEntity = [],
+) => upsertWord(language, word, { status, stages })

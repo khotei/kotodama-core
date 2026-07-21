@@ -3,8 +3,8 @@ import {
   enumAsyncJobStatus,
   enumLanguage,
   enumWordJobStage,
+  WORD_JOB_STAGES,
   WordEntityInsert,
-  wordJobStage,
 } from '@kotodama/database'
 import { Duration, Effect, Schema } from 'effect'
 import { TestClock } from 'effect/testing'
@@ -16,7 +16,7 @@ describe('MockContentEngine — default policy', () => {
   it.effect('the six passes assemble into a valid word insert', () =>
     Effect.gen(function* () {
       const engine = yield* ContentEngine
-      const slices = yield* Effect.forEach(wordJobStage.enumValues, (stage) =>
+      const slices = yield* Effect.forEach(WORD_JOB_STAGES, (stage) =>
         engine.produce(stage, enumLanguage.en, 'lacuna'),
       )
       for (const slice of slices) expect(Object.keys(slice).length).toBeGreaterThan(0)
@@ -31,6 +31,10 @@ describe('MockContentEngine — default policy', () => {
           language: enumLanguage.en,
           sourceVersions: { model: 'mock', promptHash: 'mock' },
           status: enumAsyncJobStatus.succeeded,
+          stages: WORD_JOB_STAGES.map((stage) => ({
+            stage,
+            status: enumAsyncJobStatus.succeeded,
+          })),
         },
         ...slices,
       )

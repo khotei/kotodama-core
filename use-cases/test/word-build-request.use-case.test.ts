@@ -1,19 +1,18 @@
 import { expect, it } from '@effect/vitest'
 import { AiServiceTest } from '@kotodama/ai/testing'
-import { WordBuildMessageFromJson } from '@kotodama/core-async-word-jobs'
-import { WordVerdict } from '@kotodama/core-words'
+import { WordBuildMessageFromJson, WordVerdict } from '@kotodama/core-words'
 import {
+  type BuildStagesEntity,
   DB,
   enumAsyncJobStatus,
   enumJobErrorType,
   enumLanguage,
   enumWordJobStage,
-  wordJobStage,
+  type Language,
+  WORD_JOB_STAGES,
 } from '@kotodama/database'
 import { resetDb, TestDatabaseLive } from '@kotodama/database/testing'
 import { drainQueue, QueueLocalStackLive } from '@kotodama/queue/testing'
-import { selectWordJobStages } from '@kotodama/repositories-async-word-jobs'
-import { seedFailedWord } from '@kotodama/repositories-async-word-jobs/testing'
 import { searchWords, selectWord } from '@kotodama/repositories-words'
 import { seedReadyWord, seedUnreadyWord } from '@kotodama/repositories-words/testing'
 import { Effect, Layer, Option, Schema } from 'effect'
@@ -26,8 +25,8 @@ const admitVerdict = WordVerdict.make({ isValid: true, reason: 'admit' })
 const AiServiceAdmit = AiServiceTest({ object: admitVerdict })
 
 // requestWordBuild = readWordBuildSnapshot ▸ ensureWordBuildable (guard) ▸ its own seed+enqueue action,
-// returning the freshly-seeded stage rows (the API collapses the running view) — plain functions over
-// the repos (which `yield*` DB) + JobsQueue (real SQS via a per-file LocalStack container) ← DB.
+// returning the freshly-seeded `words` row (its inline `stages` are the running view) — plain functions
+// over the repos (which `yield* DB`) + JobsQueue (real SQS via a per-file LocalStack container) ← DB.
 // Two containers per file (Postgres + LocalStack); the flow bottoms out at DB + JobsQueue, which
 // this layer provides — so a test can seed ground truths via the repos and inspect the queue.
 const TestLayer = QueueLocalStackLive.pipe(
@@ -37,7 +36,19 @@ const TestLayer = QueueLocalStackLive.pipe(
 
 const EN = enumLanguage.en
 const WORD = 'lacuna'
-const PIPELINE_LENGTH = wordJobStage.enumValues.length
+const PIPELINE_LENGTH = WORD_JOB_STAGES.length
+
+// Stages now ride the `words` row (`words.stages`), so a test reads them off `selectWord`; an absent
+// word yields no stages (the old `selectWordJobStages` returned an empty set for the same case).
+const readStages = (language: Language, word: string) =>
+  selectWord(language, word).pipe(
+    Effect.map(
+      Option.match({
+        onNone: (): BuildStagesEntity => [],
+        onSome: (row) => row.stages,
+      }),
+    ),
+  )
 
 // The LocalStack queue persists across this file's tests (one container per file); `drainQueue`
 // receive-and-deletes everything, so call it at the top of each test (the SQS analogue of `resetDb`)
@@ -49,8 +60,8 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
       yield* drainQueue
 
       const seeded = yield* requestWordBuild(EN, WORD)
-      expect(seeded).toHaveLength(PIPELINE_LENGTH)
-      expect(seeded.every((stage) => stage.status === enumAsyncJobStatus.pending)).toBe(true)
+      expect(seeded.stages).toHaveLength(PIPELINE_LENGTH)
+      expect(seeded.stages.every((stage) => stage.status === enumAsyncJobStatus.pending)).toBe(true)
 
       // Exactly one build dispatched, carrying the (language, word) identity.
       const messages = yield* drainQueue
@@ -61,8 +72,8 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
         word: WORD,
       })
 
-      // The whole pipeline is seeded `pending`.
-      const stages = yield* selectWordJobStages({ language: EN, word: WORD })
+      // The whole pipeline is seeded `pending` on the row.
+      const stages = yield* readStages(EN, WORD)
       expect(stages).toHaveLength(PIPELINE_LENGTH)
       expect(stages.every((stage) => stage.status === enumAsyncJobStatus.pending)).toBe(true)
     }),
@@ -90,8 +101,8 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
         const { items } = yield* searchWords({ language: EN, limit: 20 })
         expect(items.map((item) => item.word)).toContain(WORD)
 
-        // The seed and the 6 pending stage rows landed together (same tx).
-        const stages = yield* selectWordJobStages({ language: EN, word: WORD })
+        // The seed and its 6 pending stages landed together on the one row (same write).
+        const stages = yield* readStages(EN, WORD)
         expect(stages).toHaveLength(PIPELINE_LENGTH)
       }),
   )
@@ -102,10 +113,10 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
       Effect.gen(function* () {
         yield* resetDb
 
-        // The atomicity contract requestWordBuild leans on: the pending seed + the stage seed run in ONE
-        // db.transaction, so any failure in the body (a stage-write fault) unwinds the seed too — a word
-        // never appears half-registered. Reproduce the composition and fail *after* the seed; the pending
-        // row must not survive.
+        // The atomicity contract requestWordBuild leans on: the pending row and its inline stages are
+        // ONE write inside a db.transaction, so any failure in the body unwinds the seed too — a word
+        // never appears half-registered. Reproduce the composition and fail *after* the seed; the
+        // pending row must not survive.
         const db = yield* DB
         const boom = yield* db
           .transaction(() =>
@@ -131,8 +142,8 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
         yield* resetDb
         yield* drainQueue
 
-        expect(yield* requestWordBuild(EN, WORD)).toHaveLength(PIPELINE_LENGTH)
-        const afterFirst = yield* selectWordJobStages({ language: EN, word: WORD })
+        expect((yield* requestWordBuild(EN, WORD)).stages).toHaveLength(PIPELINE_LENGTH)
+        const afterFirst = yield* readStages(EN, WORD)
 
         // The load-bearing dedup invariant: a second create while Being-made fails, starting nothing new.
         const error = yield* requestWordBuild(EN, WORD).pipe(Effect.flip)
@@ -140,7 +151,7 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
 
         // One message total — the second request enqueued nothing — and no duplicate rows.
         expect(yield* drainQueue).toHaveLength(1)
-        const afterSecond = yield* selectWordJobStages({ language: EN, word: WORD })
+        const afterSecond = yield* readStages(EN, WORD)
         expect(afterSecond).toHaveLength(PIPELINE_LENGTH)
         expect(afterSecond).toHaveLength(afterFirst.length)
       }),
@@ -155,7 +166,9 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
       const error = yield* requestWordBuild(EN, WORD).pipe(Effect.flip)
       expect(error._tag).toBe('WordAlreadyReadyError')
       expect(yield* drainQueue).toHaveLength(0)
-      expect(yield* selectWordJobStages({ language: EN, word: WORD })).toHaveLength(0)
+      // No fresh build was seeded — the ready row's stages stay `succeeded`, never reset to `pending`.
+      const stages = yield* readStages(EN, WORD)
+      expect(stages.every((stage) => stage.status === enumAsyncJobStatus.succeeded)).toBe(true)
     }),
   )
 
@@ -163,15 +176,22 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
     Effect.gen(function* () {
       yield* resetDb
       yield* drainQueue
-      // Drive the word terminal-failed (the Couldn't-be-made state).
-      yield* seedFailedWord(EN, WORD, enumWordJobStage.fetch_source, {
-        message: 'no source found',
-        type: enumJobErrorType.not_found,
-      })
+      // Drive the word terminal-failed (the Couldn't-be-made state): a `failed` row whose stages
+      // record the failing pass, which is buildable — a re-request retries it.
+      const failedStages: BuildStagesEntity = WORD_JOB_STAGES.map((stage) =>
+        stage === enumWordJobStage.fetch_source
+          ? {
+              stage,
+              status: enumAsyncJobStatus.failed,
+              error: { message: 'no source found', type: enumJobErrorType.not_found },
+            }
+          : { stage, status: enumAsyncJobStatus.pending },
+      )
+      yield* seedUnreadyWord(EN, WORD, enumAsyncJobStatus.failed, failedStages)
 
-      expect(yield* requestWordBuild(EN, WORD)).toHaveLength(PIPELINE_LENGTH)
+      expect((yield* requestWordBuild(EN, WORD)).stages).toHaveLength(PIPELINE_LENGTH)
       // A clean new build: stages reset to pending, one fresh dispatch.
-      const stages = yield* selectWordJobStages({ language: EN, word: WORD })
+      const stages = yield* readStages(EN, WORD)
       expect(stages.every((stage) => stage.status === enumAsyncJobStatus.pending)).toBe(true)
       expect(yield* drainQueue).toHaveLength(1)
     }),
@@ -198,12 +218,10 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
           { concurrency: 'unbounded' },
         )
 
-        // At least one request started the build; the UNIQUE(word, language, stage) constraint +
-        // idempotent upsert guarantee a single set of stage rows under the race.
+        // At least one request started the build; the UNIQUE(word, language) upsert lands the pipeline
+        // idempotently on the one row, so the race yields a single full stage set.
         expect(tags).toContain('running')
-        expect(yield* selectWordJobStages({ language: EN, word: WORD })).toHaveLength(
-          PIPELINE_LENGTH,
-        )
+        expect(yield* readStages(EN, WORD)).toHaveLength(PIPELINE_LENGTH)
       }),
   )
 
@@ -217,7 +235,7 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
         const error = yield* requestWordBuild(EN, '!!!').pipe(Effect.flip)
         expect(error._tag).toBe('InvalidWordInputError')
         expect(yield* drainQueue).toHaveLength(0)
-        expect(yield* selectWordJobStages({ language: EN, word: '!!!' })).toHaveLength(0)
+        expect(yield* readStages(EN, '!!!')).toHaveLength(0)
       }),
   )
 
@@ -239,7 +257,7 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
 
         // The gate fires before any seed/enqueue action.
         expect(yield* drainQueue).toHaveLength(0)
-        expect(yield* selectWordJobStages({ language: EN, word: 'asdfgh' })).toHaveLength(0)
+        expect(yield* readStages(EN, 'asdfgh')).toHaveLength(0)
       }),
   )
 
@@ -249,13 +267,11 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
       yield* drainQueue
 
       const collocation = 'faux pas'
-      expect(yield* requestWordBuild(EN, collocation)).toHaveLength(PIPELINE_LENGTH)
+      expect((yield* requestWordBuild(EN, collocation)).stages).toHaveLength(PIPELINE_LENGTH)
 
       // The relaxed normalizer keeps the whole collocation — the phrase itself is the built word.
-      expect(yield* selectWordJobStages({ language: EN, word: collocation })).toHaveLength(
-        PIPELINE_LENGTH,
-      )
-      expect(yield* selectWordJobStages({ language: EN, word: 'faux' })).toHaveLength(0)
+      expect(yield* readStages(EN, collocation)).toHaveLength(PIPELINE_LENGTH)
+      expect(yield* readStages(EN, 'faux')).toHaveLength(0)
       const [message] = yield* drainQueue
       expect(Schema.decodeUnknownSync(WordBuildMessageFromJson)(message?.body ?? '')).toEqual({
         language: EN,

@@ -1,6 +1,7 @@
 import { createInsertSchema, createSelectSchema } from 'drizzle-orm/effect-schema'
 import { Schema } from 'effect'
 import { Language } from '../language'
+import { BuildStagesEntity } from './build-stages.entity'
 import { wordsTable } from './words.table'
 import { FrequencyBand, SourceType, VisualKind } from './words.values'
 
@@ -187,6 +188,7 @@ export const WordEntity = createSelectSchema(wordsTable, {
   // Bare override so `coreDefinition` reads non-null like the jsonb columns: the text() column is
   // nullable, and deriving it NullOr would let a succeeded row with a null coreDefinition satisfy
   // the ready leaf — breaking the CHECK invariant at decode.
+  stages: BuildStagesEntity,
   coreDefinition: Schema.String,
   lexical: LexicalEntity,
   pronunciation: PronunciationEntity,
@@ -218,6 +220,8 @@ export const WordEntityInsert = createInsertSchema(wordsTable, {
   // Bare override ⇒ required: the defaulted column would derive optional, letting a write silently
   // inherit the table default `en` — the write boundary must state the language.
   language: Language,
+  // Always written (never cleared), so plain-required, not `NullOr` like the content columns.
+  stages: BuildStagesEntity,
   coreDefinition: Schema.NullOr(Schema.String),
   lexical: Schema.NullOr(LexicalEntity),
   pronunciation: Schema.NullOr(PronunciationEntity),

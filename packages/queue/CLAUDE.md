@@ -7,8 +7,8 @@ binds the jobs-queue URL and exposes resource-free `send`/`receive`/`delete`). N
 the wrapper removes a parameter by owning the *which-queue* binding. A second queue later (e.g. a
 DLQ) is one more bound wrapper over the same base, no `QueueClient` change. **Backend-only.**
 
-- **Message-agnostic on purpose** — bodies are opaque strings; the build-message schema lives with
-  the enqueuer (`core/async-word-jobs`), so the transport stays reusable.
+- **Message-agnostic on purpose** — bodies are opaque strings; the build-message schema lives in
+  `core/words` (with the word domain, near the enqueuer), so the transport stays reusable.
 - `ensureQueue(client, name)` is provisioning, not the port (the caller owns the `SQSClient`);
   idempotent with no pre-check — `CreateQueue` with no attributes is a no-op on an existing queue.
 
