@@ -9,7 +9,7 @@ import {
   RealContentEngineLive,
   TEXT_RESILIENCE,
   WordGenerationServiceLive,
-  WordGenerationServiceTimed,
+  withBuildBudget,
 } from '@kotodama/core-content'
 import { DatabaseLive } from '@kotodama/database'
 import { WikiClientLive } from '@kotodama/external-apis'
@@ -42,7 +42,7 @@ const ContentEngineLive = RealContentEngineLive.pipe(
 )
 
 // The whole-build timeout is a decorator chosen here at wiring — createWord/buildWord never see it.
-const GenerationLive = WordGenerationServiceTimed(DEFAULT_BUILD_TIMEOUT).pipe(
+const GenerationLive = withBuildBudget(DEFAULT_BUILD_TIMEOUT).pipe(
   Layer.provide(WordGenerationServiceLive.pipe(Layer.provide(ContentEngineLive))),
 )
 

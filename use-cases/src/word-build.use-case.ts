@@ -12,7 +12,7 @@ import { Effect, Option } from 'effect'
 // A terminally-failed build's write, in one place: log, then flip the row `failed` with its final
 // stage picture — one write, since stages ride the row. Both domain outcomes (timeout, generation
 // failure) differ only in their log line and stage set, so each catch builds that descriptor.
-const failWord = Effect.fnUntraced(function* (
+const recordWordFailure = Effect.fnUntraced(function* (
   language: Language,
   word: string,
   outcome: { logLine: string; stages: BuildStagesEntity },
@@ -58,7 +58,7 @@ export const buildWord = Effect.fnUntraced(function* (language: Language, word: 
       // stays NULL; `failed` is buildable, so a re-request retries).
       TimeoutError: () => {
         const message = 'generation exceeded its build budget'
-        return failWord(language, word, {
+        return recordWordFailure(language, word, {
           logLine: `word build timed out for "${word}" (${language}): ${message}`,
           stages: WORD_JOB_STAGES.map((stage) => ({
             stage,
@@ -73,7 +73,7 @@ export const buildWord = Effect.fnUntraced(function* (language: Language, word: 
         // Passes that neither succeeded nor failed never completed — reset to `pending` (undoing the
         // `running` flip), so a dead build leaves no stage stuck `running`.
         const ran = new Set([...succeeded, ...failures.map(({ stage }) => stage)])
-        return failWord(language, word, {
+        return recordWordFailure(language, word, {
           logLine: `word build failed for "${word}" (${language}): ${failures
             .map(({ stage, error }) => `${stage} (${error.type})`)
             .join(', ')}`,

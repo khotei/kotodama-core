@@ -6,7 +6,7 @@ import {
   makeMockContentEngine,
   type StageSlice,
   WordGenerationServiceLive,
-  WordGenerationServiceTimed,
+  withBuildBudget,
 } from '@kotodama/core-content'
 import {
   type BuildStagesEntity,
@@ -71,10 +71,10 @@ const testPolicy: ContentPolicy = (word, stage) =>
     : defaultContentPolicy(word, stage)
 
 // buildWord bottoms out at WordGenerationService + DB (the repos `yield* DB`). The generation budget is
-// the WordGenerationServiceTimed decorator's argument — set tiny here so the timeout test is fast — over
+// the withBuildBudget decorator's argument — set tiny here so the timeout test is fast — over
 // the recipe-as-service Live, over the mock ContentEngine (which drives the stage machine).
 const MockEngineLayer = Layer.mergeAll(
-  WordGenerationServiceTimed(TEST_BUILD_TIMEOUT).pipe(
+  withBuildBudget(TEST_BUILD_TIMEOUT).pipe(
     Layer.provide(WordGenerationServiceLive.pipe(Layer.provide(makeMockContentEngine(testPolicy)))),
   ),
   TestDatabaseLive,

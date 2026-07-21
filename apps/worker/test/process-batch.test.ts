@@ -21,7 +21,7 @@ const encode = Schema.encodeSync(WordBuildMessageFromJson)
 const BOOM = 'boom'
 
 // A generation seam that delegates every word to the real mock-backed service, except BOOM, which it
-// `die`s. A single-tag decorator over WordGenerationServiceLive (same shape as WordGenerationServiceTimed).
+// `die`s. A single-tag decorator over WordGenerationServiceLive (same shape as withBuildBudget).
 const DefectGenerationLive = Layer.effect(
   WordGenerationService,
   Effect.gen(function* () {
