@@ -67,7 +67,7 @@ end-to-end and a schema change is a type error, not a runtime surprise. `sql` is
 here, not a fallback** — the vendored source is the reference:
 `repos/drizzle/drizzle-orm/src/pg-core/effect/{select,db}.ts` (yieldable select, `$with`, `unionAll`,
 `transaction`), `repos/drizzle/drizzle-orm/src/sql/functions/aggregate.ts`, and the built layer
-`database/src/db.ts`. The DB dependency rides the Effect `R` channel via
+`core/database/src/db.ts`. The DB dependency rides the Effect `R` channel via
 `drizzle-orm/effect-postgres` (`.claude/rules/drizzle-effect.md`).
 
 ---

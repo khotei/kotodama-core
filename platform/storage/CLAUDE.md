@@ -1,4 +1,4 @@
-# packages/storage — `@kotodama/platform/storage`
+# platform/storage — `@kotodama/platform/storage`
 
 An object-storage port over `Bun.S3Client` (a Bun global, no npm dep), same base + bound-wrapper
 split as `@kotodama/platform/queue`: **`StorageClient`** (one client, `put(bucket, key, …)` takes the bucket

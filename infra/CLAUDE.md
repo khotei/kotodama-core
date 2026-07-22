@@ -16,7 +16,7 @@ Local dev infra (Docker Compose) now; Pulumi production stack later.
 ## How to add a new AWS resource
 
 Resource identity lives in **one** list — `awsResources` in `@kotodama/platform/config`
-(`packages/config/src/aws-resources.ts`). `local:provision` (dev), the test helpers, and the future
+(`platform/config/src/aws-resources.ts`). `local:provision` (dev), the test helpers, and the future
 Pulumi stack all read it.
 
 1. **Add one entry** to `awsResources` (`{ kind, name }`). That is the whole change for another
@@ -27,7 +27,7 @@ Pulumi stack all read it.
    wrapper** — another `Layer` over the **existing** `QueueClient` / `StorageClient` base, binding the
    new URL/name (the way `JobsQueue` binds `JOBS_QUEUE_URL`, `ImagesStore` binds `IMAGES_BUCKET`).
    The base adapter is **unchanged** — it already takes the resource per call (F-PLAT-012). See
-   `packages/queue/CLAUDE.md` / `packages/storage/CLAUDE.md` for the pattern.
+   `platform/queue/CLAUDE.md` / `platform/storage/CLAUDE.md` for the pattern.
 4. `ensure*` is **dev/test-only**: prod `*Live` layers (`QueueClientLive`, `StorageClientLive`)
    only *consume* by URL/name and never self-provision. The `@aws-sdk/client-s3` devDependency
    boundary in `@kotodama/platform/storage` keeps `ensureBucket` off the `Bun.S3Client` prod path.

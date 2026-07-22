@@ -1,13 +1,13 @@
 ---
 paths:
-  - "packages/config/**"
+  - "platform/config/**"
   - "**/main.ts"
   - "**/drizzle.config.ts"
 ---
 
 # Config & env loading
 
-**Path-scoped rule** (loads under `packages/config/**` and app/CLI entrypoints). All env config goes
+**Path-scoped rule** (loads under `platform/config/**` and app/CLI entrypoints). All env config goes
 through **`@kotodama/platform/config`** — both the env-key registry and the env-file loader; nothing else reads
 `.env`.
 

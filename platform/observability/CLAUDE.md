@@ -1,9 +1,9 @@
-# packages/observability — `@kotodama/platform/observability`
+# platform/observability — `@kotodama/platform/observability`
 
 OpenTelemetry Layer factory.
 
 - **May import:** `effect`, `@effect/opentelemetry`, `@opentelemetry/*`. Importable by any
-  backend layer. **Leaf package** — imports nothing internal (so `TracingLive` reads
+  backend layer. **Leaf adapter** — imports nothing internal (so `TracingLive` reads
   `process.env`, not `@kotodama/platform/config`).
 - **Exports `TracingLive(serviceName)`** (`src/tracing.ts`): OTLP/HTTP span export. Local →
   Jaeger (`http://localhost:4318`, UI `:16686`); prod via `OTEL_EXPORTER_OTLP_ENDPOINT`

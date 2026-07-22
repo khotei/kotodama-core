@@ -13,7 +13,7 @@ script (the single source); the prose explains only the *why*.
 | **Resources** | created by `local:provision` (dev-only) | created per-file by `ensureQueue`/`ensureBucket` | created by IaC (Pulumi, later); the app only consumes |
 
 The load-bearing idea: **identity (resource names) is single-sourced; only the connection facet
-changes per environment.** Names live once in `packages/config/src/aws-resources.ts`; the URL/endpoint
+changes per environment.** Names live once in `platform/config/src/aws-resources.ts`; the URL/endpoint
 is what differs.
 
 ## Environment (`.env`)
@@ -30,7 +30,7 @@ them), the port, and the log level. **Leave them as they are.**
 The **one value you must supply is `OPENAI_API_KEY`** — a real key (the shipped `sk-local-placeholder`
 passes config validation but cannot generate). Where to get it: [README → Requirements](../readme.md#requirements).
 That is the single gap between a fresh clone and a working real-engine run; everything else is already
-correct for local. How the keys are *consumed* (the `Config` definitions): `packages/config/src/index.ts`
+correct for local. How the keys are *consumed* (the `Config` definitions): `platform/config/src/index.ts`
 + [`.claude/rules/config.md`](../.claude/rules/config.md).
 
 ## Local dev
@@ -55,13 +55,13 @@ bun run test                                   # all workspaces; bun run --filte
 
 - **No `.env.test`, and the dev stack is never touched.** Each DB-touching suite spins an **ephemeral
   Testcontainers Postgres** and builds its `PgClient` from the *container's* `getConnectionUri()` — not
-  `@kotodama/config`'s `DatabaseUrl`. Each AWS-touching suite boots a per-file LocalStack container and
-  resolves the `@kotodama/config` AWS seam from a **replacement `ConfigProvider`** built from that
+  `@kotodama/platform/config`'s `DatabaseUrl`. Each AWS-touching suite boots a per-file LocalStack container and
+  resolves the `@kotodama/platform/config` AWS seam from a **replacement `ConfigProvider`** built from that
   container's endpoint. **`ConfigProviderLive` is never in the test layer graph** — the *dev-untouched
   invariant*, the reason a test can never reach the dev LocalStack or dev DB.
 - **Why containers, not fakes:** the real adapter is exercised at the seam (no divergent in-memory
   double). Rationale + the per-suite helpers: [`.claude/rules/testing.md`](../.claude/rules/testing.md),
-  [`packages/queue/CLAUDE.md`](../packages/queue/CLAUDE.md).
+  [`platform/queue/CLAUDE.md`](../platform/queue/CLAUDE.md).
 - Needs **Docker** running. Use `bun run test`, **not** `bun test` (Bun's built-in runner) —
   [`.claude/rules/tooling.md`](../.claude/rules/tooling.md).
 

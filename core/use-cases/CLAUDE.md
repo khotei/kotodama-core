@@ -4,9 +4,9 @@ The top application tier below `apps/*`: user-flow composers that aggregate core
 functions into one end-to-end flow any entrypoint can bind. A use case owns **no primitive
 decision of its own** — and no wiring: each composer is a bare `Effect.fnUntraced` function whose
 boundary requirements ride `R`; `apps/*/main.ts` provides them (see "Service vs plain function" in
-`.claude/rules/effect-conventions.md`). Why a tier, not a `core/` folder: a user flow aggregates
-*across* core domains + repos, so core stays single-decision building blocks and apps stay thin
-transport adapters.
+`.claude/rules/effect-conventions.md`). Why its own layer, not a `words`/`content` folder: a user
+flow aggregates *across* core domains + repos, so the core domain stays single-decision building
+blocks and apps stay thin transport adapters.
 
 ## Flow invariants (the constraints the code can't show)
 
@@ -31,5 +31,6 @@ transport adapters.
   committed word is never journalled `timed_out`. A transient journal-write error on the success
   path is swallowed (the word is ready — no redrive); a commit-path error propagates.
 
-**May import:** `core/*`, `repositories/*`, `@kotodama/core/database`, `@kotodama/*` packages, `effect`.
-**MUST NOT import:** `apps/*`; nothing below may import upward into this package (Biome-enforced).
+**May import:** the core layers below it (`@kotodama/core/{words,content,repositories,database}`),
+`@kotodama/platform/*`, `effect`. **MUST NOT import:** `apps/*`; nothing below may import upward
+into this layer (Biome-enforced on `core/use-cases/**`).

@@ -1,4 +1,4 @@
-# packages/ai — `@kotodama/platform/ai`
+# platform/ai — `@kotodama/platform/ai`
 
 `AiService` — a deep wrapper over `@effect/ai-openai`: two methods (`generateObject`,
 `generateImage`), OpenAI hidden entirely, one `AiError` as the whole failure surface.

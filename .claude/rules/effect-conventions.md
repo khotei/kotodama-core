@@ -14,7 +14,7 @@ codebase already shows the idiom.
 ## Core idioms
 
 - **Schema, not Zod** — `effect/Schema` for all domain types. Word shapes are authored in
-  `database/`; core and the API edge consume them and author only computed read/view models.
+  `core/database/`; core and the API edge consume them and author only computed read/view models.
 - **Reuse Effect's stdlib** before hand-rolling any array/option/predicate/struct/order helper —
   blessed index + gotchas: `.claude/agent-patterns/effect-stdlib.md`. `Result`, not `Either` (gone
   in v4). Alias global-shadowing namespaces: `import { Array as Arr } from 'effect'`.

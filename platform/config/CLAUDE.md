@@ -1,4 +1,4 @@
-# packages/config — `@kotodama/platform/config`
+# platform/config — `@kotodama/platform/config`
 
 Config values built from `effect/Config` (env vars per Tech spec §2.5). Secrets via `Config.redacted`.
 

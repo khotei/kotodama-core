@@ -1,4 +1,4 @@
-# packages/queue — `@kotodama/platform/queue`
+# platform/queue — `@kotodama/platform/queue`
 
 A message-agnostic queue port over `@aws-sdk/client-sqs`, split into a parameterized base +
 a bound wrapper so the boundary is multi-queue-capable by construction: **`QueueClient`** (holds
