@@ -12,6 +12,7 @@
     "@effect/ai-openai": "catalog:effect",
     "@effect/platform-bun": "catalog:effect",
     "@kotodama/core": "workspace:*",
+    "@kotodama/database": "workspace:*",
     "@kotodama/platform": "workspace:*",
     "effect": "catalog:effect"
   },
