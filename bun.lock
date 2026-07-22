@@ -14,10 +14,6 @@
         "vitest": "catalog:effect",
       },
     },
-    ".tooling": {
-      "name": "@kotodama/tooling",
-      "version": "0.0.0",
-    },
     "apps/api": {
       "name": "@kotodama/app-api",
       "version": "0.0.0",
@@ -97,6 +93,10 @@
       "devDependencies": {
         "@kotodama/tooling": "workspace:*",
       },
+    },
+    "infra/tooling": {
+      "name": "@kotodama/tooling",
+      "version": "0.0.0",
     },
     "platform": {
       "name": "@kotodama/platform",
@@ -344,7 +344,7 @@
 
     "@kotodama/platform": ["@kotodama/platform@workspace:platform"],
 
-    "@kotodama/tooling": ["@kotodama/tooling@workspace:.tooling"],
+    "@kotodama/tooling": ["@kotodama/tooling@workspace:infra/tooling"],
 
     "@kwsites/file-exists": ["@kwsites/file-exists@1.1.1", "", { "dependencies": { "debug": "^4.1.1" } }, "sha512-m9/5YGR18lIwxSFDwfE3oA7bWuq9kdau6ugN4H2rJeyhFQZcG9AgSHkQtSD15a8WvTgfz9aikZMrKPHvbpqFiw=="],
 

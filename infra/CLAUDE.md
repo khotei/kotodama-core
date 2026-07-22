@@ -2,6 +2,10 @@
 
 Local dev infra (Docker Compose) now; Pulumi production stack later.
 
+`infra/tooling/` is a **separate workspace** (`@kotodama/tooling`, the shared config presets) that
+only *lives* under this folder as the dev-surface umbrella — `.claude/rules/tooling.md` owns it;
+future dev-only meta-packages land here too, never at the repo root.
+
 - `local/docker-compose.yml`: **dev** Postgres (`kotodama_dev`) + LocalStack (SQS + S3) + Jaeger.
   No test DB is provisioned — DB tests use a throwaway Testcontainers Postgres
   (`@kotodama/database/testing`), so there's no `init/` SQL to seed a `kotodama_test`.

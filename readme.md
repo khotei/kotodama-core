@@ -78,7 +78,7 @@ detail.
 | `core/repositories/` | bare persistence functions over the DB layer | the only SQL surface |
 | `database/` | Drizzle schema + the word vocabulary + `WordEntity` | the bottom; authors the row shapes |
 | `platform/{ai,queue,storage,config,external-apis,observability,…}` | boundary adapters + leaf infra | import nothing internal |
-| `infra/` | Docker Compose (local) · Pulumi (later) · `local:*` scripts | dev/ops, never imported by app code |
+| `infra/` | Docker Compose (local) · Pulumi (later) · `local:*` scripts · shared config presets (`infra/tooling/`) | dev/ops, never imported by app code |
 
 The middle tiers are layer folders of the single `@kotodama/core` package (subpath-exported);
 `database` is its own bottom-of-chain `@kotodama/database` workspace; `platform/*` are the adapter
