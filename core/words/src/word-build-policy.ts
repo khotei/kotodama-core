@@ -1,4 +1,4 @@
-import { enumAsyncJobStatus, type WordRow } from '@kotodama/core/database'
+import { enumAsyncJobStatus, type WordRow } from '@kotodama/database'
 import { Effect, Option, Schema } from 'effect'
 
 // Both 409s are payload-less: the `(language, word)` identity is the request URL.

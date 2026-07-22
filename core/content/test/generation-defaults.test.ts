@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@effect/vitest'
-import { enumVisualKind } from '@kotodama/core/database'
+import { enumVisualKind } from '@kotodama/database'
 import type { ImageOptions } from '@kotodama/platform/ai'
 import { imageOptionsFor } from '../src/generation-defaults'
 

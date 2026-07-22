@@ -1,4 +1,3 @@
-import { enumAsyncJobStatus, type Language } from '@kotodama/core/database'
 import { selectWord, upsertWord } from '@kotodama/core/repositories'
 import {
   ensureWordBuildable,
@@ -6,6 +5,7 @@ import {
   verifyWordInput,
   WordBuildMessageFromJson,
 } from '@kotodama/core/words'
+import { enumAsyncJobStatus, type Language } from '@kotodama/database'
 import { JobsQueue } from '@kotodama/platform/queue'
 import { Effect, Schema } from 'effect'
 

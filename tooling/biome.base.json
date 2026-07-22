@@ -82,7 +82,7 @@
       }
     },
     {
-      "includes": ["core/database/**"],
+      "includes": ["database/**"],
       "linter": {
         "rules": {
           "style": {
@@ -91,18 +91,8 @@
               "options": {
                 "patterns": [
                   {
-                    "group": [
-                      "@kotodama/core/words",
-                      "@kotodama/core/words/**",
-                      "@kotodama/core/content",
-                      "@kotodama/core/content/**",
-                      "@kotodama/core/repositories",
-                      "@kotodama/core/repositories/**",
-                      "@kotodama/core/use-cases",
-                      "@kotodama/core/use-cases/**",
-                      "@kotodama/app-*"
-                    ],
-                    "message": "Layer violation: core/database is the bottom — it may import @kotodama/platform/*, never words/content/repositories/use-cases or apps."
+                    "group": ["@kotodama/core", "@kotodama/core/**", "@kotodama/app-*"],
+                    "message": "Layer violation: database is the bottom of the chain — it may import @kotodama/platform/*, never core or apps."
                   },
                   {
                     "group": ["**/repos/**"],

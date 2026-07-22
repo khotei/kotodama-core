@@ -15,7 +15,7 @@ export const PgClientLive = PgClient.layerConfig({ url: DatabaseUrl })
 const dbEffect = PgDrizzle.make({ relations }).pipe(Effect.provide(PgDrizzle.DefaultServices))
 
 export class DB extends Context.Service<DB, Effect.Success<typeof dbEffect>>()(
-  '@kotodama/core/database/DB',
+  '@kotodama/database/DB',
 ) {}
 
 export const DBLive = Layer.effect(DB, dbEffect)

@@ -1,4 +1,4 @@
-import { WordEntity } from '@kotodama/core/database'
+import { WordEntity } from '@kotodama/database'
 import { Struct } from 'effect'
 
 /**

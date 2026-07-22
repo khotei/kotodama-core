@@ -13,27 +13,24 @@ class ContainerError extends Data.TaggedError('ContainerError')<{ cause: unknown
 // Resolved from this file's location, not `cwd`, to stay robust to the invoking dir.
 const migrationsFolder = join(dirname(fileURLToPath(import.meta.url)), '..', 'migrations')
 
-class PgContainer extends Context.Service<PgContainer>()(
-  '@kotodama/core/database/testing/PgContainer',
-  {
-    make: Effect.acquireRelease(
-      Effect.tryPromise({
-        // Wait on the healthcheck alone, overriding the module default that also runs
-        // `forListeningPorts`: its in-container `exec` probe HANGS on Docker Desktop/macOS,
-        // blocking `.start()` until the 120s timeout.
-        try: () =>
-          new PostgreSqlContainer('postgres:16-alpine')
-            .withWaitStrategy(Wait.forHealthCheck())
-            // Data dir on tmpfs (RAM): migrate + per-test TRUNCATE never hit real disk, so fsync
-            // durability costs nothing. The container is ephemeral, so losing it on stop is the point.
-            .withTmpFs({ '/var/lib/postgresql/data': 'rw' })
-            .start(),
-        catch: (cause) => new ContainerError({ cause }),
-      }),
-      (container) => Effect.promise(() => container.stop()),
-    ),
-  },
-) {
+class PgContainer extends Context.Service<PgContainer>()('@kotodama/database/testing/PgContainer', {
+  make: Effect.acquireRelease(
+    Effect.tryPromise({
+      // Wait on the healthcheck alone, overriding the module default that also runs
+      // `forListeningPorts`: its in-container `exec` probe HANGS on Docker Desktop/macOS,
+      // blocking `.start()` until the 120s timeout.
+      try: () =>
+        new PostgreSqlContainer('postgres:16-alpine')
+          .withWaitStrategy(Wait.forHealthCheck())
+          // Data dir on tmpfs (RAM): migrate + per-test TRUNCATE never hit real disk, so fsync
+          // durability costs nothing. The container is ephemeral, so losing it on stop is the point.
+          .withTmpFs({ '/var/lib/postgresql/data': 'rw' })
+          .start(),
+      catch: (cause) => new ContainerError({ cause }),
+    }),
+    (container) => Effect.promise(() => container.stop()),
+  ),
+}) {
   static readonly layer = Layer.effect(this)(this.make)
 }
 

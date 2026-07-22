@@ -1,9 +1,5 @@
-import {
-  type BuildStagesEntity,
-  enumAsyncJobStatus,
-  WORD_JOB_STAGES,
-} from '@kotodama/core/database'
 import type { Word } from '@kotodama/core/words'
+import { type BuildStagesEntity, enumAsyncJobStatus, WORD_JOB_STAGES } from '@kotodama/database'
 import { Array as Arr, Option, Order } from 'effect'
 import type { StageProgress, WordStateView } from './word-state.view'
 

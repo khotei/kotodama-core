@@ -1,4 +1,4 @@
-import { ASYNC_JOB_STATUSES, type AsyncJobStatus } from '@kotodama/core/database'
+import { ASYNC_JOB_STATUSES, type AsyncJobStatus } from '@kotodama/database'
 import { Schema } from 'effect'
 
 const Count = Schema.Int.check(Schema.isGreaterThanOrEqualTo(0))

@@ -1,12 +1,12 @@
+import { selectWord, upsertWord } from '@kotodama/core/repositories'
+import { createWord, stagesAll } from '@kotodama/core/words'
 import {
   type BuildStagesEntity,
   enumAsyncJobStatus,
   enumJobErrorType,
   type Language,
   WORD_JOB_STAGES,
-} from '@kotodama/core/database'
-import { selectWord, upsertWord } from '@kotodama/core/repositories'
-import { createWord, stagesAll } from '@kotodama/core/words'
+} from '@kotodama/database'
 import { Effect, Option } from 'effect'
 
 // A terminally-failed build's write, in one place: log, then flip the row `failed` with its final

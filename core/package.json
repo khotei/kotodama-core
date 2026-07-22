@@ -3,9 +3,6 @@
   "version": "0.0.0",
   "private": true,
   "exports": {
-    "./database": "./database/src/index.ts",
-    "./database/testing": "./database/src/testing.ts",
-    "./database/factories": "./database/src/factories/index.ts",
     "./repositories": "./repositories/words/src/index.ts",
     "./repositories/testing": "./repositories/words/src/testing.ts",
     "./words": "./words/src/index.ts",
@@ -13,13 +10,10 @@
     "./use-cases": "./use-cases/src/index.ts"
   },
   "dependencies": {
-    "@effect/platform-bun": "catalog:effect",
-    "@effect/sql-pg": "catalog:effect",
+    "@kotodama/database": "workspace:*",
     "@kotodama/platform": "workspace:*",
-    "drizzle-kit": "catalog:db",
     "drizzle-orm": "catalog:db",
-    "effect": "catalog:effect",
-    "type-fest": "catalog:types"
+    "effect": "catalog:effect"
   },
   "devDependencies": {
     "@faker-js/faker": "catalog:test",
@@ -28,12 +22,6 @@
     "testcontainers": "catalog:test"
   },
   "scripts": {
-    "db:link": "ln -sfn \"$(pwd)/node_modules\" database/node_modules",
-    "db:generate": "bun run db:link && bun --bun drizzle-kit generate",
-    "db:migrate": "bun run db:link && bun --bun drizzle-kit migrate",
-    "db:push": "bun run db:link && bun --bun drizzle-kit push",
-    "db:reset": "echo 'TODO(db:reset): drop + recreate + migrate — wired with the deploy runner'",
-    "db:seed": "bun run database/src/seed.ts",
     "test": "bun --bun vitest run",
     "typecheck": "bun --bun tsc --noEmit"
   }

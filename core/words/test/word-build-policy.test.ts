@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@effect/vitest'
-import { type AsyncJobStatus, enumAsyncJobStatus, type WordRow } from '@kotodama/core/database'
+import { type AsyncJobStatus, enumAsyncJobStatus, type WordRow } from '@kotodama/database'
 import { Effect, Exit, Option } from 'effect'
 import { ensureWordBuildable } from '../src/word-build-policy'
 

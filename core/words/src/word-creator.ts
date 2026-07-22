@@ -1,6 +1,6 @@
 import { WordGenerationService } from '@kotodama/core/content'
-import { enumAsyncJobStatus, type Language, WordEntityInsert } from '@kotodama/core/database'
 import { upsertWord } from '@kotodama/core/repositories'
+import { enumAsyncJobStatus, type Language, WordEntityInsert } from '@kotodama/database'
 import { Effect, Schema } from 'effect'
 import { stagesAll } from './build-stages'
 

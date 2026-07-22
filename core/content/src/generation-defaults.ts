@@ -1,4 +1,4 @@
-import { enumVisualKind, enumWordJobStage, type VisualKind } from '@kotodama/core/database'
+import { enumVisualKind, enumWordJobStage, type VisualKind } from '@kotodama/database'
 import type { ImageOptions, ImageSize, ResilienceConfig } from '@kotodama/platform/ai'
 import { Duration } from 'effect'
 

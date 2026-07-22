@@ -1,4 +1,5 @@
 import { describe, expect, it } from '@effect/vitest'
+import type { ReadyWord, UnreadyWord, Word } from '@kotodama/core/words'
 import {
   type AsyncJobStatus,
   type BuildStagesEntity,
@@ -8,8 +9,7 @@ import {
   type JobErrorEntity,
   type StageEntity,
   type WordJobStage,
-} from '@kotodama/core/database'
-import type { ReadyWord, UnreadyWord, Word } from '@kotodama/core/words'
+} from '@kotodama/database'
 import { Option } from 'effect'
 import { collapseWordState } from '../src/words/word-state-collapse'
 import { assertStatus } from './words-api-test-utils'

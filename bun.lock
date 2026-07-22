@@ -47,6 +47,22 @@
       "name": "@kotodama/core",
       "version": "0.0.0",
       "dependencies": {
+        "@kotodama/database": "workspace:*",
+        "@kotodama/platform": "workspace:*",
+        "drizzle-orm": "catalog:db",
+        "effect": "catalog:effect",
+      },
+      "devDependencies": {
+        "@faker-js/faker": "catalog:test",
+        "@kotodama/tooling": "workspace:*",
+        "@testcontainers/postgresql": "catalog:test",
+        "testcontainers": "catalog:test",
+      },
+    },
+    "database": {
+      "name": "@kotodama/database",
+      "version": "0.0.0",
+      "dependencies": {
         "@effect/platform-bun": "catalog:effect",
         "@effect/sql-pg": "catalog:effect",
         "@kotodama/platform": "workspace:*",
@@ -319,6 +335,8 @@
     "@kotodama/app-worker": ["@kotodama/app-worker@workspace:apps/worker"],
 
     "@kotodama/core": ["@kotodama/core@workspace:core"],
+
+    "@kotodama/database": ["@kotodama/database@workspace:database"],
 
     "@kotodama/infra": ["@kotodama/infra@workspace:infra"],
 

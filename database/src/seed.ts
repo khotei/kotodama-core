@@ -7,7 +7,7 @@ import { makeWordInsert } from './factories'
 import { enumLanguage, wordsTable } from './index'
 
 // Dev seed. Idempotent via `onConflictDoNothing` on `UNIQUE(word, language)`.
-// Run: `bun run --filter '@kotodama/core/database' db:seed`.
+// Run: `bun run --filter '@kotodama/database' db:seed`.
 faker.seed(20260604)
 
 const WORDS = ['lacuna', 'ephemeral', 'serendipity', 'petrichor'] as const

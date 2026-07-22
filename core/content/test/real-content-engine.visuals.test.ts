@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@effect/vitest'
-import { enumLanguage, enumVisualKind, VisualsEntity } from '@kotodama/core/database'
+import { enumLanguage, enumVisualKind, VisualsEntity } from '@kotodama/database'
 import { AiError, AiService } from '@kotodama/platform/ai'
 import { WikiClientTest } from '@kotodama/platform/external-apis/testing'
 import {

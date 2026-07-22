@@ -1,9 +1,4 @@
-import {
-  enumAsyncJobStatus,
-  JobErrorEntity,
-  StageEntity,
-  WordEntity,
-} from '@kotodama/core/database'
+import { enumAsyncJobStatus, JobErrorEntity, StageEntity, WordEntity } from '@kotodama/database'
 import { Schema, Struct } from 'effect'
 
 // `cause` is debugging-only and never FE-facing; omit keeps the rest from drifting.

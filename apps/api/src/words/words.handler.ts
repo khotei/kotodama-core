@@ -1,7 +1,7 @@
-import { enumAsyncJobStatus } from '@kotodama/core/database'
 import { searchWords, selectWordCounts } from '@kotodama/core/repositories'
 import { requestWordBuild } from '@kotodama/core/use-cases'
 import { decodeWord, ensureReadyWord, findWord, type Word } from '@kotodama/core/words'
+import { enumAsyncJobStatus } from '@kotodama/database'
 import { Effect, Option } from 'effect'
 import { HttpApiBuilder } from 'effect/unstable/httpapi'
 import { KotodamaApi } from '../kotodama.api'

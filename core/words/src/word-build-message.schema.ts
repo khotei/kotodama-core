@@ -1,4 +1,4 @@
-import { Language } from '@kotodama/core/database'
+import { Language } from '@kotodama/database'
 import { Schema } from 'effect'
 
 // The build-request message the API enqueues and the worker consumes. Not in @kotodama/platform/queue — the

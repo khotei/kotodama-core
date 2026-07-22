@@ -1,4 +1,7 @@
 import { expect, it } from '@effect/vitest'
+import { searchWords, selectWord } from '@kotodama/core/repositories'
+import { seedReadyWord, seedUnreadyWord } from '@kotodama/core/repositories/testing'
+import { WordBuildMessageFromJson, WordVerdict } from '@kotodama/core/words'
 import {
   type BuildStagesEntity,
   DB,
@@ -8,11 +11,8 @@ import {
   enumWordJobStage,
   type Language,
   WORD_JOB_STAGES,
-} from '@kotodama/core/database'
-import { resetDb, TestDatabaseLive } from '@kotodama/core/database/testing'
-import { searchWords, selectWord } from '@kotodama/core/repositories'
-import { seedReadyWord, seedUnreadyWord } from '@kotodama/core/repositories/testing'
-import { WordBuildMessageFromJson, WordVerdict } from '@kotodama/core/words'
+} from '@kotodama/database'
+import { resetDb, TestDatabaseLive } from '@kotodama/database/testing'
 import { AiServiceTest } from '@kotodama/platform/ai/testing'
 import { drainQueue, QueueLocalStackLive } from '@kotodama/platform/queue/testing'
 import { Effect, Layer, Option, Schema } from 'effect'

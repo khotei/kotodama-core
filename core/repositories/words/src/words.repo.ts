@@ -1,10 +1,5 @@
-import type {
-  EffectDrizzleQueryError,
-  Language,
-  WordInsert,
-  WordRow,
-} from '@kotodama/core/database'
-import { DB, patchOnConflict, wordsTable } from '@kotodama/core/database'
+import type { EffectDrizzleQueryError, Language, WordInsert, WordRow } from '@kotodama/database'
+import { DB, patchOnConflict, wordsTable } from '@kotodama/database'
 import { and, ilike, inArray } from 'drizzle-orm'
 import { Array as Arr, Effect, Option } from 'effect'
 

@@ -6,9 +6,9 @@ import {
   enumLanguage,
   enumVisualKind,
   wordsTable,
-} from '@kotodama/core/database'
-import { makeWordInsert } from '@kotodama/core/database/factories'
-import { resetDb, TestDatabaseLive } from '@kotodama/core/database/testing'
+} from '@kotodama/database'
+import { makeWordInsert } from '@kotodama/database/factories'
+import { resetDb, TestDatabaseLive } from '@kotodama/database/testing'
 import { eq } from 'drizzle-orm'
 import { Effect, Exit, Option } from 'effect'
 import { selectWord, selectWords, upsertWord, upsertWords } from '../src/index'

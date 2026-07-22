@@ -7,7 +7,7 @@ import {
   RelationsEntity,
   TiersEntity,
   TranslationEntity,
-} from '@kotodama/core/database'
+} from '@kotodama/database'
 import { AiServiceTest } from '@kotodama/platform/ai/testing'
 import { WikiClientTest } from '@kotodama/platform/external-apis/testing'
 import { UnusedStorage } from '@kotodama/platform/storage/testing'

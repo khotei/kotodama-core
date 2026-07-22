@@ -1,4 +1,4 @@
-import type { AsyncJobStatus, Language } from '@kotodama/core/database'
+import type { AsyncJobStatus, Language } from '@kotodama/database'
 import { Effect } from 'effect'
 import { HttpApiClient } from 'effect/unstable/httpapi'
 import { KotodamaApi } from '../src/kotodama.api'

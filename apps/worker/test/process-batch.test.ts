@@ -4,11 +4,11 @@ import {
   WordGenerationService,
   WordGenerationServiceLive,
 } from '@kotodama/core/content'
-import { enumLanguage } from '@kotodama/core/database'
-import { resetDb, TestDatabaseLive } from '@kotodama/core/database/testing'
 import { selectWords } from '@kotodama/core/repositories'
 import { seedUnreadyWord } from '@kotodama/core/repositories/testing'
 import { WordBuildMessageFromJson } from '@kotodama/core/words'
+import { enumLanguage } from '@kotodama/database'
+import { resetDb, TestDatabaseLive } from '@kotodama/database/testing'
 import { Effect, Layer, Schema } from 'effect'
 import { processBatch } from '../src/process-batch'
 

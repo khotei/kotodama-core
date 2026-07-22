@@ -1,5 +1,5 @@
-import type { AsyncJobStatus, Language, WordRow } from '@kotodama/core/database'
-import { DB, wordsTable } from '@kotodama/core/database'
+import type { AsyncJobStatus, Language, WordRow } from '@kotodama/database'
+import { DB, wordsTable } from '@kotodama/database'
 import { and, asc, eq, ilike, or, sql } from 'drizzle-orm'
 import { Effect } from 'effect'
 

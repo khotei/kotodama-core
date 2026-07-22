@@ -1,6 +1,6 @@
-import type { BuildStagesEntity, Language, WordInsert } from '@kotodama/core/database'
-import { enumAsyncJobStatus } from '@kotodama/core/database'
-import { makeWordInsert } from '@kotodama/core/database/factories'
+import type { BuildStagesEntity, Language, WordInsert } from '@kotodama/database'
+import { enumAsyncJobStatus } from '@kotodama/database'
+import { makeWordInsert } from '@kotodama/database/factories'
 import { upsertWord } from './words.repo'
 
 /** A non-`succeeded` `status` — the states an unready `words` row can carry (content NULL). */

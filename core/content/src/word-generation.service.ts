@@ -1,4 +1,4 @@
-import type { BuildProvenanceEntity, Language } from '@kotodama/core/database'
+import type { BuildProvenanceEntity, Language } from '@kotodama/database'
 import { type Cause, Context, Duration, Effect, Layer } from 'effect'
 import { ContentEngine } from './content-engine.service'
 import type { WordContent } from './word-content.schema'

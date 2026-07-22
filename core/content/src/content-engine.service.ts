@@ -3,7 +3,7 @@ import type {
   JobErrorType,
   Language,
   WordJobStage,
-} from '@kotodama/core/database'
+} from '@kotodama/database'
 import { Context, Data, type Effect } from 'effect'
 import type { StageSlice, WordGrounding } from './stage-slices'
 

@@ -1,4 +1,4 @@
-import { ASYNC_JOB_STATUSES, type AsyncJobStatus, DB, wordsTable } from '@kotodama/core/database'
+import { ASYNC_JOB_STATUSES, type AsyncJobStatus, DB, wordsTable } from '@kotodama/database'
 import type { SQLWrapper } from 'drizzle-orm'
 import { sql } from 'drizzle-orm'
 import { Effect } from 'effect'

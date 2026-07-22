@@ -1,0 +1,34 @@
+{
+  "name": "@kotodama/database",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts",
+    "./testing": "./src/testing.ts",
+    "./factories": "./src/factories/index.ts"
+  },
+  "dependencies": {
+    "@effect/platform-bun": "catalog:effect",
+    "@effect/sql-pg": "catalog:effect",
+    "@kotodama/platform": "workspace:*",
+    "drizzle-kit": "catalog:db",
+    "drizzle-orm": "catalog:db",
+    "effect": "catalog:effect",
+    "type-fest": "catalog:types"
+  },
+  "devDependencies": {
+    "@faker-js/faker": "catalog:test",
+    "@kotodama/tooling": "workspace:*",
+    "@testcontainers/postgresql": "catalog:test",
+    "testcontainers": "catalog:test"
+  },
+  "scripts": {
+    "db:generate": "bun --bun drizzle-kit generate",
+    "db:migrate": "bun --bun drizzle-kit migrate",
+    "db:push": "bun --bun drizzle-kit push",
+    "db:reset": "echo 'TODO(db:reset): drop + recreate + migrate — wired with the deploy runner'",
+    "db:seed": "bun run src/seed.ts",
+    "test": "bun --bun vitest run",
+    "typecheck": "bun --bun tsc --noEmit"
+  }
+}

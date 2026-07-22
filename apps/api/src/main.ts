@@ -1,7 +1,7 @@
 import * as OpenAiClient from '@effect/ai-openai/OpenAiClient'
 import * as OpenAiClientGenerated from '@effect/ai-openai/OpenAiClientGenerated'
 import { BunHttpClient, BunHttpServer, BunRuntime } from '@effect/platform-bun'
-import { DatabaseLive } from '@kotodama/core/database'
+import { DatabaseLive } from '@kotodama/database'
 import { AiServiceLive } from '@kotodama/platform/ai'
 import { ConfigProviderLive, OpenaiApiKey, Port } from '@kotodama/platform/config'
 import { TracingLive } from '@kotodama/platform/observability'

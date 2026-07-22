@@ -1,7 +1,7 @@
 import { BunHttpServer } from '@effect/platform-bun'
 import { describe, expect, it } from '@effect/vitest'
-import { TestDatabaseLive } from '@kotodama/core/database/testing'
 import { WordVerdict } from '@kotodama/core/words'
+import { TestDatabaseLive } from '@kotodama/database/testing'
 import { AiServiceTest } from '@kotodama/platform/ai/testing'
 import { QueueLocalStackLive } from '@kotodama/platform/queue/testing'
 import { Effect, Layer } from 'effect'

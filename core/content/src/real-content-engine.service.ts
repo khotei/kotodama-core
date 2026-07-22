@@ -11,7 +11,7 @@ import {
   type VisualKind,
   type VisualsEntity,
   type WordJobStage,
-} from '@kotodama/core/database'
+} from '@kotodama/database'
 import { type AiError, AiService } from '@kotodama/platform/ai'
 import { WikiClient } from '@kotodama/platform/external-apis'
 import { authorKey, ImagesStore, imageKey, type StorageError } from '@kotodama/platform/storage'

@@ -8,6 +8,8 @@ import {
   WordGenerationServiceLive,
   withBuildBudget,
 } from '@kotodama/core/content'
+import { selectWord, selectWords } from '@kotodama/core/repositories'
+import { seedUnreadyWord } from '@kotodama/core/repositories/testing'
 import {
   type BuildStagesEntity,
   enumAsyncJobStatus,
@@ -19,10 +21,8 @@ import {
   type Language,
   WORD_JOB_STAGES,
   type WordJobStage,
-} from '@kotodama/core/database'
-import { resetDb, TestDatabaseLive } from '@kotodama/core/database/testing'
-import { selectWord, selectWords } from '@kotodama/core/repositories'
-import { seedUnreadyWord } from '@kotodama/core/repositories/testing'
+} from '@kotodama/database'
+import { resetDb, TestDatabaseLive } from '@kotodama/database/testing'
 import { Duration, Effect, Layer, Option } from 'effect'
 import { TestClock } from 'effect/testing'
 import { buildWord } from '../src/index'

@@ -9,7 +9,7 @@ import {
   WordGenerationServiceLive,
   withBuildBudget,
 } from '@kotodama/core/content'
-import { DatabaseLive } from '@kotodama/core/database'
+import { DatabaseLive } from '@kotodama/database'
 import { AiServiceLive, AiServiceResilient } from '@kotodama/platform/ai'
 import { ConfigProviderLive, OpenaiApiKey, WorkerConcurrency } from '@kotodama/platform/config'
 import { WikiClientLive } from '@kotodama/platform/external-apis'

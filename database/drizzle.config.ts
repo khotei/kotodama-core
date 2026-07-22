@@ -10,7 +10,7 @@ export default defineConfig({
   dialect: 'postgresql',
   // Single barrel entry, not the './schema' dir: globbing the dir double-counts
   // tables the barrel re-exports.
-  schema: './database/schema/index.ts',
-  out: './database/migrations',
+  schema: './schema/index.ts',
+  out: './migrations',
   dbCredentials: { url: databaseUrl },
 })

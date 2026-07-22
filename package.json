@@ -5,6 +5,7 @@
   "workspaces": [
     "apps/*",
     "core",
+    "database",
     "platform",
     "infra",
     "tooling"
