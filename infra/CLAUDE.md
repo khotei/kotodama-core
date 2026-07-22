@@ -1,21 +1,29 @@
 # infra — `@kotodama/infra`
 
-Local dev infra (Docker Compose) now; Pulumi production stack later.
+The dev/ops umbrella, organized as **one folder per concern** (mirroring `core`'s layer folders,
+minus the exports — nothing imports `infra`; no `src/`): each module folder is self-contained and
+names the script prefix that drives it (`local/` ↔ `local:*`).
 
-`infra/tooling/` is a **separate workspace** (`@kotodama/tooling`, the shared config presets) that
-only *lives* under this folder as the dev-surface umbrella — `.claude/rules/tooling.md` owns it;
-future dev-only meta-packages land here too, never at the repo root.
+- **`local/`** — the local dev stack: `docker-compose.yml` (**dev** Postgres `kotodama_dev` +
+  LocalStack SQS/S3 + Jaeger) + `provision.ts`. No test DB is provisioned — DB tests use a
+  throwaway Testcontainers Postgres (`@kotodama/database/testing`), so there's no `init/` seed SQL.
+- **`presets/`** — a **separate workspace** (`@kotodama/presets`, the shared config presets) that
+  only *lives* here as the dev-surface umbrella — `.claude/rules/tooling.md` owns it. Not
+  `platform/`: platform is runtime code the app imports; presets are dev-only devDependencies of
+  every workspace (including `platform` itself).
+- **`deploy/`** (future) — the Pulumi/AWS production stack, under `deploy:*` scripts; reads the
+  same `awsResources` inventory as `local:provision` — the designed reuse seam between dev and deploy.
 
-- `local/docker-compose.yml`: **dev** Postgres (`kotodama_dev`) + LocalStack (SQS + S3) + Jaeger.
-  No test DB is provisioned — DB tests use a throwaway Testcontainers Postgres
-  (`@kotodama/database/testing`), so there's no `init/` SQL to seed a `kotodama_test`.
-- Scripts: `local:up` / `local:down` (stop + remove containers, **keeps** data volumes) /
-  `local:clean` (`down -v` — also removes volumes) / `local:logs` / `local:provision` (idempotently
-  ensures the AWS-resource inventory on the running LocalStack — see below).
-- No production deps yet; never imported by application code (the `local:provision` script *does*
-  import the leaf packages — that constrains who imports `infra`, not what `infra` imports).
-- The clone-to-real-word run-book lives in the root `readme.md` ("Run the backend locally (real
-  engine)") — the home for the end-to-end steps; this file only points at it.
+Scripts: `local:up` / `local:down` (keeps data volumes) / `local:clean` (`down -v`) / `local:logs` /
+`local:provision` (idempotently ensures the AWS inventory on the running LocalStack — see below).
+
+- **No tests and no `test` script by design** (the `--filter '*'` gate skips it, like
+  `@kotodama/presets`): `ensure*` is tested in `platform/{queue,storage}`; the compose file is
+  provable only by running it — the end-to-end proof is the readme quick-start curl, later a
+  CI/CD post-deploy smoke in `deploy/`.
+- No production deps; never imported by application code (`local:provision` *does* import the leaf
+  packages — that constrains who imports `infra`, not what `infra` imports). The clone-to-real-word
+  run-book lives in the root `readme.md`; this file only points at it.
 
 ## How to add a new AWS resource
 

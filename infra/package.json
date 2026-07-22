@@ -7,9 +7,7 @@
     "local:down": "docker compose -f local/docker-compose.yml down",
     "local:clean": "docker compose -f local/docker-compose.yml down -v",
     "local:logs": "docker compose -f local/docker-compose.yml logs -f",
-    "local:provision": "bun run src/local-provision.ts",
-    "local:smoke": "bun run src/local-smoke.ts",
-    "test": "bun --bun vitest run",
+    "local:provision": "bun run local/provision.ts",
     "typecheck": "bun --bun tsc --noEmit"
   },
   "dependencies": {
@@ -20,6 +18,6 @@
     "effect": "catalog:effect"
   },
   "devDependencies": {
-    "@kotodama/tooling": "workspace:*"
+    "@kotodama/presets": "workspace:*"
   }
 }

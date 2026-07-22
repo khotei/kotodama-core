@@ -62,7 +62,7 @@ Identity only — exact versions are pinned centrally in Bun **catalogs**
 | **`@effect/ai-openai`** | Word text + image generation |
 | **SQS + S3** (LocalStack locally) | Async job queue + generated-image storage |
 | **Biome + Husky** | Lint/format + the pre-commit gate; encodes the layer rule |
-| **`@effect/vitest`** | Tests, one smoke per workspace |
+| **`@effect/vitest`** | Tests, run per workspace |
 | **OpenTelemetry → Jaeger** | Traces, local and prod, from one wiring |
 
 ## Repository layers
@@ -78,7 +78,7 @@ detail.
 | `core/repositories/` | bare persistence functions over the DB layer | the only SQL surface |
 | `database/` | Drizzle schema + the word vocabulary + `WordEntity` | the bottom; authors the row shapes |
 | `platform/{ai,queue,storage,config,external-apis,observability,…}` | boundary adapters + leaf infra | import nothing internal |
-| `infra/` | Docker Compose (local) · Pulumi (later) · `local:*` scripts · shared config presets (`infra/tooling/`) | dev/ops, never imported by app code |
+| `infra/` | Docker Compose (local) · Pulumi (later) · `local:*` scripts · shared config presets (`infra/presets/`) | dev/ops, never imported by app code |
 
 The middle tiers are layer folders of the single `@kotodama/core` package (subpath-exported);
 `database` is its own bottom-of-chain `@kotodama/database` workspace; `platform/*` are the adapter
@@ -118,8 +118,10 @@ bun run --filter '@kotodama/infra' local:up
 bun run --filter '@kotodama/app-api' dev            # HTTP API on :3000
 bun run --filter '@kotodama/app-worker' dev         # the worker poll-loop
 
-# 5. Prove the real-engine path end to end — builds a word and polls until it reports `succeeded`.
-bun run --filter '@kotodama/infra' local:smoke      # en/lacuna by default; pass `<word> <language>` to vary
+# 5. Prove the real-engine path end to end — request a build, then poll until `succeeded`
+#    (a cold real-engine build — text + image stages — takes a minute or two).
+curl -X POST localhost:3000/api/words/en/lacuna/build
+curl localhost:3000/api/words/en/lacuna/state
 ```
 
 Traces at Jaeger **http://localhost:16686**; generated images land in the LocalStack `kotodama-images`

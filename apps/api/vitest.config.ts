@@ -1,1 +1,1 @@
-export { default } from '@kotodama/tooling/vitest.base'
+export { default } from '@kotodama/presets/vitest.base'

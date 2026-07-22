@@ -1,5 +1,5 @@
 {
-  "name": "@kotodama/tooling",
+  "name": "@kotodama/presets",
   "version": "0.0.0",
   "private": true,
   "exports": {

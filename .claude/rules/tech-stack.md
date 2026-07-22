@@ -15,7 +15,7 @@ The authoritative source is the [Tech spec](https://www.notion.so/36dfb28bd5f181
 | Lint/format | **Biome** | single tool; encodes the layer rule (see dependency-hierarchy). |
 | Git hook | **Husky** | pre-commit: `biome check --staged` + `bun run tsc` (per-workspace `tsc --noEmit` via Bun filter). |
 | Type utilities | **type-fest** (catalog `types`) | Types-only, zero runtime. Prefer its utilities over hand-rolling a non-trivial mapped/conditional type — the blessed list + gotchas: `.claude/agent-patterns/type-fest.md`. |
-| Tests | **`@effect/vitest`** | `.test.ts` files; one smoke test per workspace. |
+| Tests | **`@effect/vitest`** | `.test.ts` files; a workspace with no runtime surface (`infra`, `tooling`) carries no `test` script — the `--filter '*'` gate skips it. |
 | Editor (opt) | `@effect/language-service` | TS LSP plugin (`tsconfig.base.json` `plugins`). Editor-only — not run by `tsc`/CI. JetBrains: set TypeScript = workspace `node_modules/typescript`. |
 
 Versions are pinned centrally via Bun **catalogs** in root `package.json`; workspaces reference them with `catalog:<group>`.

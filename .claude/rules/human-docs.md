@@ -21,7 +21,8 @@ hand. Remove the copies and the docs stop rotting.
    is the source of truth for (signatures, structure, versions, command steps).
 2. **Commands come from `package.json`, docs name the script.** Write `bun run --filter
    '@kotodama/infra' local:up` and explain *why* — never the substeps it runs. New run path ⇒ a new
-   script (`local:smoke`), not a new doc paragraph.
+   script, not a new doc paragraph. (Direct API usage — the quick-start curls — is the exception:
+   that *is* the surface, not a script's substeps.)
 3. **Link, don't restate.** Cross-reference the one authoritative home (a `.claude/rules/*` file, a
    per-layer `CLAUDE.md`, the Tech spec, a `*.ts` source) instead of copying it. The rules are
    plain markdown — perfectly readable by a human following a README link.
@@ -46,6 +47,7 @@ hand. Remove the copies and the docs stop rotting.
   goes to the Tech spec (Notion) or a rule.
 - **No typedoc / generated docs-site** — the repo is unpublished with no public API surface to
   mirror (YAGNI; `.claude/rules/effect-conventions.md` "demonstrated need").
-- **No markdown doctests** — Bun/vitest has no doctest support; `local:smoke` is the runnable proof.
+- **No markdown doctests** — Bun/vitest has no doctest support; the quick-start commands are the
+  runnable proof.
 - **No "docs-changed" CI gate, last-reviewed stamps, or CODEOWNERS** — net-negative ceremony for a
   repo this size.

@@ -9,18 +9,18 @@
 | `bun run test` | `bun run --filter '*' test` (each workspace's own `bun --bun vitest run`) | CI only |
 | `bun run check` | `lint` + `tsc` | manual / `/check` |
 
-**Shared config presets** live in the `@kotodama/tooling` workspace (`infra/tooling/` — under the dev/ops umbrella, not a root folder: write-once config is not day-to-day code):
+**Shared config presets** live in the `@kotodama/presets` workspace (`infra/presets/` — under the dev/ops umbrella, not a root folder: write-once config is not day-to-day code):
 `tsconfig.base.json`, `vitest.base.ts`, and the Biome config `biome.base.json` (2-space, single
 quotes, semicolons as-needed, width 100). **There is no config file in the repo root at all.**
 
-- **tsconfig / vitest** reach the presets by **package specifier** (`@kotodama/tooling/…`), so every
-  workspace carries `@kotodama/tooling` as a `workspace:*` devDependency (depth-independent — no
-  `../` juggling). `@kotodama/tooling` is config-only: no `typecheck`/`test` scripts, so the
+- **tsconfig / vitest** reach the presets by **package specifier** (`@kotodama/presets/…`), so every
+  workspace carries `@kotodama/presets` as a `workspace:*` devDependency (depth-independent — no
+  `../` juggling). `@kotodama/presets` is config-only: no `typecheck`/`test` scripts, so the
   `--filter '*'` gates skip it.
 - **Biome** cannot use a package specifier, and its config is NOT at the root. Two deliberate moves
   make a root-less Biome work: (1) the file is named `biome.base.json`, **not** `biome.json`, so
   Biome's auto-discovery never picks it up as a stray nested config on a full-tree scan; (2) every
-  Biome invocation passes `--config-path infra/tooling/biome.base.json` (the two root scripts +
+  Biome invocation passes `--config-path infra/presets/biome.base.json` (the two root scripts +
   the husky hook), and the file is `"root": true`. The layer rule is encoded via
   `style/noRestrictedImports` per-**folder**-glob overrides in it (one per layer folder —
   `database/**`, `core/repositories/**`, `core/words|content/**`, `core/use-cases/**`,
@@ -34,7 +34,7 @@ quotes, semicolons as-needed, width 100). **There is no config file in the repo 
     Biome is **reworking project-root resolution** ([biomejs/biome#8672]; `--config-path`+root
     interplay is rough, [#7390]) — **re-verify `bun run lint` on any Biome version bump**; if it
     breaks, the fallback is a 3-line root `biome.json` stub that `extends`
-    `@kotodama/tooling/biome.base.json`.
+    `@kotodama/presets/biome.base.json`.
 
 [biomejs/biome#8672]: https://github.com/biomejs/biome/issues/8672
 [#7390]: https://github.com/biomejs/biome/issues/7390
@@ -45,17 +45,17 @@ CI only). `git commit --no-verify` bypasses it — genuine emergencies only, nev
 
 ## Single source of truth: `package.json#workspaces`
 
-The workspace list is `["apps/*","core","database","platform","infra","infra/tooling"]` — `core` and `platform` are
+The workspace list is `["apps/*","core","database","platform","infra","infra/presets"]` — `core` and `platform` are
 each **one aggregate package** whose layer/adapter folders are subpath exports, not separate
 workspaces. **The package list lives in exactly one place. There is no root `tsconfig.json` and no
 root `vitest.config.ts` — never reintroduce one to hand-list packages.**
 
-- Each workspace's single `tsconfig.json` extends `@kotodama/tooling/tsconfig.base.json` and covers
+- Each workspace's single `tsconfig.json` extends `@kotodama/presets/tsconfig.base.json` and covers
   all of that package's layer folders; packages resolve each other's **source** via `workspace:*` +
   `moduleResolution: bundler`, so per-workspace `tsc --noEmit` is correct without project references
   (`composite`/`declaration` were removed — they only served the retired `tsc -b` mode). Bare
   `tsc`/`vitest` from the repo root is not a supported entrypoint.
-- Each workspace owns a one-line `vitest.config.ts` re-exporting `@kotodama/tooling/vitest.base`
+- Each workspace owns a one-line `vitest.config.ts` re-exporting `@kotodama/presets/vitest.base`
   (node env + `test/**/*.test.ts`). **`core` runs ONE vitest over `**/test/**` across all its layer
   folders** (`database`, `repositories`, `words`, `content`, `use-cases`) — a single project over
   many test files, which is fine.

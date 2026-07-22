@@ -5,7 +5,7 @@
 Six workspaces: `apps/{api,worker}` (apps drop the plural → `@kotodama/app-api`,
 `@kotodama/app-worker`), the two aggregate packages **`@kotodama/core`** and
 **`@kotodama/platform`**, plus the standalone **`@kotodama/database`**, `@kotodama/infra` and
-`@kotodama/tooling` (folder `infra/tooling/` — dev-surface config presets live under the dev/ops
+`@kotodama/presets` (folder `infra/presets/` — dev-surface config presets live under the dev/ops
 umbrella, not at the root). `core` and `platform` expose their layer/adapter folders as **subpath exports**,
 not separate dash-flattened packages: `core/words` → `@kotodama/core/words`,
 `core/repositories/words` → `@kotodama/core/repositories`; `platform/config` →

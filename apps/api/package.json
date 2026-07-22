@@ -17,6 +17,6 @@
     "@kotodama/platform": "workspace:*"
   },
   "devDependencies": {
-    "@kotodama/tooling": "workspace:*"
+    "@kotodama/presets": "workspace:*"
   }
 }
