@@ -3,7 +3,7 @@
 # Fast-fail; tests run in CI only (T12), never here. Bypass with --no-verify.
 
 # Lint + format check on staged files only.
-bun biome check --config-path infra/presets/biome.base.json --staged --no-errors-on-unmatched || exit 1
+bun biome check --config-path infra/presets/src/biome.base.json --staged --no-errors-on-unmatched || exit 1
 
 # Typecheck every workspace via Bun filters (`bun run tsc` =
 # `bun run --filter '*' typecheck`, each package's `tsc --noEmit`). Replaces the

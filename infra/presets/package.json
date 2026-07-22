@@ -3,8 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "exports": {
-    "./vitest.base": "./vitest.base.ts",
-    "./tsconfig.base.json": "./tsconfig.base.json",
-    "./biome.base.json": "./biome.base.json"
+    "./vitest.base": "./src/vitest.base.ts",
+    "./tsconfig.base.json": "./src/tsconfig.base.json",
+    "./biome.base.json": "./src/biome.base.json"
   }
 }

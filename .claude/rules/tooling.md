@@ -20,7 +20,7 @@ quotes, semicolons as-needed, width 100). **There is no config file in the repo 
 - **Biome** cannot use a package specifier, and its config is NOT at the root. Two deliberate moves
   make a root-less Biome work: (1) the file is named `biome.base.json`, **not** `biome.json`, so
   Biome's auto-discovery never picks it up as a stray nested config on a full-tree scan; (2) every
-  Biome invocation passes `--config-path infra/presets/biome.base.json` (the two root scripts +
+  Biome invocation passes `--config-path infra/presets/src/biome.base.json` (the two root scripts +
   the husky hook), and the file is `"root": true`. The layer rule is encoded via
   `style/noRestrictedImports` per-**folder**-glob overrides in it (one per layer folder —
   `database/**`, `core/repositories/**`, `core/words|content/**`, `core/use-cases/**`,
