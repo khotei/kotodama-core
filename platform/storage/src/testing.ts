@@ -9,7 +9,6 @@ import { LocalstackContainer } from '@testcontainers/localstack'
 import { ConfigProvider, Context, Data, Effect, Layer } from 'effect'
 import { ImagesStore, ImagesStoreLive } from './images-store'
 import { ensureBucket } from './provisioning'
-import { StorageClientLive } from './storage-client'
 
 class ContainerError extends Data.TaggedError('ContainerError')<{ cause: unknown }> {}
 
@@ -98,12 +97,11 @@ const StorageConfigLive = Layer.unwrap(
 )
 
 /**
- * The production base+wrapper verbatim on a per-file LocalStack container — the storage analogue
+ * The production `ImagesStoreLive` verbatim on a per-file LocalStack container — the storage analogue
  * of `QueueLocalStackLive`. The container is merged into the output context so
  * {@link bucketObjects} / {@link resetBucket} can inspect what landed.
  */
 export const StorageLocalStackLive = ImagesStoreLive.pipe(
-  Layer.provide(StorageClientLive),
   Layer.provide(StorageConfigLive),
   Layer.provideMerge(StorageLocalStackContainer.layer),
 )

@@ -14,8 +14,8 @@ import { AiServiceLive, AiServiceResilient } from '@kotodama/platform/ai'
 import { ConfigProviderLive, OpenaiApiKey, WorkerConcurrency } from '@kotodama/platform/config'
 import { WikiClientLive } from '@kotodama/platform/external-apis'
 import { TracingLive } from '@kotodama/platform/observability'
-import { JobsQueueLive, QueueClientLive } from '@kotodama/platform/queue'
-import { ImagesStoreLive, StorageClientLive } from '@kotodama/platform/storage'
+import { JobsQueueLive } from '@kotodama/platform/queue'
+import { ImagesStoreLive } from '@kotodama/platform/storage'
 import { Effect, Layer } from 'effect'
 import { consumeForever } from './consume'
 import { BatchConcurrency } from './process-batch'
@@ -38,7 +38,7 @@ const AiServiceProd = AiServiceResilient(TEXT_RESILIENCE, IMAGE_RESILIENCE).pipe
 const ContentEngineLive = RealContentEngineLive.pipe(
   Layer.provide(AiServiceProd),
   Layer.provide(WikiClientLive.pipe(Layer.provide(BunHttpClient.layer))),
-  Layer.provide(ImagesStoreLive.pipe(Layer.provide(StorageClientLive))),
+  Layer.provide(ImagesStoreLive),
 )
 
 // The whole-build timeout is a decorator chosen here at wiring — createWord/buildWord never see it.
@@ -47,11 +47,7 @@ const GenerationLive = withBuildBudget(DEFAULT_BUILD_TIMEOUT).pipe(
 )
 
 // Only the boundary services — buildWord is a plain function whose `R` bottoms out here.
-const WorkerLive = Layer.mergeAll(
-  JobsQueueLive.pipe(Layer.provide(QueueClientLive)),
-  GenerationLive,
-  DatabaseLive,
-)
+const WorkerLive = Layer.mergeAll(JobsQueueLive, GenerationLive, DatabaseLive)
 
 const program = Effect.gen(function* () {
   yield* Effect.log('worker consuming build messages…')

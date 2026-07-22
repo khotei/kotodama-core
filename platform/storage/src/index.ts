@@ -1,5 +1,4 @@
 export { ImagesStore, ImagesStoreLive } from './images-store'
-export { StorageClient, StorageClientLive } from './storage-client'
 export {
   type AuthorKeyInput,
   authorKey,

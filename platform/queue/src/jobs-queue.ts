@@ -1,7 +1,12 @@
-import { JobsQueueUrl } from '@kotodama/platform/config'
+import {
+  DeleteMessageCommand,
+  ReceiveMessageCommand,
+  SendMessageCommand,
+  SQSClient,
+} from '@aws-sdk/client-sqs'
+import { AwsClientConfig, JobsQueueUrl } from '@kotodama/platform/config'
 import { Context, Effect, Layer } from 'effect'
-import { QueueClient } from './queue-client'
-import type { QueueError, QueueMessage, ReceiveOptions } from './queue-types'
+import { QueueError, type QueueMessage, type ReceiveOptions } from './queue-types'
 
 export interface JobsQueueShape {
   readonly send: (body: string) => Effect.Effect<void, QueueError>
@@ -12,9 +17,9 @@ export interface JobsQueueShape {
 }
 
 /**
- * The bound wrapper business code yields — not a pass-through: the base speaks `(queueUrl, …)`,
- * this speaks `(…)`, removing a parameter by owning the which-queue binding. A second queue (a
- * DLQ) is one more wrapper over the same base.
+ * The message-agnostic queue port, bound to the jobs queue at layer build — the `Layer` reads
+ * `JobsQueueUrl` from config so `send`/`receive`/`delete` carry no queue argument. Bodies are opaque
+ * strings; the build-message schema is owned by the enqueuer.
  */
 export class JobsQueue extends Context.Service<JobsQueue, JobsQueueShape>()(
   '@kotodama/platform/queue/JobsQueue',
@@ -23,13 +28,44 @@ export class JobsQueue extends Context.Service<JobsQueue, JobsQueueShape>()(
 export const JobsQueueLive = Layer.effect(
   JobsQueue,
   Effect.gen(function* () {
-    const client = yield* QueueClient
-    const url = yield* JobsQueueUrl
+    const aws = yield* AwsClientConfig
+    const queueUrl = yield* JobsQueueUrl
+
+    const client = yield* Effect.acquireRelease(
+      Effect.sync(() => new SQSClient(aws)),
+      (client) => Effect.sync(() => client.destroy()),
+    )
+
+    const call = <A>(run: () => Promise<A>) =>
+      Effect.tryPromise({ try: run, catch: (cause) => new QueueError({ cause }) })
 
     return {
-      send: (body) => client.send(url, body),
-      receive: (options) => client.receive(url, options),
-      delete: (handle) => client.delete(url, handle),
+      send: (body) =>
+        call(() =>
+          client.send(new SendMessageCommand({ QueueUrl: queueUrl, MessageBody: body })),
+        ).pipe(Effect.asVoid),
+      receive: (options) =>
+        call(() =>
+          client.send(
+            new ReceiveMessageCommand({
+              QueueUrl: queueUrl,
+              MaxNumberOfMessages: options?.max ?? 1,
+              WaitTimeSeconds: options?.waitSeconds ?? 0,
+            }),
+          ),
+        ).pipe(
+          Effect.map((out) =>
+            (out.Messages ?? []).flatMap((m) =>
+              m.Body !== undefined && m.ReceiptHandle !== undefined
+                ? [{ body: m.Body, handle: m.ReceiptHandle }]
+                : [],
+            ),
+          ),
+        ),
+      delete: (handle) =>
+        call(() =>
+          client.send(new DeleteMessageCommand({ QueueUrl: queueUrl, ReceiptHandle: handle })),
+        ).pipe(Effect.asVoid),
     }
   }),
 )

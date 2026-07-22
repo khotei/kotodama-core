@@ -1,11 +1,13 @@
 # platform/queue — `@kotodama/platform/queue`
 
-A message-agnostic queue port over `@aws-sdk/client-sqs`, split into a parameterized base +
-a bound wrapper so the boundary is multi-queue-capable by construction: **`QueueClient`** (holds
-only the `SQSClient`; ops take the queue URL per call) and **`JobsQueue`** (a `Layer` over it that
-binds the jobs-queue URL and exposes resource-free `send`/`receive`/`delete`). Not a pass-through —
-the wrapper removes a parameter by owning the *which-queue* binding. A second queue later (e.g. a
-DLQ) is one more bound wrapper over the same base, no `QueueClient` change. **Backend-only.**
+A message-agnostic queue port over `@aws-sdk/client-sqs`: one service, **`JobsQueue`**, whose
+`JobsQueueLive` owns the `SQSClient` and binds `JobsQueueUrl` (from `@kotodama/platform/config`) at
+layer build, exposing resource-free `send`/`receive`/`delete`. **Backend-only.**
+
+- **One queue, one service — no parameterized base.** The earlier `QueueClient`/`JobsQueue`
+  base+wrapper split bought a speculative multi-queue capability the app never used (there is exactly
+  one jobs queue); a second queue (e.g. a DLQ) is a second `*Live` layer reading its own config URL,
+  not a per-call `queueUrl` argument.
 
 - **Message-agnostic on purpose** — bodies are opaque strings; the build-message schema lives in
   `core/words` (with the word domain, near the enqueuer), so the transport stays reusable.
@@ -15,7 +17,7 @@ DLQ) is one more bound wrapper over the same base, no `QueueClient` change. **Ba
 ## Testing — `@kotodama/platform/queue/testing`
 
 **No in-memory fake** — a hand-modelled fake is itself a divergent double, so every queue-touching
-test runs the real `JobsQueueLive` over `QueueClientLive` on a per-file LocalStack container
+test runs the real `JobsQueueLive` on a per-file LocalStack container
 (`QueueLocalStackLive`; `it.layer(…, { timeout: '120 seconds' })`). Cost accepted: SQS's
 non-deterministic receive (cap-10, may-return-fewer, visibility timing), contained by the helpers:
 

@@ -1,7 +1,6 @@
 import { describe, expect, it } from '@effect/vitest'
 import { ConfigProvider, Effect, Layer } from 'effect'
 import { ImagesStore, ImagesStoreLive } from '../src/images-store'
-import { StorageClientLive } from '../src/storage-client'
 import { authorKey, imageKey, StorageError } from '../src/storage-types'
 import { bucketObjects, resetBucket, StorageLocalStackLive } from '../src/testing'
 
@@ -19,8 +18,8 @@ describe('imageKey / authorKey', () => {
   })
 })
 
-// Adapter-contract test: the bound `ImagesStore` over the real `Bun.S3Client` against LocalStack S3 —
-// the one place the bound `put` (no bucket arg → the configured images bucket) is exercised end-to-end.
+// Adapter-contract test: `ImagesStore` over the real `Bun.S3Client` against LocalStack S3 — the one
+// place the bound `put` (no bucket arg → the configured images bucket) is exercised end-to-end.
 it.layer(StorageLocalStackLive, { timeout: '120 seconds' })((it) => {
   it.effect('writes bytes to the images bucket under the key and returns it (AC-5)', () =>
     Effect.gen(function* () {
@@ -40,10 +39,9 @@ it.layer(StorageLocalStackLive, { timeout: '120 seconds' })((it) => {
   )
 })
 
-// The bound `ImagesStore` over a `StorageClient` pointed at a dead endpoint: every write rejects, so
-// this exercises the error channel (client rejection → one `StorageError`) without a container.
+// `ImagesStore` pointed at a dead endpoint: every write rejects, so this exercises the error channel
+// (client rejection → one `StorageError`) without a container.
 const StorageBroken = ImagesStoreLive.pipe(
-  Layer.provide(StorageClientLive),
   Layer.provide(
     ConfigProvider.layer(
       ConfigProvider.fromDotEnvContents(

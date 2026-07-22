@@ -4,7 +4,6 @@ import { LocalstackContainer } from '@testcontainers/localstack'
 import { ConfigProvider, Context, Data, Effect, Layer } from 'effect'
 import { ensureQueue } from './ensure-queue'
 import { JobsQueue, JobsQueueLive } from './jobs-queue'
-import { QueueClientLive } from './queue-client'
 import type { QueueMessage } from './queue-types'
 
 class ContainerError extends Data.TaggedError('ContainerError')<{ cause: unknown }> {}
@@ -74,24 +73,16 @@ const QueueConfigLive = Layer.unwrap(
 ).pipe(Layer.provide(QueueLocalStackContainer.layer))
 
 /**
- * The production base+wrapper split verbatim, on a per-file LocalStack container — the queue
- * analogue of `TestDatabaseLive`. One container per test file via
+ * The production `JobsQueueLive` verbatim, on a per-file LocalStack container — the queue analogue
+ * of `TestDatabaseLive`. One container per test file via
  * `it.layer(QueueLocalStackLive, { timeout: '120 seconds' })`.
  */
 export const QueueLocalStackLive = JobsQueueLive.pipe(
-  Layer.provide(QueueClientLive),
   Layer.provide(QueueConfigLive),
   Layer.provideMerge(QueueLocalStackContainer.layer),
 )
 
-// For the base's own adapter-contract test, which drives ops with an explicit queue URL rather
-// than the bound one.
-export const QueueClientLocalStackLive = QueueClientLive.pipe(
-  Layer.provide(QueueConfigLive),
-  Layer.provideMerge(QueueLocalStackContainer.layer),
-)
-
-/** A short-lived harness SDK client (distinct from the `QueueClientLive` under test) for raw SQS primitives. */
+/** A short-lived harness SDK client (distinct from the `JobsQueueLive` under test) for raw SQS primitives. */
 export const withSqs = <A, E>(use: (client: SQSClient) => Effect.Effect<A, E>) =>
   Effect.gen(function* () {
     const container = yield* QueueLocalStackContainer

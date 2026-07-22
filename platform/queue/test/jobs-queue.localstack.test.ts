@@ -3,11 +3,10 @@ import { Effect } from 'effect'
 import { JobsQueue } from '../src'
 import { drainQueue, QueueLocalStackLive } from '../src/testing'
 
-// Contract test for the real bound adapter: `JobsQueueLive` over `QueueClientLive` against a per-file
-// LocalStack SQS container. With the in-memory fake removed, ALL queue tests run on this real adapter
-// (the queue analogue of the Testcontainers DB); these cases pin the bound wrapper's contract — a real
-// round-trip via `send(body)` and the received→invisible ack semantics the worker's delete-on-success
-// rests on.
+// Contract test for the real adapter: `JobsQueueLive` against a per-file LocalStack SQS container.
+// With the in-memory fake removed, ALL queue tests run on this real adapter (the queue analogue of the
+// Testcontainers DB); these cases pin the bound port's contract — a real round-trip via `send(body)`
+// and the received→invisible ack semantics the worker's delete-on-success rests on.
 it.layer(QueueLocalStackLive, { timeout: '120 seconds' })((it) => {
   it.effect('JobsQueue round-trips send → receive → delete against LocalStack SQS', () =>
     Effect.gen(function* () {
