@@ -1,15 +1,15 @@
 # core/words — `@kotodama/core/words`
 
 Word creation + input gates + build-admission policy + the domain `Word` union. There is **no
-per-row word "model"** — backend code speaks the `core/database` shapes directly (`WordRow` through
+per-row word "model"** — backend code speaks the `database` shapes directly (`WordRow` through
 reads, `WordEntity` at contracts); a projection earns its way back only if a read ever truly
 transforms storage (e.g. presigned URLs).
 
 - **`word.schema.ts` — the domain union `Word = ReadyWord | UnreadyWord` + `decodeWord`.** It
   enforces "ready ⇒ complete content" **at decode**, mirroring the DB CHECK: a `succeeded` row
   with null content fails the `ReadyWord` leaf (whose fields derive from `WordEntity`, so they
-  can't drift); a building row's NULL content drops as excess. It lives here, not `core/database` — a
-  shape *derived* from the entity is core's; `core/database` stays entity-level storage vocabulary.
+  can't drift); a building row's NULL content drops as excess. It lives here, not `database` — a
+  shape *derived* from the entity is core's; `database` stays entity-level storage vocabulary.
   `StaleWord` is reserved for the parked regen feature — do not add a third leaf.
 - **`findWord` (`word-read.ts`) is THE decoded read boundary** — `selectWord` + `decodeWord` in one
   step, returning `Option<Word>`, so no edge repeats the decode. Reads that want the domain word
@@ -44,4 +44,4 @@ transforms storage (e.g. presigned URLs).
 
 **May import:** `@kotodama/core/{content,repositories,database}`, `@kotodama/platform/*`, `effect`.
 **MUST NOT import:** `apps/*`, `@kotodama/core/use-cases`; no HTTP code (Biome-enforced on
-`core/words/**`). `@kotodama/core/database/factories` (pulls faker) belongs in tests, not `src/**`.
+`core/words/**`). `@kotodama/database/factories` (pulls faker) belongs in tests, not `src/**`.

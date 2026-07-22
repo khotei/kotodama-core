@@ -23,7 +23,7 @@ quotes, semicolons as-needed, width 100). **There is no config file in the repo 
   Biome invocation passes `--config-path tooling/biome.base.json` (the two root scripts +
   the husky hook), and the file is `"root": true`. The layer rule is encoded via
   `style/noRestrictedImports` per-**folder**-glob overrides in it (one per layer folder —
-  `core/database/**`, `core/repositories/**`, `core/words|content/**`, `core/use-cases/**`,
+  `database/**`, `core/repositories/**`, `core/words|content/**`, `core/use-cases/**`,
   `platform/**` — banning the upward `@kotodama/core/*` subpath specifiers) — the sole enforcement of
   the dependency hierarchy (transitive-import checking is out of scope; if ever needed, add
   `scripts/check-deps.ts` and note it here).
@@ -45,7 +45,7 @@ CI only). `git commit --no-verify` bypasses it — genuine emergencies only, nev
 
 ## Single source of truth: `package.json#workspaces`
 
-The workspace list is `["apps/*","core","platform","infra","tooling"]` — `core` and `platform` are
+The workspace list is `["apps/*","core","database","platform","infra","tooling"]` — `core` and `platform` are
 each **one aggregate package** whose layer/adapter folders are subpath exports, not separate
 workspaces. **The package list lives in exactly one place. There is no root `tsconfig.json` and no
 root `vitest.config.ts` — never reintroduce one to hand-list packages.**

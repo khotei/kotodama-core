@@ -52,7 +52,7 @@ code can't show.
 
 - Return `WordRow` (`$inferSelect`), never a derived schema — `effect-schema` erases the jsonb
   `$type` (see `.claude/rules/drizzle-effect.md`). Error channel is `EffectDrizzleQueryError` only.
-- May import `@kotodama/core/database`, `@kotodama/platform/*`, `effect`, `drizzle-orm` query
+- May import `@kotodama/database`, `@kotodama/platform/*`, `effect`, `drizzle-orm` query
   helpers — never a bare `drizzle()`/driver, never the higher core layers
   (`@kotodama/core/{words,content,use-cases}`) or `apps/*` (Biome-enforced on `core/repositories/**`).
 - Tests are DB-backed (Testcontainers — needs Docker); run the whole `core` suite:

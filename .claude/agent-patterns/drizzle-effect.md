@@ -14,7 +14,7 @@ There is **no Drizzle `LLMS.md`** — this file is the entry point. The *mandate
 - Tests/examples: `repos/drizzle/integration-tests/tests/validators/effect-schema/pg.test.ts`
   (createSelectSchema/Insert/Update over pg) and `repos/drizzle/integration-tests/tests/pg/`
   (real schema, relations, migrations — ignore the bare-driver connection boilerplate at the top).
-- Use `effect/Schema` for refinements — **never Zod**. Generated schemas stay in `core/database/`
+- Use `effect/Schema` for refinements — **never Zod**. Generated schemas stay in `database/`
   (they `import 'drizzle-orm'`).
 
 ## Schema derivation — `drizzle-orm/effect-schema` (NOT used in this repo)
@@ -47,12 +47,12 @@ export const WordSchemaInsert = createInsertSchema(wordsTable, {
 
 ## DB layer — `drizzle-orm/effect-postgres`
 
-The real implementation is **`core/database/src/db.ts`** — copy from there, not from web docs
+The real implementation is **`database/src/db.ts`** — copy from there, not from web docs
 (still Effect v3: `@effect/sql-drizzle`, `Context.Tag('DB')`). The URL comes from
 `@kotodama/platform/config`'s `DatabaseUrl`, resolved from the active `ConfigProvider`.
 
 ```ts
-// core/database/src/db.ts
+// database/src/db.ts
 import { PgClient } from '@effect/sql-pg'
 import { DatabaseUrl } from '@kotodama/platform/config'
 import * as PgDrizzle from 'drizzle-orm/effect-postgres'
@@ -67,7 +67,7 @@ const dbEffect = PgDrizzle.make({ relations }).pipe(Effect.provide(PgDrizzle.Def
 
 // Class-syntax Context.Service (NOT Context.Tag — v4 settled on Context.Service).
 export class DB extends Context.Service<DB, Effect.Success<typeof dbEffect>>()(
-  '@kotodama/core/database/DB',
+  '@kotodama/database/DB',
 ) {}
 
 export const DBLive = Layer.effect(DB, dbEffect) // needs a PgClient
@@ -123,7 +123,7 @@ Stronger storage variant: split content into a 1:1 `word_details` table (exists 
 
 - A bare `drizzle(...)` / `drizzle-orm/node-postgres` driver, or a hand-rolled `PgClient`, in
   `core/repositories/*` — go through the `effect-postgres` layer.
-- `import 'drizzle-orm'` (or a generated row-schema) outside `core/database/` — hand-author a
+- `import 'drizzle-orm'` (or a generated row-schema) outside `database/` — hand-author a
   plain `effect/Schema` if another layer needs the shape.
 - Copying the web docs verbatim (`@effect/sql-drizzle`, `Context.Tag('DB')`, `@effect/sql/SqlError`)
   — they are Effect v3. Read the vendored `rc` source for exact signatures.

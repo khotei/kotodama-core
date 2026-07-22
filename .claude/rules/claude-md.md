@@ -33,7 +33,7 @@ delete the line instead of updating it.
 
 - **Binding decisions + the rejected alternative** — only ones a reader would otherwise "fix" back.
 - **Invariants the types can't express**, and cross-file / cross-package coupling (e.g. "this
-  read's SQL must match an index defined in `core/database/`").
+  read's SQL must match an index defined in `database/`").
 - **Non-obvious gotchas** — footguns, ordering rules, version quirks (usually debugging trophies).
 - **Boundaries** — import rules, ownership, "this is the single source of X".
 - **Pointers** — to the spec (Notion), `.claude/agent-patterns/*`, or the file where the surface lives.

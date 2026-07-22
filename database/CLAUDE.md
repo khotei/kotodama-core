@@ -1,4 +1,4 @@
-# database — `@kotodama/core/database`
+# database — `@kotodama/database`
 
 Drizzle schema, relations, migrations, seed, and the `DB` layer. Schema *mechanics* (folder
 layout, `…Table` suffix, entity derivation) live in `.claude/rules/naming.md` +
@@ -27,9 +27,9 @@ layout, `…Table` suffix, entity derivation) live in `.claude/rules/naming.md` 
   (`migration.sql` + `snapshot.json`, chained via `prevIds` — no central `_journal.json`).
 - `db:*` scripts are config-driven through `@kotodama/platform/config` (no hardcoded URLs); they target the
   **dev** DB. Tests never touch it — ephemeral Testcontainers Postgres via
-  `@kotodama/core/database/testing` (`TestDatabaseLive` migrates itself; `resetDb` per test — see
+  `@kotodama/database/testing` (`TestDatabaseLive` migrates itself; `resetDb` per test — see
   `.claude/rules/testing.md`).
 
 **May import:** `@kotodama/platform/*`, `effect`, `@effect/sql-pg`, drizzle. **Never** the sibling
 core layers (`@kotodama/core/{words,content,repositories,use-cases}`) or `apps/*` — this is the
-bottom folder of `@kotodama/core` (Biome-enforced on `core/database/**`).
+bottom folder of `@kotodama/core` (Biome-enforced on `database/**`).

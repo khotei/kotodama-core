@@ -25,8 +25,9 @@ returns the row once Ready. The composer functions that assemble this — `reque
 ## The layers
 
 Direction (top calls down; `platform/*` are leaves): `apps → use-cases → core → repositories →
-database`, and everything → `platform`. The middle four are layer folders of the single
-`@kotodama/core` package; `platform/*` are the adapter folders of the single leaf `@kotodama/platform`.
+database`, and everything → `platform`. The middle tiers are layer folders of the single
+`@kotodama/core` package; `database` is its own `@kotodama/database` workspace; `platform/*` are the
+adapter folders of the single leaf `@kotodama/platform`.
 The **rule and its enforcement** are owned by
 [`.claude/rules/dependency-hierarchy.md`](../.claude/rules/dependency-hierarchy.md); the README has the
 [layer responsibility table](../readme.md#repository-layers). Each layer's detail is its own
@@ -39,7 +40,7 @@ The **rule and its enforcement** are owned by
 | Flow composers | [`core/use-cases/CLAUDE.md`](../core/use-cases/CLAUDE.md) |
 | Domain logic + the `ContentEngine` swap seam | [`core/`](../core/content/CLAUDE.md) |
 | Persistence functions | [`core/repositories/`](../core/repositories/words/CLAUDE.md) |
-| Schema · word vocabulary · `WordEntity` | [`core/database/CLAUDE.md`](../core/database/CLAUDE.md) |
+| Schema · word vocabulary · `WordEntity` | [`database/CLAUDE.md`](../database/CLAUDE.md) |
 | Boundary adapters (ai · queue · storage · config · …) | [`platform/*/CLAUDE.md`](../platform/) |
 | Tech stack + decisions | [`.claude/rules/tech-stack.md`](../.claude/rules/tech-stack.md) |
 

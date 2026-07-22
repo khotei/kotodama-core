@@ -16,7 +16,7 @@ Full table in `.claude/rules/tech-stack.md`.
 ## Dependency hierarchy (the rule the scaffolding protects)
 
 ```
-apps/{api,worker} ─► core/use-cases ─► core/{words,content} ─► core/repositories ─► core/database
+apps/{api,worker} ─► core/use-cases ─► core/{words,content} ─► core/repositories ─► database
                                             │  ▲ use-cases/domain/apps consume WordEntity/WordRow directly
                                             ▼
                                     platform/{ai,queue,storage,config,external-apis,observability}
@@ -24,7 +24,9 @@ apps/{api,worker} ─► core/use-cases ─► core/{words,content} ─► core/
 ```
 
 The middle tiers are layer folders inside the single `@kotodama/core` package (subpath-exported);
-`platform/*` are the adapter folders of the single leaf `@kotodama/platform`. `core/use-cases` is the
+`database` is its own bottom-of-chain `@kotodama/database` workspace (distinct drizzle/migration
+tooling); `platform/*` are the adapter folders of the single leaf `@kotodama/platform`.
+`core/use-cases` is the
 top application tier below `apps/*`: user-flow composer functions (`requestWordBuild`, `buildWord`)
 that aggregate the core-domain functions + the repo functions into one end-to-end flow an app binds.
 Details: `.claude/rules/dependency-hierarchy.md`.
@@ -63,7 +65,7 @@ target < 200 lines of always-loaded context per file; bloat reduces adherence).
 - **Always:** `tech-stack` · `dependency-hierarchy` · `naming` · `comments` · `tooling` ·
   `commits` · `pull-requests` · `claude-md`.
 - **Path-scoped (load on match):** `effect-conventions`, `vendored-sources` → `**/*.ts` ·
-  `drizzle-effect` → `core/database/**`, `core/repositories/**` · `config` → `platform/config/**`,
+  `drizzle-effect` → `database/**`, `core/repositories/**` · `config` → `platform/config/**`,
   `**/main.ts` · `testing` → `**/test/**`, `**/*.test.ts` · `observability` →
   `platform/observability/**`, `apps/**` · `sdd` → `.claude/{commands,agents,sdd}/**` ·
   `human-docs` → `readme.md`, `docs/**`.
@@ -75,7 +77,7 @@ target < 200 lines of always-loaded context per file; bloat reduces adherence).
 ## Per-layer context (loaded lazily when editing that subtree)
 
 `apps/{api,worker}/CLAUDE.md` · `core/use-cases/CLAUDE.md` · `core/{words,content}/CLAUDE.md` ·
-`core/database/CLAUDE.md` · `core/repositories/words/CLAUDE.md` · `platform/*/CLAUDE.md` ·
+`database/CLAUDE.md` · `core/repositories/words/CLAUDE.md` · `platform/*/CLAUDE.md` ·
 `infra/CLAUDE.md`.
 Ancestor `CLAUDE.md` files (this one) always load; subdirectory ones load when you touch files
 in that folder.

@@ -4,7 +4,7 @@ Local dev infra (Docker Compose) now; Pulumi production stack later.
 
 - `local/docker-compose.yml`: **dev** Postgres (`kotodama_dev`) + LocalStack (SQS + S3) + Jaeger.
   No test DB is provisioned — DB tests use a throwaway Testcontainers Postgres
-  (`@kotodama/core/database/testing`), so there's no `init/` SQL to seed a `kotodama_test`.
+  (`@kotodama/database/testing`), so there's no `init/` SQL to seed a `kotodama_test`.
 - Scripts: `local:up` / `local:down` (stop + remove containers, **keeps** data volumes) /
   `local:clean` (`down -v` — also removes volumes) / `local:logs` / `local:provision` (idempotently
   ensures the AWS-resource inventory on the running LocalStack — see below).

@@ -18,7 +18,7 @@ The contract lives with its server — `apps/api/src/words/words.api.ts` beside
 ```ts
 import { HttpApi, HttpApiEndpoint, HttpApiGroup } from 'effect/unstable/httpapi'
 import { Schema } from 'effect'
-import { WordEntity } from '@kotodama/core/database'
+import { WordEntity } from '@kotodama/database'
 
 const getWord = HttpApiEndpoint.get('getWord', '/words/:id')
   .setSuccess(WordEntity)

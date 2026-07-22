@@ -4,11 +4,12 @@
 
 Six workspaces: `apps/{api,worker}` (apps drop the plural → `@kotodama/app-api`,
 `@kotodama/app-worker`), the two aggregate packages **`@kotodama/core`** and
-**`@kotodama/platform`**, plus `@kotodama/infra` and `@kotodama/tooling`. `core` and `platform`
-expose their layer/adapter folders as **subpath exports**, not separate dash-flattened packages:
-`core/words` → `@kotodama/core/words`, `core/repositories/words` → `@kotodama/core/repositories`,
-`core/database` → `@kotodama/core/database`; `platform/config` → `@kotodama/platform/config`,
-`platform/ai` → `@kotodama/platform/ai`.
+**`@kotodama/platform`**, plus the standalone **`@kotodama/database`**, `@kotodama/infra` and
+`@kotodama/tooling`. `core` and `platform` expose their layer/adapter folders as **subpath exports**,
+not separate dash-flattened packages: `core/words` → `@kotodama/core/words`,
+`core/repositories/words` → `@kotodama/core/repositories`; `platform/config` →
+`@kotodama/platform/config`, `platform/ai` → `@kotodama/platform/ai`. `database` stays a normal
+top-level package (`@kotodama/database`) — its drizzle/migration tooling earns the boundary.
 
 ## Files
 
@@ -25,16 +26,16 @@ expose their layer/adapter folders as **subpath exports**, not separate dash-fla
   | `.schema.ts` | other `effect/Schema` definitions (results, messages) | `core/**` |
   | `.api.ts` / `.handler.ts` | an `HttpApi` contract / its handler bindings | `apps/api/**` |
   | `.view.ts` / `.model.ts` | a computed view model (presentation edge) / read model (core) — no backing row | edge / `core/**` |
-  | `.entity.ts` / `.table.ts` / `.values.ts` / `.enums.ts` | storage schemas / table / value tuples / derived `pgEnum`s | `core/database/**` |
-  | `*.factory.ts` | test-data factories | `core/database/src/factories/` |
+  | `.entity.ts` / `.table.ts` / `.values.ts` / `.enums.ts` | storage schemas / table / value tuples / derived `pgEnum`s | `database/**` |
+  | `*.factory.ts` | test-data factories | `database/src/factories/` |
 
   A file playing none of these roles — a plain helper, mock data, or pure logic/orchestration
   (plain `Effect.fnUntraced` functions, not services) — stays a bare kebab-case name. Tests mirror
   the source they cover, suffix included (`words.repo.test.ts`), in the workspace's `test/` folder.
 - **Entrypoints:** `src/main.ts` (apps), `src/index.ts` (libraries).
-- `core/database/schema/` groups by aggregate/domain (one folder per repository boundary, named to
+- `database/schema/` groups by aggregate/domain (one folder per repository boundary, named to
   match the repo folder); cross-domain helpers stay at the `schema/` root; the barrel
-  `schema/index.ts` re-exports every group. Details: `core/database/CLAUDE.md`.
+  `schema/index.ts` re-exports every group. Details: `database/CLAUDE.md`.
 
 ## Symbols
 
@@ -63,7 +64,7 @@ carries its role noun, so the bare name is unambiguous by elimination. **Never s
   boundary service; `*Default` is retired. Don't collapse a precise role into `Service`:
   `ContentEngine`/`WikiClient` are correct as-is (Effect idiom — `HttpClient`, not
   `HttpClientService`).
-- Data: `Entity`/`EntityInsert` (**all storage vocabulary, authored in `core/database/`** — row schemas
+- Data: `Entity`/`EntityInsert` (**all storage vocabulary, authored in `database/`** — row schemas
   AND the jsonb content shapes, so a database-authored shape is name-distinguishable from a core
   business shape) · `Row` (`$inferSelect`, exported from the table file — what repos return on
   trusted reads; `Entity` is the runtime schema for write/untrusted boundaries) · `View`/`Model`
@@ -72,7 +73,7 @@ carries its role noun, so the bare name is unambiguous by elimination. **Never s
   `AsyncJobStatus`) stay bare — shared vocabulary, not structs.
 - A 1:1 per-row projection earns a `.model.ts`/`.view.ts` only when it truly *transforms* storage
   (e.g. presigned URLs) — an alias or a bare field-hide does not; backend code otherwise consumes
-  the `core/database/` rows/entities directly.
+  the `database/` rows/entities directly.
 - **Repo I/O shapes are `<Entity><Role>`, the role keyed to the `select`/`search`/`upsert`
   verb that eats or emits them** — so the type name alone says which repo call it belongs to:
   `Query` (a `select*` filter — `WordQuery`, `AsyncWordJobQuery`) · `SearchQuery` (a
@@ -82,7 +83,7 @@ carries its role noun, so the bare name is unambiguous by elimination. **Never s
   per-status aggregate — `WordCounts`). The `<Entity>` is **singular** (`WordQuery`, not
   `WordsQuery`) though the function pluralizes (`selectWords`/`searchWords`); `Row` stays the
   trusted-read return. Never name an `upsert` payload `Content` — that role is the
-  `core/database/`-authored jsonb shape.
+  `database/`-authored jsonb shape.
 
 ## File-internal order
 

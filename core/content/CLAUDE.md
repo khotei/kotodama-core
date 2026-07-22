@@ -2,9 +2,9 @@
 
 The word-generation seam. `ContentEngine` is the `Context.Service` port called once per stage
 (`produce(stage, …)` → the stage's typed slice); `MockContentEngine` and the real OpenAI engine are
-layers behind the same interface. It speaks backend domain types (`core/database` content schemas),
+layers behind the same interface. It speaks backend domain types (`database` content schemas),
 which is why it lives in `core`, not `platform/ai` (a `platform/*` leaf may not import
-`@kotodama/core/database`).
+`@kotodama/database`).
 
 - **Two abstraction levels, two errors:** the port fails per-stage (`ContentEngineError`); the
   recipe (`generateWordContent` — the private body of `WordGenerationServiceLive`, not exported)
@@ -14,7 +14,7 @@ which is why it lives in `core`, not `platform/ai` (a `platform/*` leaf may not 
   `Effect.partition` so one bad enrich doesn't interrupt siblings.
 - **`STAGE_SLICES` (`stage-slices.ts`) is the single source of stage → output shape** — each slice
   `pick`ed off `WordContent` (the entity-minus-envelope selection, authored here because it's a
-  derived domain shape; fields keep one author in `core/database`), `satisfies Record<WordJobStage,
+  derived domain shape; fields keep one author in `database`), `satisfies Record<WordJobStage,
   Schema.Top>` for compiler exhaustiveness. Both the type and the engine's `generateObject`
   runtime schema come from here, so a stage's promise and its generation can't drift.
 - **`WordGenerationService` exists so the build budget can be a layer** — `…Timed(budget)` is a
@@ -37,6 +37,6 @@ which is why it lives in `core`, not `platform/ai` (a `platform/*` leaf may not 
 - `MockContentEngine` is deterministic by construction (same `(word, stage)` → same content, no
   faker/clock); its failure paths are an injectable `ContentPolicy`.
 
-**May import:** `@kotodama/core/database`, `@kotodama/platform/*`, `effect`. **MUST NOT import:**
+**May import:** `@kotodama/database`, `@kotodama/platform/*`, `effect`. **MUST NOT import:**
 `apps/*` or `@kotodama/core/use-cases` (Biome-enforced on `core/content/**`);
-`@kotodama/core/database/factories` belongs in tests, never `src/**`.
+`@kotodama/database/factories` belongs in tests, never `src/**`.

@@ -27,4 +27,4 @@ poll-loop (`src/consume.ts` under `BunRuntime` from `src/main.ts`).
 
 **May import:** all `@kotodama/core/*` layers (`use-cases`, `words`, `content`, `repositories`,
 `database` — the last for `DatabaseLive`), `@kotodama/platform/*`, `effect`, `@effect/platform-bun`.
-**MUST NOT import:** another app. `@kotodama/core/database/factories` belongs in tests, not `src/**`.
+**MUST NOT import:** another app. `@kotodama/database/factories` belongs in tests, not `src/**`.

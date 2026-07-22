@@ -46,4 +46,4 @@ derived from the root, so it reflects new groups automatically. Patterns:
 
 **May import:** all `@kotodama/core/*` layers (`use-cases`, `words`, `content`, `repositories`,
 `database`), `@kotodama/platform/*`, `effect`, `@effect/platform-bun`. **MUST NOT import:** another
-app. `@kotodama/core/database/factories` belongs in tests, not `src/**`.
+app. `@kotodama/database/factories` belongs in tests, not `src/**`.

@@ -41,7 +41,7 @@ pointer at the site.
 
 - DB tests run against an **ephemeral Testcontainers Postgres**, never the dev DB — the URL is
   generated per container, so there is **no `.env.test`** and structurally no way to hit dev.
-  Requires a Docker daemon. Surface: `@kotodama/core/database/testing` — `TestDatabaseLive` (migrates
+  Requires a Docker daemon. Surface: `@kotodama/database/testing` — `TestDatabaseLive` (migrates
   itself at layer build) + `resetDb` (TRUNCATEs every `public` table, enumerated dynamically).
 - **Prefer the real adapter over a hand-written fake wherever a container is feasible.** Queue and
   storage tests run the real `*Live` layers over per-file LocalStack containers
