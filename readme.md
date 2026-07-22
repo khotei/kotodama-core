@@ -19,8 +19,8 @@
 
 > The **why / what** is the [Tech spec](https://www.notion.so/36dfb28bd5f181988f16de6ab423eb3e)
 > (authoritative). This README is the **front door** — what this is and how to run it. Depth is
-> linked, never restated: operational detail in [`docs/`](#docs--conventions); conventions in
-> `.claude/rules/*` + per-layer `CLAUDE.md` (auto-loaded in Claude Code).
+> linked, never restated: conventions in `.claude/rules/*` + per-layer `CLAUDE.md` (auto-loaded in
+> Claude Code, plain markdown otherwise).
 
 ## How it works
 
@@ -45,8 +45,7 @@ GET /api/words/en/lacuna/state  ──►  running → … → succeeded
 ```
 
 A read hits the DB; a miss enqueues a build the worker fulfils asynchronously, then the entry is
-read back. Full topology: [Tech spec §1](https://www.notion.so/36dfb28bd5f181988f16de6ab423eb3e) ·
-[`docs/architecture.md`](docs/architecture.md).
+read back. Full topology: [Tech spec §1](https://www.notion.so/36dfb28bd5f181988f16de6ab423eb3e).
 
 ## The stack
 
@@ -87,8 +86,7 @@ folders of the single leaf `@kotodama/platform`.
 
 **Dependency direction** (enforced by Biome): `apps → use-cases → core → repositories → database`,
 and everything → `platform`. The full rule + enforcement lives in
-[`.claude/rules/dependency-hierarchy.md`](.claude/rules/dependency-hierarchy.md); the topology map is
-[`docs/architecture.md`](docs/architecture.md).
+[`.claude/rules/dependency-hierarchy.md`](.claude/rules/dependency-hierarchy.md).
 
 ## Requirements
 
@@ -125,15 +123,59 @@ bun run --filter '@kotodama/infra' local:smoke      # en/lacuna by default; pass
 ```
 
 Traces at Jaeger **http://localhost:16686**; generated images land in the LocalStack `kotodama-images`
-bucket. Full reset: `local:clean && local:up` (both bring-up steps are idempotent). How this differs
-across **local / test / prod** — and why — is [`docs/running.md`](docs/running.md).
+bucket. Full reset: `local:clean && local:up` (both bring-up steps are idempotent).
 
-## Docs & conventions
+## Environments
 
-- **[`docs/running.md`](docs/running.md)** — running across local dev / test / prod (config provenance)
-- **[`docs/architecture.md`](docs/architecture.md)** — the topology map (link-hub)
-- **[`docs/contributing.md`](docs/contributing.md)** — scripts, tests, commits, PRs, the pre-commit gate
+The same code runs in three environments; what changes between them is **where configuration comes
+from** — resource *identity* (queue/bucket names) is single-sourced in
+[`platform/config`](platform/config/src/aws-resources.ts), only the connection facet varies.
+
+| | Local dev | Test | Production |
+|---|---|---|---|
+| **Run with** | `local:up` + the `dev` apps | `bun run test` (needs Docker; **not** `bun test`) | AWS Lambda (api + worker) |
+| **Infra** | Docker Compose — Postgres + LocalStack + Jaeger | ephemeral Testcontainers per file | real RDS Postgres · SQS · S3 |
+| **Config from** | repo-root `.env` (fallback under `process.env`) | each container's own endpoint — never `.env`, never the dev stack | env injected by the Lambda role |
+| **Resources** | created by `local:provision` | created per file (`ensureQueue`/`ensureBucket`) | IaC-owned; the app only consumes |
+
+The invariants behind the matrix — why a test structurally cannot touch the dev stack, why prod
+never self-provisions — are owned by [`.claude/rules/config.md`](.claude/rules/config.md) ·
+[`.claude/rules/testing.md`](.claude/rules/testing.md).
+
+## Contributing
+
+Every convention has one authoritative home in [`.claude/rules/`](.claude/rules/) — auto-loaded in
+Claude Code, plain markdown for humans:
+
+- **Commits** — gitmoji + Conventional Commits + a `Decision:` paragraph:
+  [`commits.md`](.claude/rules/commits.md). **PRs squash-merge**, so the description *is* the
+  permanent history: [`pull-requests.md`](.claude/rules/pull-requests.md).
+- **Pre-commit gate** — Husky runs `biome check --staged` + `bun run tsc`; tests are CI-only.
+  Scripts + the root-less config setup: [`tooling.md`](.claude/rules/tooling.md).
+- **New workspace** — the `/new-package` command scaffolds it with zero root-config edits.
+- **Vendored sources** — `repos/effect-smol/` holds the Effect v4 source as read-only reference
+  (`bun run vendor:effect:update`); never import from it:
+  [`vendored-sources.md`](.claude/rules/vendored-sources.md).
+- **MCP servers (optional, deliberately not in the repo)** — personal tooling, so each developer
+  installs their own into Claude Code's **local scope** (stored per project in `~/.claude.json`,
+  never committed), baking this project's env at add time. The recommended trio:
+
+  ```bash
+  claude mcp add postgres -e DATABASE_URI=postgres://postgres:postgres@localhost:5432/kotodama_dev \
+    -- docker run -i --rm -e DATABASE_URI crystaldba/postgres-mcp --access-mode=restricted
+  claude mcp add pulumi -- npx -y @pulumi/mcp-server@latest stdio
+  claude mcp add aws -e AWS_PROFILE=<your-profile> -e AWS_REGION=us-east-1 \
+    -- uvx awslabs.aws-api-mcp-server@latest
+
+  # Need the same service against two environments (e.g. a second, production DB)? Add it twice
+  # under distinct names — tools arrive prefixed per server, so they can't be confused. Works for
+  # any MCP server; keep production access read-only:
+  claude mcp add postgres-prod -e DATABASE_URI=postgres://<user>@<prod-host>:5432/kotodama \
+    -- docker run -i --rm -e DATABASE_URI crystaldba/postgres-mcp --access-mode=restricted
+  ```
+
+## Docs
+
 - **[Tech spec](https://www.notion.so/36dfb28bd5f181988f16de6ab423eb3e)** — the authoritative why/what
-- **`.claude/`** — AI-agent context (root `CLAUDE.md` + `.claude/rules/*` + per-layer `CLAUDE.md`),
-  loaded automatically in Claude Code; `repos/effect-smol/` vendors the Effect v4 source as read-only
-  reference (`bun run vendor:effect:update`).
+- **[`.claude/`](.claude/)** — the project `CLAUDE.md` + `.claude/rules/*` + per-layer `CLAUDE.md`:
+  the conventions and per-layer detail, one owner per fact.

@@ -51,8 +51,8 @@ jobs:
 
   # Docker-free, runs in parallel with `static`. Guards the one residual drift vector of a
   # link-don't-restate doc strategy: a renamed link target is a broken link. `--offline` checks ONLY
-  # the relative links in `readme.md` + `docs/**` against the checked-out tree (the exact thing a
-  # rename breaks) — external URLs (badges, the Notion Tech spec, etc.) are not a drift vector for a
+  # the relative links in `readme.md` against the checked-out tree (the exact thing a rename
+  # breaks) — external URLs (badges, the Notion Tech spec, etc.) are not a drift vector for a
   # code change and only add network flakiness, so they're skipped entirely.
   links:
     name: docs link check
@@ -67,7 +67,6 @@ jobs:
             --offline
             --no-progress
             readme.md
-            './docs/**/*.md'
           fail: true
 
   test:

@@ -68,7 +68,7 @@ target < 200 lines of always-loaded context per file; bloat reduces adherence).
   `drizzle-effect` → `database/**`, `core/repositories/**` · `config` → `platform/config/**`,
   `**/main.ts` · `testing` → `**/test/**`, `**/*.test.ts` · `observability` →
   `platform/observability/**`, `apps/**` · `sdd` → `.claude/{commands,agents,sdd}/**` ·
-  `human-docs` → `readme.md`, `docs/**`.
+  `human-docs` → `readme.md`.
 - **On-demand reference (pointer-loaded, NOT auto-loaded):** `.claude/agent-patterns/*.md` —
   Effect/Drizzle/Postgres/type-fest/modern-TS/design-principles cheat-sheets and
   `commit-examples.md`. Linked from the rules/commands that need them; never put on-demand depth
