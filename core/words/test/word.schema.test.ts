@@ -26,7 +26,7 @@ const CONTENT_KEYS = [
   'translations',
   'visuals',
   'sources',
-  'sourceVersions',
+  'provenance',
   'frequency',
 ] as const
 

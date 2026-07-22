@@ -27,7 +27,7 @@ it.layer(TestDatabaseLive, { timeout: '120 seconds' })((it) => {
       expect(row.status).toBe(enumAsyncJobStatus.pending)
       expect(row.coreDefinition).toBeNull()
       expect(row.lexical).toBeNull()
-      expect(row.sourceVersions).toBeNull()
+      expect(row.provenance).toBeNull()
     }),
   )
 

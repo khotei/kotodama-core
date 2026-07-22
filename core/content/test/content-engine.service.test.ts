@@ -29,7 +29,7 @@ describe('MockContentEngine — default policy', () => {
         {
           word: 'lacuna',
           language: enumLanguage.en,
-          sourceVersions: { model: 'mock', promptHash: 'mock' },
+          provenance: { model: 'mock', promptHash: 'mock' },
           status: enumAsyncJobStatus.succeeded,
           stages: WORD_JOB_STAGES.map((stage) => ({
             stage,

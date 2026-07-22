@@ -1,0 +1,6 @@
+# Collapse machine-generated noise in PR diffs (GitHub honors `linguist-generated`:
+# the file still shows, but folded-by-default and excluded from language stats).
+# The human-meaningful `migration.sql` stays fully visible — only the paired
+# `snapshot.json` (drizzle-kit's internal state) and the lockfile are folded.
+bun.lock linguist-generated=true
+**/migrations/**/snapshot.json linguist-generated=true

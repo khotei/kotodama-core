@@ -15,7 +15,7 @@ const decodeWordInsert = Schema.decodeUnknownEffect(WordEntityInsert)
  */
 export const createWord = Effect.fnUntraced(function* (language: Language, word: string) {
   const generator = yield* WordGenerationService
-  const { content, sourceVersions } = yield* generator.generate(language, word)
+  const { content, provenance } = yield* generator.generate(language, word)
 
   // Uninterruptible so an ambient interrupt (worker shutdown) can't split the `words` write from
   // the caller's stage journal.
@@ -27,7 +27,7 @@ export const createWord = Effect.fnUntraced(function* (language: Language, word:
         ...content,
         word,
         language,
-        sourceVersions,
+        provenance,
         status: enumAsyncJobStatus.succeeded,
         // Content + `succeeded` + all-succeeded stages land in one write — no separate journal.
         stages: stagesAll(enumAsyncJobStatus.succeeded),

@@ -24,3 +24,6 @@ dist/
 .claude/scheduled_tasks.lock
 
 # Note: bun.lock is committed (do NOT ignore it)
+
+# drizzle-kit resolution symlink (created by core db:link; never commit)
+core/database/node_modules

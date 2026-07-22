@@ -17,7 +17,7 @@ import {
 } from '../src/prompts'
 import { RealContentEngineLive } from '../src/real-content-engine.service'
 
-// No stage is produced here — `sourceVersions` is a static engine property — so the three leaves are
+// No stage is produced here — `provenance` is a static engine property — so the three leaves are
 // provided only to satisfy the layer's requirements; their fixtures are never exercised.
 const engineLayer: Layer.Layer<ContentEngine> = RealContentEngineLive.pipe(
   Layer.provide(AiServiceTest({})),
@@ -42,19 +42,19 @@ const allSurfaces = [
 const hashOf = (parts: readonly string[]): string =>
   createHash('sha256').update(parts.join(' ')).digest('hex')
 
-describe('RealContentEngine.sourceVersions — build provenance', () => {
+describe('RealContentEngine.provenance — build provenance', () => {
   it.effect('exposes the model + pipeline identity the worker stamps onto the words row', () =>
     Effect.gen(function* () {
       const engine = yield* ContentEngine
-      expect(engine.sourceVersions.model).toBe('gpt-5.5')
-      expect(engine.sourceVersions.pipeline).toBe('real-content-engine@0.1')
+      expect(engine.provenance.model).toBe('gpt-5.5')
+      expect(engine.provenance.pipeline).toBe('real-content-engine@0.1')
     }).pipe(Effect.provide(engineLayer)),
   )
 
   it.effect('stamps every per-stage text + image model into stageModels (AC-7)', () =>
     Effect.gen(function* () {
       const engine = yield* ContentEngine
-      expect(engine.sourceVersions.stageModels).toEqual({
+      expect(engine.provenance.stageModels).toEqual({
         fetch_source: 'gpt-5.4-mini',
         enrich_etymology: 'gpt-5.4',
         enrich_tiers: 'gpt-5.5',
@@ -71,10 +71,10 @@ describe('RealContentEngine.sourceVersions — build provenance', () => {
     Effect.gen(function* () {
       const engine = yield* ContentEngine
       // The impl's digest equals a recomputation over all surfaces — dropping any surface fails here.
-      expect(engine.sourceVersions.promptHash).toBe(hashOf(allSurfaces))
+      expect(engine.provenance.promptHash).toBe(hashOf(allSurfaces))
       // And the portrait genuinely contributes: omitting it changes the digest.
       expect(hashOf(allSurfaces.filter((s) => s !== portrait))).not.toBe(
-        engine.sourceVersions.promptHash,
+        engine.provenance.promptHash,
       )
     }).pipe(Effect.provide(engineLayer)),
   )

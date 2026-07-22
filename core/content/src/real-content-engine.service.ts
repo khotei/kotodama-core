@@ -1,11 +1,11 @@
 import { createHash } from 'node:crypto'
 import {
   AuthorExampleEntity,
+  type BuildProvenanceEntity,
   CulturalGuideEntity,
   enumVisualKind,
   enumWordJobStage,
   type Language,
-  type SourceVersionsEntity,
   type StorageKey,
   VisualEntity,
   type VisualKind,
@@ -68,7 +68,7 @@ const EnrichAuthorsPlan = Schema.Struct({
 
 // sha256 over every prompt template + the image config, rendered for one fixed sample with no
 // grounding — so the digest tracks the recipe, not the word, and is identical across all words.
-const SOURCE_VERSIONS_PROMPT_HASH: string = createHash('sha256')
+const PROVENANCE_PROMPT_HASH: string = createHash('sha256')
   .update(
     [
       fetchSourcePrompt('en', 'lacuna', undefined),
@@ -85,9 +85,9 @@ const SOURCE_VERSIONS_PROMPT_HASH: string = createHash('sha256')
   .digest('hex')
 
 // Build identity, not a content pass — an engine property, never a key smuggled through a slice.
-const PROVENANCE: SourceVersionsEntity = {
+const PROVENANCE: BuildProvenanceEntity = {
   model: PROVENANCE_MODEL,
-  promptHash: SOURCE_VERSIONS_PROMPT_HASH,
+  promptHash: PROVENANCE_PROMPT_HASH,
   pipeline: 'real-content-engine@0.1',
   stageModels: PROVENANCE_STAGE_MODELS,
 }
@@ -293,6 +293,6 @@ export const RealContentEngineLive: Layer.Layer<
     ): Effect.Effect<StageSlice<S>, ContentEngineError> =>
       handlers[stage](language, word, grounding)
 
-    return ContentEngine.of({ produce, sourceVersions: PROVENANCE })
+    return ContentEngine.of({ produce, provenance: PROVENANCE })
   }),
 )

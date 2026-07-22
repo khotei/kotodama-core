@@ -1,1 +1,0 @@
-DROP INDEX "words_language_word_prefix_idx";

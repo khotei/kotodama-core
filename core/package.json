@@ -28,9 +28,10 @@
     "testcontainers": "catalog:test"
   },
   "scripts": {
-    "db:generate": "bun --bun drizzle-kit generate",
-    "db:migrate": "bun --bun drizzle-kit migrate",
-    "db:push": "bun --bun drizzle-kit push",
+    "db:link": "ln -sfn \"$(pwd)/node_modules\" database/node_modules",
+    "db:generate": "bun run db:link && bun --bun drizzle-kit generate",
+    "db:migrate": "bun run db:link && bun --bun drizzle-kit migrate",
+    "db:push": "bun run db:link && bun --bun drizzle-kit push",
     "db:reset": "echo 'TODO(db:reset): drop + recreate + migrate — wired with the deploy runner'",
     "db:seed": "bun run database/src/seed.ts",
     "test": "bun --bun vitest run",

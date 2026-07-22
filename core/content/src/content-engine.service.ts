@@ -1,7 +1,7 @@
 import type {
+  BuildProvenanceEntity,
   JobErrorType,
   Language,
-  SourceVersionsEntity,
   WordJobStage,
 } from '@kotodama/core/database'
 import { Context, Data, type Effect } from 'effect'
@@ -36,6 +36,6 @@ export class ContentEngine extends Context.Service<
      * Build provenance is engine *identity*, not a content pass — it lives on the service so it is
      * never smuggled through a stage's produced slice.
      */
-    readonly sourceVersions: SourceVersionsEntity
+    readonly provenance: BuildProvenanceEntity
   }
 >()('@kotodama/core/content/ContentEngine') {}

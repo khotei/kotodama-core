@@ -93,7 +93,7 @@ describe('RealContentEngine.produce — text enrichment stages', () => {
         const engine = yield* ContentEngine
         const result = yield* engine.produce('final_review', enumLanguage.en, 'lacuna')
 
-        // No provenance keys on the result — build provenance lives on the engine's `sourceVersions`
+        // No provenance keys on the result — build provenance lives on the engine's `provenance`
         // (real-content-engine.provenance.test.ts), not smuggled through this slice.
         expect(new Set(Object.keys(result))).toEqual(new Set(['frequency']))
         const decoded = Schema.decodeUnknownSync(FrequencySlice)(result)

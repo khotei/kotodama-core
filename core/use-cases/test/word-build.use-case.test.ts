@@ -29,7 +29,7 @@ import { buildWord } from '../src/index'
 
 // Two `it.layer` blocks for the one flow, differing only in the ContentEngine double — the mock
 // (policy-driven; exercises the stage machine) and a real-shaped fake carrying its own
-// `sourceVersions` (exercises provenance threading onto the words row). Each block owns its own
+// `provenance` (exercises provenance threading onto the words row). Each block owns its own
 // container, so this costs exactly what two files would.
 
 const EN = enumLanguage.en
@@ -221,7 +221,7 @@ const WORD = 'lacuna'
 
 /**
  * One assembled slice per stage — together they decode through `WordEntityInsert`. Build provenance is
- * no longer carried on a slice; it comes off the engine's `sourceVersions` (see `ContentEngineFake`),
+ * no longer carried on a slice; it comes off the engine's `provenance` (see `ContentEngineFake`),
  * so these are pure content slices.
  */
 const slices: { readonly [S in WordJobStage]: StageSlice<S> } = {
@@ -287,9 +287,9 @@ const slices: { readonly [S in WordJobStage]: StageSlice<S> } = {
   },
 }
 
-// A distinctive provenance so the assertions prove promote threads *the engine's* sourceVersions onto
+// A distinctive provenance so the assertions prove promote threads *the engine's* provenance onto
 // the words row (not a hardcoded default).
-const FAKE_SOURCE_VERSIONS = {
+const FAKE_PROVENANCE = {
   model: 'gpt-5.5',
   promptHash: 'fake-prompt-hash-abc123',
   pipeline: 'real-content-engine@0.1',
@@ -300,7 +300,7 @@ const ContentEngineFake: Layer.Layer<ContentEngine> = Layer.succeed(
   ContentEngine,
   ContentEngine.of({
     produce: (stage, _language, _word) => Effect.succeed(slices[stage]),
-    sourceVersions: FAKE_SOURCE_VERSIONS,
+    provenance: FAKE_PROVENANCE,
   }),
 )
 
@@ -312,7 +312,7 @@ const ProvenanceLayer = Layer.mergeAll(
 )
 
 it.layer(ProvenanceLayer, { timeout: '120 seconds' })((it) => {
-  it.effect('the six-stage assembly promotes with the engine sourceVersions (AC-7)', () =>
+  it.effect('the six-stage assembly promotes with the engine provenance (AC-7)', () =>
     Effect.gen(function* () {
       yield* resetDb
       yield* seedPendingWord(WORD)
@@ -322,8 +322,8 @@ it.layer(ProvenanceLayer, { timeout: '120 seconds' })((it) => {
       const [word] = yield* selectWords({ language: EN, word: WORD, limit: 1 })
       expect(word).toBeDefined()
 
-      // Provenance threaded from the engine's `sourceVersions`, not smuggled through a stage slice.
-      expect(word?.sourceVersions).toEqual(FAKE_SOURCE_VERSIONS)
+      // Provenance threaded from the engine's `provenance`, not smuggled through a stage slice.
+      expect(word?.provenance).toEqual(FAKE_PROVENANCE)
     }),
   )
 })

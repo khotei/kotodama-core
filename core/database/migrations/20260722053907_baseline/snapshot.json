@@ -1,9 +1,9 @@
 {
   "version": "8",
   "dialect": "postgres",
-  "id": "bfeedc3f-00a6-438c-903f-c54f6ddb0fa6",
+  "id": "db2c9b75-f8db-43e6-bd42-21b0e8f3f06f",
   "prevIds": [
-    "c8a73651-f56b-44a1-83cc-32854174f9e6"
+    "00000000-0000-0000-0000-000000000000"
   ],
   "ddl": [
     {
@@ -35,25 +35,6 @@
       "schema": "public"
     },
     {
-      "values": [
-        "fetch_source",
-        "enrich_etymology",
-        "enrich_tiers",
-        "enrich_authors",
-        "enrich_visuals",
-        "final_review"
-      ],
-      "name": "word_job_stage",
-      "entityType": "enums",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "async-word-jobs",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
       "isRlsEnabled": false,
       "name": "words",
       "entityType": "tables",
@@ -70,149 +51,6 @@
       "name": "id",
       "entityType": "columns",
       "schema": "public",
-      "table": "async-word-jobs"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "word",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "async-word-jobs"
-    },
-    {
-      "type": "language",
-      "typeSchema": "public",
-      "notNull": true,
-      "dimensions": 0,
-      "default": "'en'",
-      "generated": null,
-      "identity": null,
-      "name": "language",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "async-word-jobs"
-    },
-    {
-      "type": "word_job_stage",
-      "typeSchema": "public",
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "stage",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "async-word-jobs"
-    },
-    {
-      "type": "async_job_status",
-      "typeSchema": "public",
-      "notNull": true,
-      "dimensions": 0,
-      "default": "'pending'",
-      "generated": null,
-      "identity": null,
-      "name": "status",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "async-word-jobs"
-    },
-    {
-      "type": "jsonb",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "result",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "async-word-jobs"
-    },
-    {
-      "type": "jsonb",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "error",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "async-word-jobs"
-    },
-    {
-      "type": "timestamp with time zone",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "started_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "async-word-jobs"
-    },
-    {
-      "type": "timestamp with time zone",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "finished_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "async-word-jobs"
-    },
-    {
-      "type": "timestamp with time zone",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "created_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "async-word-jobs"
-    },
-    {
-      "type": "timestamp with time zone",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "updated_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "async-word-jobs"
-    },
-    {
-      "type": "uuid",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "gen_random_uuid()",
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "entityType": "columns",
-      "schema": "public",
       "table": "words"
     },
     {
@@ -250,6 +88,19 @@
       "generated": null,
       "identity": null,
       "name": "status",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "words"
+    },
+    {
+      "type": "jsonb",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "'[]'",
+      "generated": null,
+      "identity": null,
+      "name": "stages",
       "entityType": "columns",
       "schema": "public",
       "table": "words"
@@ -405,7 +256,7 @@
       "default": null,
       "generated": null,
       "identity": null,
-      "name": "source_versions",
+      "name": "provenance",
       "entityType": "columns",
       "schema": "public",
       "table": "words"
@@ -601,33 +452,10 @@
         "id"
       ],
       "nameExplicit": false,
-      "name": "async-word-jobs_pkey",
-      "schema": "public",
-      "table": "async-word-jobs",
-      "entityType": "pks"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": false,
       "name": "words_pkey",
       "schema": "public",
       "table": "words",
       "entityType": "pks"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        "word",
-        "language",
-        "stage"
-      ],
-      "nullsNotDistinct": false,
-      "name": "async_word_jobs_stage_uq",
-      "entityType": "uniques",
-      "schema": "public",
-      "table": "async-word-jobs"
     },
     {
       "nameExplicit": false,
@@ -642,7 +470,7 @@
       "table": "words"
     },
     {
-      "value": "\"status\" <> 'succeeded' OR (\"core_definition\" IS NOT NULL AND \"lexical\" IS NOT NULL AND \"pronunciation\" IS NOT NULL AND \"tiers\" IS NOT NULL AND \"etymology\" IS NOT NULL AND \"author_examples\" IS NOT NULL AND \"cultural_guide\" IS NOT NULL AND \"relations\" IS NOT NULL AND \"translations\" IS NOT NULL AND \"visuals\" IS NOT NULL AND \"sources\" IS NOT NULL AND \"source_versions\" IS NOT NULL)",
+      "value": "\"status\" <> 'succeeded' OR (\"core_definition\" IS NOT NULL AND \"lexical\" IS NOT NULL AND \"pronunciation\" IS NOT NULL AND \"tiers\" IS NOT NULL AND \"etymology\" IS NOT NULL AND \"author_examples\" IS NOT NULL AND \"cultural_guide\" IS NOT NULL AND \"relations\" IS NOT NULL AND \"translations\" IS NOT NULL AND \"visuals\" IS NOT NULL AND \"sources\" IS NOT NULL AND \"provenance\" IS NOT NULL)",
       "name": "words_succeeded_content_present",
       "entityType": "checks",
       "schema": "public",

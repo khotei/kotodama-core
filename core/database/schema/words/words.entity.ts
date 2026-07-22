@@ -166,13 +166,13 @@ export type FrequencyEntity = typeof FrequencyEntity.Type
  * Which models/prompts/pipeline produced the row — stamped at promotion, static per engine
  * version, so "find stale words" can detect a recipe change.
  */
-export const SourceVersionsEntity = Schema.Struct({
+export const BuildProvenanceEntity = Schema.Struct({
   model: Schema.String,
   promptHash: Schema.String,
   pipeline: Schema.optionalKey(Schema.String),
   stageModels: Schema.optionalKey(Schema.Record(Schema.String, Schema.String)),
 })
-export type SourceVersionsEntity = typeof SourceVersionsEntity.Type
+export type BuildProvenanceEntity = typeof BuildProvenanceEntity.Type
 
 /**
  * The `words` row as a runtime schema, every jsonb column overridden with its authored content
@@ -200,7 +200,7 @@ export const WordEntity = createSelectSchema(wordsTable, {
   translations: Schema.Array(TranslationEntity),
   visuals: VisualsEntity,
   sources: Schema.Array(SourceEntity),
-  sourceVersions: SourceVersionsEntity,
+  provenance: BuildProvenanceEntity,
   // A bare-schema override owns its own nullability (column nullability is not auto-applied).
   frequency: Schema.NullOr(FrequencyEntity),
 })
@@ -235,7 +235,7 @@ export const WordEntityInsert = createInsertSchema(wordsTable, {
   translations: Schema.NullOr(Schema.mutable(Schema.Array(TranslationEntity))),
   visuals: Schema.NullOr(VisualsEntity),
   sources: Schema.NullOr(Schema.mutable(Schema.Array(SourceEntity))),
-  sourceVersions: Schema.NullOr(SourceVersionsEntity),
+  provenance: Schema.NullOr(BuildProvenanceEntity),
   frequency: Schema.NullOr(FrequencyEntity),
 })
 export type WordEntityInsert = typeof WordEntityInsert.Type
