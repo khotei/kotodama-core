@@ -1,4 +1,4 @@
-import type { Language, SourceVersionsEntity } from '@kotodama/database'
+import type { BuildProvenanceEntity, Language } from '@kotodama/database'
 import { type Cause, Context, Duration, Effect, Layer } from 'effect'
 import { ContentEngine } from './content-engine.service'
 import type { WordContent } from './word-content.schema'
@@ -8,7 +8,7 @@ export const DEFAULT_BUILD_TIMEOUT: Duration.Duration = Duration.minutes(5)
 
 /**
  * A service only so the whole-build budget can be a decorator layer instead of a `createWord`
- * parameter; `generate` bundles the engine's `sourceVersions` so provenance travels with the
+ * parameter; `generate` bundles the engine's `provenance` so provenance travels with the
  * generation that produced it. The error union is fixed at the tag — the Live layer never raises
  * `TimeoutError` (only the `withBuildBudget` decorator does), but callers must catch both.
  */
@@ -19,11 +19,11 @@ export class WordGenerationService extends Context.Service<
       language: Language,
       word: string,
     ) => Effect.Effect<
-      { readonly content: WordContent; readonly sourceVersions: SourceVersionsEntity },
+      { readonly content: WordContent; readonly provenance: BuildProvenanceEntity },
       WordGenerationError | Cause.TimeoutError
     >
   }
->()('@kotodama/core-content/WordGenerationService') {}
+>()('@kotodama/core/content/WordGenerationService') {}
 
 export const WordGenerationServiceLive: Layer.Layer<WordGenerationService, never, ContentEngine> =
   Layer.effect(
@@ -33,7 +33,7 @@ export const WordGenerationServiceLive: Layer.Layer<WordGenerationService, never
       const generate = (language: Language, word: string) =>
         generateWordContent(language, word).pipe(
           Effect.provideService(ContentEngine, engine),
-          Effect.map((content) => ({ content, sourceVersions: engine.sourceVersions })),
+          Effect.map((content) => ({ content, provenance: engine.provenance })),
         )
       return WordGenerationService.of({ generate })
     }),

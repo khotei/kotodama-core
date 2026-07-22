@@ -1,11 +1,11 @@
 import * as OpenAiClient from '@effect/ai-openai/OpenAiClient'
 import * as OpenAiClientGenerated from '@effect/ai-openai/OpenAiClientGenerated'
 import { BunHttpClient, BunHttpServer, BunRuntime } from '@effect/platform-bun'
-import { AiServiceLive } from '@kotodama/ai'
-import { ConfigProviderLive, OpenaiApiKey, Port } from '@kotodama/config'
 import { DatabaseLive } from '@kotodama/database'
-import { TracingLive } from '@kotodama/observability'
-import { JobsQueueLive, QueueClientLive } from '@kotodama/queue'
+import { AiServiceLive } from '@kotodama/platform/ai'
+import { ConfigProviderLive, OpenaiApiKey, Port } from '@kotodama/platform/config'
+import { TracingLive } from '@kotodama/platform/observability'
+import { JobsQueueLive } from '@kotodama/platform/queue'
 import { Effect, Layer } from 'effect'
 import { HttpRouter } from 'effect/unstable/http'
 import { HttpApiBuilder } from 'effect/unstable/httpapi'
@@ -24,11 +24,7 @@ const AiServiceProd = AiServiceLive.pipe(
 )
 
 // Only the boundary services — repos and flows are plain functions whose `R` bottoms out here.
-const DomainLive = Layer.mergeAll(
-  JobsQueueLive.pipe(Layer.provide(QueueClientLive)),
-  DatabaseLive,
-  AiServiceProd,
-)
+const DomainLive = Layer.mergeAll(JobsQueueLive, DatabaseLive, AiServiceProd)
 
 // `openapiPath` makes the builder derive `OpenApi.fromApi(KotodamaApi)` and serve it as a router-level
 // GET (not an `HttpApiEndpoint`, so the doc doesn't list its own route). F-PLAT-014 fetches it live

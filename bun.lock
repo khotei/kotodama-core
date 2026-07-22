@@ -20,14 +20,9 @@
       "dependencies": {
         "@effect/ai-openai": "catalog:effect",
         "@effect/platform-bun": "catalog:effect",
-        "@kotodama/ai": "workspace:*",
-        "@kotodama/config": "workspace:*",
-        "@kotodama/core-words": "workspace:*",
+        "@kotodama/core": "workspace:*",
         "@kotodama/database": "workspace:*",
-        "@kotodama/observability": "workspace:*",
-        "@kotodama/queue": "workspace:*",
-        "@kotodama/repositories-words": "workspace:*",
-        "@kotodama/use-cases": "workspace:*",
+        "@kotodama/platform": "workspace:*",
         "effect": "catalog:effect",
       },
       "devDependencies": {
@@ -40,17 +35,9 @@
       "dependencies": {
         "@effect/ai-openai": "catalog:effect",
         "@effect/platform-bun": "catalog:effect",
-        "@kotodama/ai": "workspace:*",
-        "@kotodama/config": "workspace:*",
-        "@kotodama/core-content": "workspace:*",
-        "@kotodama/core-words": "workspace:*",
+        "@kotodama/core": "workspace:*",
         "@kotodama/database": "workspace:*",
-        "@kotodama/external-apis": "workspace:*",
-        "@kotodama/observability": "workspace:*",
-        "@kotodama/queue": "workspace:*",
-        "@kotodama/repositories-words": "workspace:*",
-        "@kotodama/storage": "workspace:*",
-        "@kotodama/use-cases": "workspace:*",
+        "@kotodama/platform": "workspace:*",
         "effect": "catalog:effect",
       },
       "devDependencies": {
@@ -58,32 +45,20 @@
         "@types/aws-lambda": "catalog:types",
       },
     },
-    "core/content": {
-      "name": "@kotodama/core-content",
+    "core": {
+      "name": "@kotodama/core",
       "version": "0.0.0",
       "dependencies": {
-        "@kotodama/ai": "workspace:*",
         "@kotodama/database": "workspace:*",
-        "@kotodama/external-apis": "workspace:*",
-        "@kotodama/storage": "workspace:*",
+        "@kotodama/platform": "workspace:*",
+        "drizzle-orm": "catalog:db",
         "effect": "catalog:effect",
       },
       "devDependencies": {
+        "@faker-js/faker": "catalog:test",
         "@kotodama/tooling": "workspace:*",
-      },
-    },
-    "core/words": {
-      "name": "@kotodama/core-words",
-      "version": "0.0.0",
-      "dependencies": {
-        "@kotodama/ai": "workspace:*",
-        "@kotodama/core-content": "workspace:*",
-        "@kotodama/database": "workspace:*",
-        "@kotodama/repositories-words": "workspace:*",
-        "effect": "catalog:effect",
-      },
-      "devDependencies": {
-        "@kotodama/tooling": "workspace:*",
+        "@testcontainers/postgresql": "catalog:test",
+        "testcontainers": "catalog:test",
       },
     },
     "database": {
@@ -92,7 +67,7 @@
       "dependencies": {
         "@effect/platform-bun": "catalog:effect",
         "@effect/sql-pg": "catalog:effect",
-        "@kotodama/config": "workspace:*",
+        "@kotodama/platform": "workspace:*",
         "drizzle-kit": "catalog:db",
         "drizzle-orm": "catalog:db",
         "effect": "catalog:effect",
@@ -112,50 +87,19 @@
         "@aws-sdk/client-s3": "catalog:aws",
         "@aws-sdk/client-sqs": "catalog:aws",
         "@effect/platform-bun": "catalog:effect",
-        "@kotodama/config": "workspace:*",
-        "@kotodama/queue": "workspace:*",
-        "@kotodama/storage": "workspace:*",
+        "@kotodama/platform": "workspace:*",
         "effect": "catalog:effect",
       },
       "devDependencies": {
         "@kotodama/tooling": "workspace:*",
       },
     },
-    "packages/ai": {
-      "name": "@kotodama/ai",
+    "platform": {
+      "name": "@kotodama/platform",
       "version": "0.0.0",
       "dependencies": {
+        "@aws-sdk/client-sqs": "catalog:aws",
         "@effect/ai-openai": "catalog:effect",
-        "effect": "catalog:effect",
-      },
-      "devDependencies": {
-        "@kotodama/tooling": "workspace:*",
-      },
-    },
-    "packages/config": {
-      "name": "@kotodama/config",
-      "version": "0.0.0",
-      "dependencies": {
-        "effect": "catalog:effect",
-      },
-      "devDependencies": {
-        "@kotodama/tooling": "workspace:*",
-      },
-    },
-    "packages/external-apis": {
-      "name": "@kotodama/external-apis",
-      "version": "0.0.0",
-      "dependencies": {
-        "effect": "catalog:effect",
-      },
-      "devDependencies": {
-        "@kotodama/tooling": "workspace:*",
-      },
-    },
-    "packages/observability": {
-      "name": "@kotodama/observability",
-      "version": "0.0.0",
-      "dependencies": {
         "@effect/opentelemetry": "catalog:effect",
         "@opentelemetry/api": "catalog:otel",
         "@opentelemetry/api-logs": "catalog:otel",
@@ -169,72 +113,15 @@
         "effect": "catalog:effect",
       },
       "devDependencies": {
-        "@kotodama/tooling": "workspace:*",
-      },
-    },
-    "packages/queue": {
-      "name": "@kotodama/queue",
-      "version": "0.0.0",
-      "dependencies": {
-        "@aws-sdk/client-sqs": "catalog:aws",
-        "@kotodama/config": "workspace:*",
-        "effect": "catalog:effect",
-      },
-      "devDependencies": {
-        "@kotodama/tooling": "workspace:*",
-        "@testcontainers/localstack": "catalog:test",
-        "testcontainers": "catalog:test",
-      },
-    },
-    "packages/storage": {
-      "name": "@kotodama/storage",
-      "version": "0.0.0",
-      "dependencies": {
-        "@kotodama/config": "workspace:*",
-        "effect": "catalog:effect",
-      },
-      "devDependencies": {
         "@aws-sdk/client-s3": "catalog:aws",
         "@kotodama/tooling": "workspace:*",
         "@testcontainers/localstack": "catalog:test",
         "testcontainers": "catalog:test",
       },
     },
-    "packages/tooling": {
+    "tooling": {
       "name": "@kotodama/tooling",
       "version": "0.0.0",
-    },
-    "repositories/words": {
-      "name": "@kotodama/repositories-words",
-      "version": "0.0.0",
-      "dependencies": {
-        "@effect/sql-pg": "catalog:effect",
-        "@kotodama/database": "workspace:*",
-        "drizzle-orm": "catalog:db",
-        "effect": "catalog:effect",
-      },
-      "devDependencies": {
-        "@faker-js/faker": "catalog:test",
-        "@kotodama/tooling": "workspace:*",
-        "@testcontainers/postgresql": "catalog:test",
-        "testcontainers": "catalog:test",
-      },
-    },
-    "use-cases": {
-      "name": "@kotodama/use-cases",
-      "version": "0.0.0",
-      "dependencies": {
-        "@kotodama/core-content": "workspace:*",
-        "@kotodama/core-words": "workspace:*",
-        "@kotodama/database": "workspace:*",
-        "@kotodama/queue": "workspace:*",
-        "@kotodama/repositories-words": "workspace:*",
-        "effect": "catalog:effect",
-      },
-      "devDependencies": {
-        "@kotodama/ai": "workspace:*",
-        "@kotodama/tooling": "workspace:*",
-      },
     },
   },
   "catalogs": {
@@ -445,35 +332,19 @@
 
     "@js-temporal/polyfill": ["@js-temporal/polyfill@0.5.1", "", { "dependencies": { "jsbi": "^4.3.0" } }, "sha512-hloP58zRVCRSpgDxmqCWJNlizAlUgJFqG2ypq79DCvyv9tHjRYMDOcPFjzfl/A1/YxDvRCZz8wvZvmapQnKwFQ=="],
 
-    "@kotodama/ai": ["@kotodama/ai@workspace:packages/ai"],
-
     "@kotodama/app-api": ["@kotodama/app-api@workspace:apps/api"],
 
     "@kotodama/app-worker": ["@kotodama/app-worker@workspace:apps/worker"],
 
-    "@kotodama/config": ["@kotodama/config@workspace:packages/config"],
-
-    "@kotodama/core-content": ["@kotodama/core-content@workspace:core/content"],
-
-    "@kotodama/core-words": ["@kotodama/core-words@workspace:core/words"],
+    "@kotodama/core": ["@kotodama/core@workspace:core"],
 
     "@kotodama/database": ["@kotodama/database@workspace:database"],
 
-    "@kotodama/external-apis": ["@kotodama/external-apis@workspace:packages/external-apis"],
-
     "@kotodama/infra": ["@kotodama/infra@workspace:infra"],
 
-    "@kotodama/observability": ["@kotodama/observability@workspace:packages/observability"],
+    "@kotodama/platform": ["@kotodama/platform@workspace:platform"],
 
-    "@kotodama/queue": ["@kotodama/queue@workspace:packages/queue"],
-
-    "@kotodama/repositories-words": ["@kotodama/repositories-words@workspace:repositories/words"],
-
-    "@kotodama/storage": ["@kotodama/storage@workspace:packages/storage"],
-
-    "@kotodama/tooling": ["@kotodama/tooling@workspace:packages/tooling"],
-
-    "@kotodama/use-cases": ["@kotodama/use-cases@workspace:use-cases"],
+    "@kotodama/tooling": ["@kotodama/tooling@workspace:tooling"],
 
     "@kwsites/file-exists": ["@kwsites/file-exists@1.1.1", "", { "dependencies": { "debug": "^4.1.1" } }, "sha512-m9/5YGR18lIwxSFDwfE3oA7bWuq9kdau6ugN4H2rJeyhFQZcG9AgSHkQtSD15a8WvTgfz9aikZMrKPHvbpqFiw=="],
 

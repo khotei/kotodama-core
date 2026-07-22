@@ -1,6 +1,6 @@
 import { BunRuntime } from '@effect/platform-bun'
 import { faker } from '@faker-js/faker'
-import { ConfigProviderLive } from '@kotodama/config'
+import { ConfigProviderLive } from '@kotodama/platform/config'
 import { Effect } from 'effect'
 import { DatabaseLive, DB } from './db'
 import { makeWordInsert } from './factories'

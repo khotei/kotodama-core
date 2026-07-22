@@ -1,9 +1,9 @@
 import { describe, expect, it } from '@effect/vitest'
-import { MockContentEngine, WordGenerationServiceLive } from '@kotodama/core-content'
+import { MockContentEngine, WordGenerationServiceLive } from '@kotodama/core/content'
+import { selectWord } from '@kotodama/core/repositories'
+import { seedUnreadyWord } from '@kotodama/core/repositories/testing'
 import { enumLanguage } from '@kotodama/database'
 import { resetDb, TestDatabaseLive } from '@kotodama/database/testing'
-import { selectWord } from '@kotodama/repositories-words'
-import { seedUnreadyWord } from '@kotodama/repositories-words/testing'
 import { Effect, Layer, Option } from 'effect'
 import { createWord } from '../src/word-creator'
 

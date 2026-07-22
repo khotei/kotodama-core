@@ -1,20 +1,20 @@
 import { createHash } from 'node:crypto'
-import { type AiError, AiService } from '@kotodama/ai'
 import {
   AuthorExampleEntity,
+  type BuildProvenanceEntity,
   CulturalGuideEntity,
   enumVisualKind,
   enumWordJobStage,
   type Language,
-  type SourceVersionsEntity,
   type StorageKey,
   VisualEntity,
   type VisualKind,
   type VisualsEntity,
   type WordJobStage,
 } from '@kotodama/database'
-import { WikiClient } from '@kotodama/external-apis'
-import { authorKey, ImagesStore, imageKey, type StorageError } from '@kotodama/storage'
+import { type AiError, AiService } from '@kotodama/platform/ai'
+import { WikiClient } from '@kotodama/platform/external-apis'
+import { authorKey, ImagesStore, imageKey, type StorageError } from '@kotodama/platform/storage'
 import { Effect, Layer, Option, Schema, Semaphore, Struct } from 'effect'
 import { ContentEngine, ContentEngineError } from './content-engine.service'
 import {
@@ -68,7 +68,7 @@ const EnrichAuthorsPlan = Schema.Struct({
 
 // sha256 over every prompt template + the image config, rendered for one fixed sample with no
 // grounding — so the digest tracks the recipe, not the word, and is identical across all words.
-const SOURCE_VERSIONS_PROMPT_HASH: string = createHash('sha256')
+const PROVENANCE_PROMPT_HASH: string = createHash('sha256')
   .update(
     [
       fetchSourcePrompt('en', 'lacuna', undefined),
@@ -85,9 +85,9 @@ const SOURCE_VERSIONS_PROMPT_HASH: string = createHash('sha256')
   .digest('hex')
 
 // Build identity, not a content pass — an engine property, never a key smuggled through a slice.
-const PROVENANCE: SourceVersionsEntity = {
+const PROVENANCE: BuildProvenanceEntity = {
   model: PROVENANCE_MODEL,
-  promptHash: SOURCE_VERSIONS_PROMPT_HASH,
+  promptHash: PROVENANCE_PROMPT_HASH,
   pipeline: 'real-content-engine@0.1',
   stageModels: PROVENANCE_STAGE_MODELS,
 }
@@ -173,7 +173,7 @@ export const RealContentEngineLive: Layer.Layer<
       ai.generateObject(schema, prompt, config).pipe(Effect.mapError(textFailure))
 
     // The one image→storage seam both media stages share. The CALLER builds the key, so the path
-    // scheme stays solely in @kotodama/storage; the model/size/quality decision stays in
+    // scheme stays solely in @kotodama/platform/storage; the model/size/quality decision stays in
     // generation-defaults.
     const renderToStorage = (
       key: StorageKey,
@@ -293,6 +293,6 @@ export const RealContentEngineLive: Layer.Layer<
     ): Effect.Effect<StageSlice<S>, ContentEngineError> =>
       handlers[stage](language, word, grounding)
 
-    return ContentEngine.of({ produce, sourceVersions: PROVENANCE })
+    return ContentEngine.of({ produce, provenance: PROVENANCE })
   }),
 )

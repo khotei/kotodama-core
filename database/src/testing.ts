@@ -34,7 +34,7 @@ class PgContainer extends Context.Service<PgContainer>()('@kotodama/database/tes
   static readonly layer = Layer.effect(this)(this.make)
 }
 
-// Container's generated URI, NOT @kotodama/config's DatabaseUrl (the dev DB).
+// Container's generated URI, NOT @kotodama/platform/config's DatabaseUrl (the dev DB).
 const PgClientLive = Layer.unwrap(
   Effect.gen(function* () {
     const container = yield* PgContainer

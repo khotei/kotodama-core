@@ -1,8 +1,8 @@
 import {
+  type BuildProvenanceEntity,
   enumJobErrorType,
   enumWordJobStage,
   type JobErrorType,
-  type SourceVersionsEntity,
   type WordJobStage,
 } from '@kotodama/database'
 import { Duration, Effect, Layer } from 'effect'
@@ -17,7 +17,7 @@ export type StagePlan =
 export type ContentPolicy = (word: string, stage: WordJobStage) => StagePlan
 
 // Honest placeholders (never the real model/hash), so a mock-built row records that the mock made it.
-const MOCK_SOURCE_VERSIONS: SourceVersionsEntity = {
+const MOCK_PROVENANCE: BuildProvenanceEntity = {
   model: 'mock-content-engine',
   promptHash: 'mock',
   pipeline: 'mock-content-engine@0.1',
@@ -66,7 +66,7 @@ const makeService = (policy: ContentPolicy) =>
         }
         return mockStageContent(stage, word, language)
       }),
-    sourceVersions: MOCK_SOURCE_VERSIONS,
+    provenance: MOCK_PROVENANCE,
   })
 
 /** A `ContentEngine` layer over an injectable {@link ContentPolicy} (defaults to {@link defaultContentPolicy}). */

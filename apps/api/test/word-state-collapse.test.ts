@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@effect/vitest'
-import type { ReadyWord, UnreadyWord, Word } from '@kotodama/core-words'
+import type { ReadyWord, UnreadyWord, Word } from '@kotodama/core/words'
 import {
   type AsyncJobStatus,
   type BuildStagesEntity,

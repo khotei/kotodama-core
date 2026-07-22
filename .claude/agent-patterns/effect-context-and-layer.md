@@ -22,7 +22,7 @@ Read the vendored source before writing DI/wiring code.
 ```ts
 import { Context, Effect, Layer } from 'effect'
 
-export class ContentEngine extends Context.Tag('@kotodama/core-content/ContentEngine')<
+export class ContentEngine extends Context.Tag('@kotodama/core/content/ContentEngine')<
   ContentEngine,
   { readonly produce: (stage: WordJobStage, language: Language, word: string) => Effect.Effect<StageResultEntity> }
 >() {}

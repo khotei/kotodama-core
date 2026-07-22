@@ -49,12 +49,12 @@ export const WordSchemaInsert = createInsertSchema(wordsTable, {
 
 The real implementation is **`database/src/db.ts`** — copy from there, not from web docs
 (still Effect v3: `@effect/sql-drizzle`, `Context.Tag('DB')`). The URL comes from
-`@kotodama/config`'s `DatabaseUrl`, resolved from the active `ConfigProvider`.
+`@kotodama/platform/config`'s `DatabaseUrl`, resolved from the active `ConfigProvider`.
 
 ```ts
 // database/src/db.ts
 import { PgClient } from '@effect/sql-pg'
-import { DatabaseUrl } from '@kotodama/config'
+import { DatabaseUrl } from '@kotodama/platform/config'
 import * as PgDrizzle from 'drizzle-orm/effect-postgres'
 import { Context, Effect, Layer } from 'effect'
 import { relations } from '../schema'
@@ -75,7 +75,7 @@ export const DatabaseLive = DBLive.pipe(Layer.provide(PgClientLive)) // self-con
 ```
 
 ```ts
-// repositories/* — yield the service; never construct drizzle(...) yourself.
+// core/repositories/* — yield the service; never construct drizzle(...) yourself.
 const findById = Effect.fnUntraced(function* (id: string) {
   const db = yield* DB
   return yield* db.query.wordsTable.findFirst({ where: { id } })
@@ -122,7 +122,7 @@ Stronger storage variant: split content into a 1:1 `word_details` table (exists 
 ## Avoid
 
 - A bare `drizzle(...)` / `drizzle-orm/node-postgres` driver, or a hand-rolled `PgClient`, in
-  `repositories/*` — go through the `effect-postgres` layer.
+  `core/repositories/*` — go through the `effect-postgres` layer.
 - `import 'drizzle-orm'` (or a generated row-schema) outside `database/` — hand-author a
   plain `effect/Schema` if another layer needs the shape.
 - Copying the web docs verbatim (`@effect/sql-drizzle`, `Context.Tag('DB')`, `@effect/sql/SqlError`)

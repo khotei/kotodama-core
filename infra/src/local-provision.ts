@@ -7,9 +7,9 @@ import {
   awsResources,
   ConfigProviderLive,
   JobsQueueUrl,
-} from '@kotodama/config'
-import { ensureQueue } from '@kotodama/queue'
-import { ensureBucket } from '@kotodama/storage/provisioning'
+} from '@kotodama/platform/config'
+import { ensureQueue } from '@kotodama/platform/queue'
+import { ensureBucket } from '@kotodama/platform/storage/provisioning'
 import { Effect } from 'effect'
 
 // The dev-only `ensure*` caller (prod layers only consume by URL/name and create nothing).

@@ -2,7 +2,7 @@ import { LANGUAGES, type Language } from '@kotodama/database'
 import type { WordGrounding } from './stage-slices'
 
 // One named builder per stage, kept as a data module (not inlined in handlers) so
-// `sourceVersions.promptHash` can hash each template verbatim.
+// `provenance.promptHash` can hash each template verbatim.
 
 /**
  * Raw Wikipedia facts fed INTO `fetch_source` — named `WikiFacts`, not `…Grounding`, to stay
@@ -119,5 +119,5 @@ export const finalReviewPrompt = (
     '(year + value; empty if you have no data), and an optional change note. Estimate conservatively; do not invent exact counts.',
   ].join('\n')
 
-// A named builder like the text prompts, so a reword shifts `sourceVersions.promptHash`.
+// A named builder like the text prompts, so a reword shifts `provenance.promptHash`.
 export const authorPortraitPrompt = (author: string): string => `Portrait of ${author}.`

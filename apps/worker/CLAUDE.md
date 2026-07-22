@@ -25,6 +25,6 @@ poll-loop (`src/consume.ts` under `BunRuntime` from `src/main.ts`).
 - The prod handler stays deploy-clean (no `BunRuntime`/layer wiring); packaging it into the real
   Lambda entry is a later infra feature.
 
-**May import:** `core/*`, `use-cases/*`, `@kotodama/database` + `repositories/*` (for
-`DatabaseLive`), `@kotodama/*` packages, `effect`, `@effect/platform-bun`. **MUST NOT import:**
-another app. `@kotodama/database/factories` belongs in tests, not `src/**`.
+**May import:** all `@kotodama/core/*` layers (`use-cases`, `words`, `content`, `repositories`,
+`database` — the last for `DatabaseLive`), `@kotodama/platform/*`, `effect`, `@effect/platform-bun`.
+**MUST NOT import:** another app. `@kotodama/database/factories` belongs in tests, not `src/**`.

@@ -2,12 +2,25 @@
   "name": "@kotodama/database",
   "version": "0.0.0",
   "private": true,
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
     "./testing": "./src/testing.ts",
     "./factories": "./src/factories/index.ts"
+  },
+  "dependencies": {
+    "@effect/platform-bun": "catalog:effect",
+    "@effect/sql-pg": "catalog:effect",
+    "@kotodama/platform": "workspace:*",
+    "drizzle-kit": "catalog:db",
+    "drizzle-orm": "catalog:db",
+    "effect": "catalog:effect",
+    "type-fest": "catalog:types"
+  },
+  "devDependencies": {
+    "@faker-js/faker": "catalog:test",
+    "@kotodama/tooling": "workspace:*",
+    "@testcontainers/postgresql": "catalog:test",
+    "testcontainers": "catalog:test"
   },
   "scripts": {
     "db:generate": "bun --bun drizzle-kit generate",
@@ -17,20 +30,5 @@
     "db:seed": "bun run src/seed.ts",
     "test": "bun --bun vitest run",
     "typecheck": "bun --bun tsc --noEmit"
-  },
-  "dependencies": {
-    "@effect/platform-bun": "catalog:effect",
-    "@effect/sql-pg": "catalog:effect",
-    "@kotodama/config": "workspace:*",
-    "drizzle-kit": "catalog:db",
-    "drizzle-orm": "catalog:db",
-    "effect": "catalog:effect",
-    "type-fest": "catalog:types"
-  },
-  "devDependencies": {
-    "@faker-js/faker": "catalog:test",
-    "@testcontainers/postgresql": "catalog:test",
-    "testcontainers": "catalog:test",
-    "@kotodama/tooling": "workspace:*"
   }
 }

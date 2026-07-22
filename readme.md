@@ -31,12 +31,12 @@ POST /api/words/en/lacuna/build
    requestWordBuild ──► words row exists?  ──yes──►  already Ready
         │ no
         ▼
-   seed job + enqueue ──► SQS (packages/queue)
+   seed job + enqueue ──► SQS (platform/queue)
                               │
                               ▼
                       apps/worker consumes ──► buildWord
-                              │                    ├─ OpenAI text + image  (packages/ai)
-                              │                    └─ store images          (packages/storage)
+                              │                    ├─ OpenAI text + image  (platform/ai)
+                              │                    └─ store images          (platform/storage)
                               ▼
                       writes the entry back ──► words row  (a word exists ⇔ every stage succeeded)
         │
@@ -74,15 +74,19 @@ detail.
 | Layer | Owns | Why it's here |
 |---|---|---|
 | `apps/{api,worker}` | HTTP-contract server · SQS consumer | the process boundaries |
-| `use-cases/` | end-to-end flow composers (`requestWordBuild`, `buildWord`) | one place a flow is assembled |
+| `core/use-cases/` | end-to-end flow composers (`requestWordBuild`, `buildWord`) | one place a flow is assembled |
 | `core/{words,content}` | domain logic + the `ContentEngine` swap seam | the rules a flow runs |
-| `repositories/` | bare persistence functions over the DB layer | the only SQL surface |
+| `core/repositories/` | bare persistence functions over the DB layer | the only SQL surface |
 | `database/` | Drizzle schema + the word vocabulary + `WordEntity` | the bottom; authors the row shapes |
-| `packages/{ai,queue,storage,config,observability,…}` | boundary adapters + leaf infra | import nothing internal |
+| `platform/{ai,queue,storage,config,external-apis,observability,…}` | boundary adapters + leaf infra | import nothing internal |
 | `infra/` | Docker Compose (local) · Pulumi (later) · `local:*` scripts | dev/ops, never imported by app code |
 
+The middle tiers are layer folders of the single `@kotodama/core` package (subpath-exported);
+`database` is its own bottom-of-chain `@kotodama/database` workspace; `platform/*` are the adapter
+folders of the single leaf `@kotodama/platform`.
+
 **Dependency direction** (enforced by Biome): `apps → use-cases → core → repositories → database`,
-and everything → `packages`. The full rule + enforcement lives in
+and everything → `platform`. The full rule + enforcement lives in
 [`.claude/rules/dependency-hierarchy.md`](.claude/rules/dependency-hierarchy.md); the topology map is
 [`docs/architecture.md`](docs/architecture.md).
 

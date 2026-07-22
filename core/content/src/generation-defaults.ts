@@ -1,5 +1,5 @@
-import type { ImageOptions, ImageSize, ResilienceConfig } from '@kotodama/ai'
 import { enumVisualKind, enumWordJobStage, type VisualKind } from '@kotodama/database'
+import type { ImageOptions, ImageSize, ResilienceConfig } from '@kotodama/platform/ai'
 import { Duration } from 'effect'
 
 // The one surface to retune — kept out of the engine so the pipeline file stays pure topology.

@@ -3,12 +3,12 @@ import {
   MockContentEngine,
   WordGenerationService,
   WordGenerationServiceLive,
-} from '@kotodama/core-content'
-import { WordBuildMessageFromJson } from '@kotodama/core-words'
+} from '@kotodama/core/content'
+import { selectWords } from '@kotodama/core/repositories'
+import { seedUnreadyWord } from '@kotodama/core/repositories/testing'
+import { WordBuildMessageFromJson } from '@kotodama/core/words'
 import { enumLanguage } from '@kotodama/database'
 import { resetDb, TestDatabaseLive } from '@kotodama/database/testing'
-import { selectWords } from '@kotodama/repositories-words'
-import { seedUnreadyWord } from '@kotodama/repositories-words/testing'
 import { Effect, Layer, Schema } from 'effect'
 import { processBatch } from '../src/process-batch'
 

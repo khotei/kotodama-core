@@ -73,7 +73,7 @@ it.layer(TestDatabaseLive, { timeout: '120 seconds' })((it) => {
       expect(word.authorExamples?.length).toBeGreaterThan(0)
       expect(word.translations?.[0]?.language).toBe(enumLanguage.fr)
       expect(word.etymology?.descent.length).toBeGreaterThan(0)
-      expect(word.sourceVersions?.model).toBeDefined()
+      expect(word.provenance?.model).toBeDefined()
     }),
   )
 

@@ -5,7 +5,7 @@ import {
   WordAlreadyReadyError,
   WordBuildInProgressError,
   WordNotReadyError,
-} from '@kotodama/core-words'
+} from '@kotodama/core/words'
 import { AsyncJobStatus, WordEntity } from '@kotodama/database'
 import { Schema } from 'effect'
 import { HttpApiEndpoint, HttpApiGroup } from 'effect/unstable/httpapi'

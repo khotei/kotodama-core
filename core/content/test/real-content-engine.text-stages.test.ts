@@ -1,5 +1,4 @@
 import { describe, expect, it } from '@effect/vitest'
-import { AiServiceTest } from '@kotodama/ai/testing'
 import {
   EtymologyEntity,
   enumFrequencyBand,
@@ -9,8 +8,9 @@ import {
   TiersEntity,
   TranslationEntity,
 } from '@kotodama/database'
-import { WikiClientTest } from '@kotodama/external-apis/testing'
-import { UnusedStorage } from '@kotodama/storage/testing'
+import { AiServiceTest } from '@kotodama/platform/ai/testing'
+import { WikiClientTest } from '@kotodama/platform/external-apis/testing'
+import { UnusedStorage } from '@kotodama/platform/storage/testing'
 import { Effect, Layer, Schema } from 'effect'
 import { ContentEngine, ContentEngineError } from '../src'
 import { RealContentEngineLive } from '../src/real-content-engine.service'
@@ -93,7 +93,7 @@ describe('RealContentEngine.produce — text enrichment stages', () => {
         const engine = yield* ContentEngine
         const result = yield* engine.produce('final_review', enumLanguage.en, 'lacuna')
 
-        // No provenance keys on the result — build provenance lives on the engine's `sourceVersions`
+        // No provenance keys on the result — build provenance lives on the engine's `provenance`
         // (real-content-engine.provenance.test.ts), not smuggled through this slice.
         expect(new Set(Object.keys(result))).toEqual(new Set(['frequency']))
         const decoded = Schema.decodeUnknownSync(FrequencySlice)(result)

@@ -24,3 +24,4 @@ dist/
 .claude/scheduled_tasks.lock
 
 # Note: bun.lock is committed (do NOT ignore it)
+

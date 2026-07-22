@@ -1,0 +1,28 @@
+{
+  "name": "@kotodama/core",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./repositories": "./repositories/words/src/index.ts",
+    "./repositories/testing": "./repositories/words/src/testing.ts",
+    "./words": "./words/src/index.ts",
+    "./content": "./content/src/index.ts",
+    "./use-cases": "./use-cases/src/index.ts"
+  },
+  "dependencies": {
+    "@kotodama/database": "workspace:*",
+    "@kotodama/platform": "workspace:*",
+    "drizzle-orm": "catalog:db",
+    "effect": "catalog:effect"
+  },
+  "devDependencies": {
+    "@faker-js/faker": "catalog:test",
+    "@kotodama/tooling": "workspace:*",
+    "@testcontainers/postgresql": "catalog:test",
+    "testcontainers": "catalog:test"
+  },
+  "scripts": {
+    "test": "bun --bun vitest run",
+    "typecheck": "bun --bun tsc --noEmit"
+  }
+}

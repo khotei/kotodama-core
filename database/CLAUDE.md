@@ -7,7 +7,7 @@ layout, `…Table` suffix, entity derivation) live in `.claude/rules/naming.md` 
 - **Schema authority — entity-level ONLY:** this package authors the *storage* vocabulary (value
   tuples + `pgEnum`s, content schemas suffixed `Entity`, the `<Name>Entity`/`<Name>EntityInsert`
   row schemas). **Shapes *derived* from the entities live in the core package that owns them,
-  never here** — the `Word` union is `core-words`', `WordContent` is `core-content`'s, the views
+  never here** — the `Word` union is `core/words`', `WordContent` is `core/content`'s, the views
   are the API edge's. One author per shape, no cycle.
 - **`words` is one lifecycle row:** every row carries `status` (the reused `async_job_status`
   enum — never a second enum) and all content columns are **nullable** (a row exists from the
@@ -25,10 +25,11 @@ layout, `…Table` suffix, entity derivation) live in `.claude/rules/naming.md` 
   the new baseline.
 - **Migrations** use the drizzle-kit rc format: one timestamped folder per migration
   (`migration.sql` + `snapshot.json`, chained via `prevIds` — no central `_journal.json`).
-- `db:*` scripts are config-driven through `@kotodama/config` (no hardcoded URLs); they target the
+- `db:*` scripts are config-driven through `@kotodama/platform/config` (no hardcoded URLs); they target the
   **dev** DB. Tests never touch it — ephemeral Testcontainers Postgres via
   `@kotodama/database/testing` (`TestDatabaseLive` migrates itself; `resetDb` per test — see
   `.claude/rules/testing.md`).
 
-**May import:** `@kotodama/*` packages, `effect`, `@effect/sql-pg`, drizzle. **Never** `core/*`,
-`repositories/*`, `apps/*`.
+**May import:** `@kotodama/platform/*`, `effect`, `@effect/sql-pg`, drizzle. **Never** the sibling
+core layers (`@kotodama/core/{words,content,repositories,use-cases}`) or `apps/*` — this is the
+bottom folder of `@kotodama/core` (Biome-enforced on `database/**`).

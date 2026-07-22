@@ -2,9 +2,14 @@
 
 ## Packages
 
-`@kotodama/<folder>`, nested folders flatten with a dash: `core/words` → `@kotodama/core-words`,
-`repositories/words` → `@kotodama/repositories-words`, `database` → `@kotodama/database`. Apps drop
-the plural: `apps/api` → `@kotodama/app-api`.
+Six workspaces: `apps/{api,worker}` (apps drop the plural → `@kotodama/app-api`,
+`@kotodama/app-worker`), the two aggregate packages **`@kotodama/core`** and
+**`@kotodama/platform`**, plus the standalone **`@kotodama/database`**, `@kotodama/infra` and
+`@kotodama/tooling`. `core` and `platform` expose their layer/adapter folders as **subpath exports**,
+not separate dash-flattened packages: `core/words` → `@kotodama/core/words`,
+`core/repositories/words` → `@kotodama/core/repositories`; `platform/config` →
+`@kotodama/platform/config`, `platform/ai` → `@kotodama/platform/ai`. `database` stays a normal
+top-level package (`@kotodama/database`) — its drizzle/migration tooling earns the boundary.
 
 ## Files
 
@@ -15,9 +20,9 @@ the plural: `apps/api` → `@kotodama/app-api`.
 
   | Suffix | Role | Layer |
   |---|---|---|
-  | `.service.ts` | a `Context.Service` (or its concrete/mock `Layer`) | `core/**`, `packages/**` |
-  | `.use-case.ts` | a user-flow composer function | `use-cases/**` |
-  | `.repo.ts` | bare persistence functions (`selectX`/`upsertX` — not a service, not a namespace object) | `repositories/**` |
+  | `.service.ts` | a `Context.Service` (or its concrete/mock `Layer`) | `core/**`, `platform/**` |
+  | `.use-case.ts` | a user-flow composer function | `core/use-cases/**` |
+  | `.repo.ts` | bare persistence functions (`selectX`/`upsertX` — not a service, not a namespace object) | `core/repositories/**` |
   | `.schema.ts` | other `effect/Schema` definitions (results, messages) | `core/**` |
   | `.api.ts` / `.handler.ts` | an `HttpApi` contract / its handler bindings | `apps/api/**` |
   | `.view.ts` / `.model.ts` | a computed view model (presentation edge) / read model (core) — no backing row | edge / `core/**` |
@@ -28,9 +33,9 @@ the plural: `apps/api` → `@kotodama/app-api`.
   (plain `Effect.fnUntraced` functions, not services) — stays a bare kebab-case name. Tests mirror
   the source they cover, suffix included (`words.repo.test.ts`), in the workspace's `test/` folder.
 - **Entrypoints:** `src/main.ts` (apps), `src/index.ts` (libraries).
-- `database/schema/` groups by aggregate/domain (one folder per repository boundary, named to match
-  the repo package); cross-domain helpers stay at the `schema/` root; the barrel `schema/index.ts`
-  re-exports every group. Details: `database/CLAUDE.md`.
+- `database/schema/` groups by aggregate/domain (one folder per repository boundary, named to
+  match the repo folder); cross-domain helpers stay at the `schema/` root; the barrel
+  `schema/index.ts` re-exports every group. Details: `database/CLAUDE.md`.
 
 ## Symbols
 
@@ -47,7 +52,7 @@ carries its role noun, so the bare name is unambiguous by elimination. **Never s
   + domain: `selectWords`, `upsertWord`, `searchWords` (a filtered/ordered/paged read),
   `selectWordCounts` (an aggregate read — a `select*` whose name mirrors its `WordCounts` return
   shape, just as `selectWord` returns a `Word`, so it stays role-noun-free, not `count*`). The DB
-  verb says "raw `repositories/**` layer". No `Repo` symbols — repos are bare exported functions.
+  verb says "raw `core/repositories/**` layer". No `Repo` symbols — repos are bare exported functions.
 - **Core logic & app-flows use a domain verb** — `find`/`get`/`ensure`/`collapse`/`assemble`/
   `build`/`request`: `ensureWordBuildable`, `requestWordBuild`. The partition kills collisions —
   the verb alone tells you the layer, no namespace prefix needed.
@@ -92,7 +97,7 @@ DatabaseLive`); and a `Context.Service` file reads Shape → tag → helpers →
 ## Effect
 
 - `Context.Service`/`Context.Tag` ids are slash-namespaced to the package:
-  `Context.Tag<ContentEngine>("@kotodama/core-content/ContentEngine")`.
+  `Context.Tag<ContentEngine>("@kotodama/core/content/ContentEngine")`.
 - Tagged errors: `PascalCase` ending in `Error` (`WordNotFoundError`), via `Data.TaggedError`.
 - Layers: one `*Live` per boundary service — the swappable client/config rides the service's `R`
   channel, is provided at the app entrypoint, and is faked in tests.

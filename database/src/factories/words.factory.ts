@@ -4,6 +4,7 @@ import { WORD_JOB_STAGES } from '../../schema/words/build-stages.entity'
 import { enumAsyncJobStatus } from '../../schema/words/word-status'
 import type {
   AuthorExampleEntity,
+  BuildProvenanceEntity,
   CulturalGuideEntity,
   EtymologyEntity,
   EtymologyStageEntity,
@@ -12,7 +13,6 @@ import type {
   PronunciationEntity,
   RelationsEntity,
   SourceEntity,
-  SourceVersionsEntity,
   StorageKey,
   TierEntity,
   TiersEntity,
@@ -167,11 +167,11 @@ export const makeWordInsert = (overrides: Partial<WordInsert> = {}): WordInsert 
     translations: makeTranslations(),
     visuals: makeVisuals(),
     sources,
-    sourceVersions: {
+    provenance: {
       model: faker.helpers.arrayElement(['gpt-4o', 'gpt-4o-mini']),
       promptHash: faker.string.alphanumeric(16),
       pipeline: `v${faker.number.int({ min: 1, max: 3 })}`,
-    } satisfies SourceVersionsEntity,
+    } satisfies BuildProvenanceEntity,
     frequency: makeFrequency(),
     ...overrides,
   }

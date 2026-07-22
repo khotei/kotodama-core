@@ -1,9 +1,9 @@
-import { ConfigProviderLive, DatabaseUrl } from '@kotodama/config'
+import { ConfigProviderLive, DatabaseUrl } from '@kotodama/platform/config'
 import { defineConfig } from 'drizzle-kit'
 import { Effect, Redacted } from 'effect'
 
 // drizzle-kit is a plain CLI (no Effect runtime), so resolve `DatabaseUrl` through
-// `@kotodama/config` with `runSync`. Override per-command with an exported `DATABASE_URL`.
+// `@kotodama/platform/config` with `runSync`. Override per-command with an exported `DATABASE_URL`.
 const databaseUrl = Redacted.value(Effect.runSync(Effect.provide(DatabaseUrl, ConfigProviderLive)))
 
 export default defineConfig({

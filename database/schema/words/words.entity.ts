@@ -18,7 +18,7 @@ import { FrequencyBand, SourceType, VisualKind } from './words.values'
  *   OpenAI structured output rejects `undefined` in the AST, translates every key to
  *   required-nullable, and decodes a returned `null` back to an absent key.
  * - Render-filled keys (`imageKey`, `authorImageUrl`) are required HERE: a stored word always has
- *   its images. The generation *plan* variant (`@kotodama/core-content`) omits them and the render
+ *   its images. The generation *plan* variant (`@kotodama/core/content`) omits them and the render
  *   step fills them — the plan, not this stored schema, carries the absence.
  */
 
@@ -166,13 +166,13 @@ export type FrequencyEntity = typeof FrequencyEntity.Type
  * Which models/prompts/pipeline produced the row — stamped at promotion, static per engine
  * version, so "find stale words" can detect a recipe change.
  */
-export const SourceVersionsEntity = Schema.Struct({
+export const BuildProvenanceEntity = Schema.Struct({
   model: Schema.String,
   promptHash: Schema.String,
   pipeline: Schema.optionalKey(Schema.String),
   stageModels: Schema.optionalKey(Schema.Record(Schema.String, Schema.String)),
 })
-export type SourceVersionsEntity = typeof SourceVersionsEntity.Type
+export type BuildProvenanceEntity = typeof BuildProvenanceEntity.Type
 
 /**
  * The `words` row as a runtime schema, every jsonb column overridden with its authored content
@@ -180,7 +180,7 @@ export type SourceVersionsEntity = typeof SourceVersionsEntity.Type
  *
  * Deliberately the strict **ready-row** shape (content non-null) even though the table's content
  * columns are nullable: `ReadyWord` pins it and `WordContent`/`STAGE_SLICES` derive from it. The
- * permissive lifecycle row is decoded by the `Word` union (`@kotodama/core-words`), never by
+ * permissive lifecycle row is decoded by the `Word` union (`@kotodama/core/words`), never by
  * loosening this schema.
  */
 export const WordEntity = createSelectSchema(wordsTable, {
@@ -200,7 +200,7 @@ export const WordEntity = createSelectSchema(wordsTable, {
   translations: Schema.Array(TranslationEntity),
   visuals: VisualsEntity,
   sources: Schema.Array(SourceEntity),
-  sourceVersions: SourceVersionsEntity,
+  provenance: BuildProvenanceEntity,
   // A bare-schema override owns its own nullability (column nullability is not auto-applied).
   frequency: Schema.NullOr(FrequencyEntity),
 })
@@ -235,7 +235,7 @@ export const WordEntityInsert = createInsertSchema(wordsTable, {
   translations: Schema.NullOr(Schema.mutable(Schema.Array(TranslationEntity))),
   visuals: Schema.NullOr(VisualsEntity),
   sources: Schema.NullOr(Schema.mutable(Schema.Array(SourceEntity))),
-  sourceVersions: Schema.NullOr(SourceVersionsEntity),
+  provenance: Schema.NullOr(BuildProvenanceEntity),
   frequency: Schema.NullOr(FrequencyEntity),
 })
 export type WordEntityInsert = typeof WordEntityInsert.Type

@@ -1,7 +1,7 @@
 ---
 paths:
   - "database/**"
-  - "repositories/**"
+  - "core/repositories/**"
 ---
 
 # Drizzle ⇄ Effect (the mandated pattern)
@@ -25,16 +25,17 @@ Canonical implementation: `database/src/db.ts` — read it first.
 
 - `PgDrizzle.make({ relations })` over a `PgClient` layer; `PgDrizzle.DefaultServices` supplies the
   no-op logger/cache it requires.
-- `PgClient` config goes through `@kotodama/config` (`PgClient.layerConfig({ url: DatabaseUrl })`) —
+- `PgClient` config goes through `@kotodama/platform/config` (`PgClient.layerConfig({ url: DatabaseUrl })`) —
   take the one config you need, not the whole `AppConfig` bundle. DB **tests** bypass this layer
   entirely (ephemeral Testcontainers Postgres — `@kotodama/database/testing`).
-- Expose **layers only** (`PgClientLive`, `DBLive`, `DatabaseLive`); `repositories/*` `yield*` the
-  `DB` service — **never** a bare `drizzle(...)`/driver or a hand-rolled `PgClient`.
+- Expose **layers only** (`PgClientLive`, `DBLive`, `DatabaseLive`); `core/repositories/*` `yield*`
+  the `DB` service — **never** a bare `drizzle(...)`/driver or a hand-rolled `PgClient`.
 
 ## Schema conventions
 
 - **One folder per aggregate** under `database/schema/`, re-exported by the `schema/index.ts`
-  barrel — the single `drizzle.config` `schema` entry (a directory glob would double-count the
+  barrel — the single `drizzle.config` `schema` entry (`core/drizzle.config.ts`, `schema:
+  ./database/schema/index.ts`, `out: ./database/migrations`; a directory glob would double-count the
   barrel's re-exports).
 - Table exports are suffixed `…Table` (`wordsTable`), declared with `snakeCase.table` — **never
   also set `transformQueryNames`**. The table file also exports `<Entity>Row`

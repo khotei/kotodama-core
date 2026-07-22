@@ -11,17 +11,9 @@
   "dependencies": {
     "@effect/ai-openai": "catalog:effect",
     "@effect/platform-bun": "catalog:effect",
-    "@kotodama/ai": "workspace:*",
-    "@kotodama/config": "workspace:*",
-    "@kotodama/core-content": "workspace:*",
-    "@kotodama/core-words": "workspace:*",
+    "@kotodama/core": "workspace:*",
     "@kotodama/database": "workspace:*",
-    "@kotodama/external-apis": "workspace:*",
-    "@kotodama/observability": "workspace:*",
-    "@kotodama/queue": "workspace:*",
-    "@kotodama/repositories-words": "workspace:*",
-    "@kotodama/storage": "workspace:*",
-    "@kotodama/use-cases": "workspace:*",
+    "@kotodama/platform": "workspace:*",
     "effect": "catalog:effect"
   },
   "devDependencies": {

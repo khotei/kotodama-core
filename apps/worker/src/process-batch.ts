@@ -1,5 +1,5 @@
-import { WordBuildMessageFromJson } from '@kotodama/core-words'
-import { buildWord } from '@kotodama/use-cases'
+import { buildWord } from '@kotodama/core/use-cases'
+import { WordBuildMessageFromJson } from '@kotodama/core/words'
 import { Array as Arr, Context, Effect, Option, Schema } from 'effect'
 
 // The prod edge passes the SQS `messageId` as `id`; the local edge the receipt `handle`.

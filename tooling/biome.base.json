@@ -1,0 +1,193 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.4.16/schema.json",
+  "root": true,
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "ignoreUnknown": true,
+    "includes": ["**", "!repos", "!**/dist", "!**/migrations"]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100
+  },
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "semicolons": "asNeeded",
+      "trailingCommas": "all"
+    }
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "correctness": {
+        "noUnusedImports": "error"
+      },
+      "suspicious": {
+        "noExplicitAny": "error"
+      },
+      "style": {
+        "useImportType": "error",
+        "noRestrictedImports": {
+          "level": "error",
+          "options": {
+            "patterns": [
+              {
+                "group": ["**/repos/**"],
+                "message": "Do not import from repos/ — it is vendored, read-only reference material. Import the published package (effect, @effect/*) instead."
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["platform/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@kotodama/core", "@kotodama/core/**", "@kotodama/app-*"],
+                    "message": "Layer violation: platform/* are leaves and must not import core (@kotodama/core/*) or apps. See CLAUDE.md dependency hierarchy."
+                  },
+                  {
+                    "group": ["**/repos/**"],
+                    "message": "Do not import from repos/ — it is vendored, read-only reference material. Import the published package (effect, @effect/*) instead."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["database/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@kotodama/core", "@kotodama/core/**", "@kotodama/app-*"],
+                    "message": "Layer violation: database is the bottom of the chain — it may import @kotodama/platform/*, never core or apps."
+                  },
+                  {
+                    "group": ["**/repos/**"],
+                    "message": "Do not import from repos/ — it is vendored, read-only reference material. Import the published package (effect, @effect/*) instead."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["core/repositories/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": [
+                      "@kotodama/core/words",
+                      "@kotodama/core/words/**",
+                      "@kotodama/core/content",
+                      "@kotodama/core/content/**",
+                      "@kotodama/core/use-cases",
+                      "@kotodama/core/use-cases/**",
+                      "@kotodama/app-*"
+                    ],
+                    "message": "Layer violation: core/repositories may import core/database + platform only, never words/content/use-cases or apps."
+                  },
+                  {
+                    "group": ["**/repos/**"],
+                    "message": "Do not import from repos/ — it is vendored, read-only reference material. Import the published package (effect, @effect/*) instead."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["core/words/**", "core/content/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": [
+                      "@kotodama/core/use-cases",
+                      "@kotodama/core/use-cases/**",
+                      "@kotodama/app-*"
+                    ],
+                    "message": "Layer violation: the core domain (words/content) must not import use-cases or apps."
+                  },
+                  {
+                    "group": ["**/repos/**"],
+                    "message": "Do not import from repos/ — it is vendored, read-only reference material. Import the published package (effect, @effect/*) instead."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["core/use-cases/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@kotodama/app-*"],
+                    "message": "Layer violation: core/use-cases is the top tier below apps — it composes the layers below but must not import apps."
+                  },
+                  {
+                    "group": ["**/repos/**"],
+                    "message": "Do not import from repos/ — it is vendored, read-only reference material. Import the published package (effect, @effect/*) instead."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,5 +1,5 @@
-import { AiService } from '@kotodama/ai'
-import { VERIFIER_MODEL } from '@kotodama/core-content'
+import { VERIFIER_MODEL } from '@kotodama/core/content'
+import { AiService } from '@kotodama/platform/ai'
 import { Effect, Schema } from 'effect'
 import { InvalidWordInputError, parseWordInput } from './word-input'
 

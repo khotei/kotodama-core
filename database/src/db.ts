@@ -1,5 +1,5 @@
 import { PgClient } from '@effect/sql-pg'
-import { DatabaseUrl } from '@kotodama/config'
+import { DatabaseUrl } from '@kotodama/platform/config'
 import * as PgDrizzle from 'drizzle-orm/effect-postgres'
 import { Context, Effect, Layer } from 'effect'
 import { relations } from '../schema'

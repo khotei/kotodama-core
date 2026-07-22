@@ -22,7 +22,7 @@ codebase already shows the idiom.
   entrypoint, never construct dependencies inside use cases.
 - **In-beta APIs live under `effect/unstable/*`** (notably parts of HttpApi) — import from there,
   not a guessed stable path.
-- Errors: `Data.TaggedError` + `Effect.catchTag(s)`. Config: `effect/Config` via `@kotodama/config`.
+- Errors: `Data.TaggedError` + `Effect.catchTag(s)`. Config: `effect/Config` via `@kotodama/platform/config`.
   DB: `drizzle-orm/effect-postgres` (see `.claude/rules/drizzle-effect.md`). Entrypoints:
   `BunRuntime.runMain`.
 

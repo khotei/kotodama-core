@@ -6,6 +6,7 @@ import type { BuildStagesEntity } from './build-stages.entity'
 import { asyncJobStatus, enumAsyncJobStatus } from './word-status'
 import type {
   AuthorExampleEntity,
+  BuildProvenanceEntity,
   CulturalGuideEntity,
   EtymologyEntity,
   FrequencyEntity,
@@ -13,7 +14,6 @@ import type {
   PronunciationEntity,
   RelationsEntity,
   SourceEntity,
-  SourceVersionsEntity,
   TiersEntity,
   TranslationEntity,
   VisualsEntity,
@@ -52,7 +52,7 @@ export const wordsTable = snakeCase.table(
     translations: jsonb().$type<TranslationEntity[]>(),
     visuals: jsonb().$type<VisualsEntity>(),
     sources: jsonb().$type<SourceEntity[]>(),
-    sourceVersions: jsonb().$type<SourceVersionsEntity>(),
+    provenance: jsonb().$type<BuildProvenanceEntity>(),
     frequency: jsonb().$type<FrequencyEntity>(),
     ...timestampColumns,
   },
@@ -60,7 +60,7 @@ export const wordsTable = snakeCase.table(
     unique().on(t.word, t.language),
     check(
       'words_succeeded_content_present',
-      sql`${t.status} <> ${enumAsyncJobStatus.succeeded} OR (${t.coreDefinition} IS NOT NULL AND ${t.lexical} IS NOT NULL AND ${t.pronunciation} IS NOT NULL AND ${t.tiers} IS NOT NULL AND ${t.etymology} IS NOT NULL AND ${t.authorExamples} IS NOT NULL AND ${t.culturalGuide} IS NOT NULL AND ${t.relations} IS NOT NULL AND ${t.translations} IS NOT NULL AND ${t.visuals} IS NOT NULL AND ${t.sources} IS NOT NULL AND ${t.sourceVersions} IS NOT NULL)`,
+      sql`${t.status} <> ${enumAsyncJobStatus.succeeded} OR (${t.coreDefinition} IS NOT NULL AND ${t.lexical} IS NOT NULL AND ${t.pronunciation} IS NOT NULL AND ${t.tiers} IS NOT NULL AND ${t.etymology} IS NOT NULL AND ${t.authorExamples} IS NOT NULL AND ${t.culturalGuide} IS NOT NULL AND ${t.relations} IS NOT NULL AND ${t.translations} IS NOT NULL AND ${t.visuals} IS NOT NULL AND ${t.sources} IS NOT NULL AND ${t.provenance} IS NOT NULL)`,
     ),
     index('words_language_created_at_word_idx').on(
       t.language,
