@@ -21,7 +21,7 @@ apps/{api,worker} ─► core/use-cases ─► core/{words,content} ─► core/
 ```
 
 **Enforcement:** Biome `style/noRestrictedImports` per-**folder**-glob overrides in
-`tooling/biome.base.json` fail lint on a forbidden import — each override matches a layer folder
+`.tooling/biome.base.json` fail lint on a forbidden import — each override matches a layer folder
 (`database/**`, `core/repositories/**`, `core/words|content/**`, `core/use-cases/**`,
 `platform/**`) and bans the `@kotodama/core/*` subpath specifiers above it (e.g. `database/**`
 may not import `@kotodama/core/{words,content,repositories,use-cases}`; `platform/**` may not import

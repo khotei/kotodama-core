@@ -9,7 +9,7 @@
 | `bun run test` | `bun run --filter '*' test` (each workspace's own `bun --bun vitest run`) | CI only |
 | `bun run check` | `lint` + `tsc` | manual / `/check` |
 
-**Shared config presets** live in the `@kotodama/tooling` workspace (`tooling/`):
+**Shared config presets** live in the `@kotodama/tooling` workspace (`.tooling/` — dot-hidden: write-once config, not day-to-day code):
 `tsconfig.base.json`, `vitest.base.ts`, and the Biome config `biome.base.json` (2-space, single
 quotes, semicolons as-needed, width 100). **There is no config file in the repo root at all.**
 
@@ -20,7 +20,7 @@ quotes, semicolons as-needed, width 100). **There is no config file in the repo 
 - **Biome** cannot use a package specifier, and its config is NOT at the root. Two deliberate moves
   make a root-less Biome work: (1) the file is named `biome.base.json`, **not** `biome.json`, so
   Biome's auto-discovery never picks it up as a stray nested config on a full-tree scan; (2) every
-  Biome invocation passes `--config-path tooling/biome.base.json` (the two root scripts +
+  Biome invocation passes `--config-path .tooling/biome.base.json` (the two root scripts +
   the husky hook), and the file is `"root": true`. The layer rule is encoded via
   `style/noRestrictedImports` per-**folder**-glob overrides in it (one per layer folder —
   `database/**`, `core/repositories/**`, `core/words|content/**`, `core/use-cases/**`,
@@ -45,7 +45,7 @@ CI only). `git commit --no-verify` bypasses it — genuine emergencies only, nev
 
 ## Single source of truth: `package.json#workspaces`
 
-The workspace list is `["apps/*","core","database","platform","infra","tooling"]` — `core` and `platform` are
+The workspace list is `["apps/*","core","database","platform","infra",".tooling"]` — `core` and `platform` are
 each **one aggregate package** whose layer/adapter folders are subpath exports, not separate
 workspaces. **The package list lives in exactly one place. There is no root `tsconfig.json` and no
 root `vitest.config.ts` — never reintroduce one to hand-list packages.**
