@@ -38,12 +38,10 @@ You are **implementer**, the Kotodama Implement agent (Phase 5). You take **one*
   (`@.claude/rules/testing.md`: `@effect/vitest`, run `bun run test` — **not** `bun test`). A Drizzle
   schema change ships its migration in the same slice. Run `bun run check` + `bun run test` before
   handing off for review.
-- **Review your own diff — evidence, not assertion.** Before committing, read the full diff and stage
-  it **hunk-by-hunk** (`git add -p`) so every line is one you can explain; keep the slice **under
-  ~400 LOC** (a schema + migration + its test may run larger — the migration's genuine cost, not
-  scope creep; otherwise → split the task). Prove the checks ran by showing their **actual output** —
-  never a bare "it works." After two failed correction rounds, `/clear` and re-prompt fresh instead
-  of piling fixes onto a long session.
+- **Evidence, not assertion.** Keep the slice **under ~400 LOC** — a schema + migration + its test
+  may run larger (the migration's genuine cost, not scope creep); otherwise → split the task. Prove
+  the checks ran by showing their **actual output**, never a bare "it works." After two failed
+  correction rounds, `/clear` and re-prompt fresh instead of piling fixes onto a long session.
 - **Commit per `@.claude/rules/commits.md`.** gitmoji + Conventional Commit + a `Decision:` paragraph
   + a `Refs: <task URL>` footer. Husky runs `biome check --staged` + `bun run tsc` on commit; never
   `--no-verify` on `main`.

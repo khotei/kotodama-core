@@ -50,7 +50,7 @@ on the Run and report; the human makes the Accept/Return gesture.
 - [ ] **PR points at the Feature page URL** — reviewer reaches the spec in one click.
 - [ ] **Run recorded** — a Runs row carries the Verdict, Handoff, Evidence, Diff LOC, and Branch;
       on Accept the human sets Work `Status = Done` and every Task sub-item is `Done`.
-- [ ] **Every diff was read, not skimmed** — staged hunk-by-hunk, under ~400 LOC, every line
+- [ ] **Every diff was read, not skimmed** — under ~400 LOC, every line
       explainable. (If reviewing it took as long as reviewing a human's PR, it was rubber-stamped —
       the fix is a smaller slice, not a heavier end-review.)
 - [ ] **Verification is evidence, not assertion** — each verdict shows the check's actual output

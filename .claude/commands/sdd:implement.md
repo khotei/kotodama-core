@@ -33,14 +33,7 @@ first, stay scoped, living spec, respect the repo rules, commit per `@.claude/ru
 5. **Living spec.** If implementation reveals a spec gap, **STOP** — propose the spec change, get the
    user's confirmation, then record the decision in the commit's `Decision:` paragraph (never a
    Notion change-log) before continuing.
-6. **Review your own diff — evidence, not assertion.** Before committing, read the whole diff and
-   stage it **hunk-by-hunk** (`git add -p`) — a decision per change, so every line is one you can
-   explain. Keep the slice **under ~400 LOC** (a Drizzle schema + migration + its test may run
-   larger — that's the migration's genuine cost, not scope creep); past that a diff is unreviewable
-   even when correct — split the task. Show the check's **actual output** as proof it's green; never
-   assert "it works." If two correction rounds fail to make it pass, `/clear` and re-prompt fresh
-   rather than accreting fixes on a long session.
-7. **Finish — hand off to the review gate.** When every AC in `Hard AC:` passes and `bun run check` +
+6. **Finish — hand off to the review gate.** When every AC in `Hard AC:` passes and `bun run check` +
    `bun run test` (**not** `bun test`) are green, commit per `@.claude/rules/commits.md`
    (`Refs: <task URL>`). Then **create a Run row** in the Runs DB (`Verdict = Needs review`,
    `Handoff` summary, `Evidence` URL, `Diff LOC`, `Branch`, `Cost`, `Agent` + `Task` relations) and

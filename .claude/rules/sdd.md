@@ -32,7 +32,7 @@ protect it — this is the *why* behind their shape:
 - **The contract goes first** — ACs/tests committed before the fill (`/sdd:implement` writes the
   failing test first).
 - **The heavy review lands once, on the plan** — a reviewed contract surface; tasks only conform.
-- **Each slice stays under ~400 LOC** — read hunk-by-hunk (`git add -p`), or it's two tasks.
+- **Each slice stays under ~400 LOC** — or it's two tasks.
 - **Verification is evidence, not assertion** — a fresh `verifier` re-checks behavior, records the
   Verdict on a **Run**, and feeds the human Accept/Return gate.
 
