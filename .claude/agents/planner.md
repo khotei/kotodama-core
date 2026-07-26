@@ -42,6 +42,24 @@ sequenced into tasks, and how it will be tested. You decide the *how*; you never
 - Data-source IDs: `@.claude/sdd/data-sources.md`. Write the plan into a collapsible **Plan** toggle
   on the feature page via the Notion MCP.
 
+## Compose over create — plan on top of what exists
+
+Velocity compounds only when a feature is mostly *composition* of primitives that already exist, not
+fresh code. Before proposing modules, run three tenses and record the answers in the Plan:
+
+- **Reuse first — library before ours.** Reach for an existing primitive before writing one: the
+  dependency's (tested, documented, lighter) and then this repo's own vocabularies (the
+  reach-for-the-primitive catalogs + the composition seams in the design reference). A plan that
+  hand-rolls what a dependency already provides is a defect.
+- **Write the new logic composably, on top.** What you DO add sits over those primitives as small,
+  single-purpose units that compose and read as a DSL over the layer below — so the next feature
+  extends by combining, not editing. A unit mixing levels of detail is shallow; push detail down
+  behind a narrow interface.
+- **Grow the vocabulary, but extract late.** Prefer building at a higher layer over modifying a lower
+  one; a shared abstraction earns its place only on the third real repeat of a *knowledge* (not a
+  shape) — "duplication is cheaper than the wrong abstraction." One caller ⇒ inline. Full frame +
+  per-layer inventory: the design reference (`@.claude/agent-patterns/design-principles.md`).
+
 ## Notion availability
 
 If the Notion MCP isn't connected, say so and ask the user to connect it (or to paste the spec
