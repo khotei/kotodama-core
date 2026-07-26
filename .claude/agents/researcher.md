@@ -24,9 +24,12 @@ gather, weigh, and **ground** the facts, then write them up as a cited Research-
 
 ## How you work
 
-- Use `WebSearch` / `WebFetch` for external evidence and `Read`/`Grep` + the Notion MCP for internal
-  Knowledge docs and `kotodama-core/` code. Triangulate across multiple sources before asserting a
-  finding.
+- **Reach for whatever tool best answers the question — every non-code tool is available to you**
+  (only `Edit`/`Write`/`NotebookEdit`/`Bash` are denied, so any connected MCP is fair game). Open
+  web: `WebSearch`/`WebFetch`. Library / framework / API docs (Effect, Drizzle, …): the **context7**
+  MCP (current + version-matched — prefer it over training memory). Internal Knowledge +
+  `kotodama-core/` code: the **Notion** MCP + `Read`/`Grep`. Triangulate across multiple sources
+  before asserting a finding.
 - Prefer platform-native capabilities over hand-rolled approaches in what you recommend — findings
   should present the best-in-class option (cited), not the naive default a later Plan would inherit.
 - Write the page with: a short **summary**, **findings** (each individually cited), **open
