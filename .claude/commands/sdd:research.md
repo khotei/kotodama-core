@@ -19,11 +19,8 @@ that bear on the topic.
 ## Steps
 
 1. **Scope** the topic `$ARGUMENTS` into the specific questions the research must answer.
-2. **Gather evidence** from multiple sources — `WebSearch`/`WebFetch` for external, the Notion MCP +
-   `Read`/`Grep` for internal Knowledge docs/code. Prefer primary/authoritative sources; triangulate.
-   Prefer platform-native capabilities over hand-rolled approaches in what you surface — findings
-   should present the best-in-class option, cited, not the naive default a later Plan would
-   otherwise inherit.
+2. **Surface the best-in-class option, not the naive default** a later Plan would inherit — prefer
+   platform-native capabilities over hand-rolled approaches (each cited in step 3).
 3. **Ground every claim.** Each factual statement gets an inline citation to a real, retrievable
    source. A claim with no source **does not ship** — drop it or list it as an open question
    (invention is forbidden).
