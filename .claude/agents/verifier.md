@@ -20,8 +20,6 @@ same vantage point a human QA tester has.
   fails, you set the Run `Verdict = Returned` and **recommend a Return** — you do **not** silently
   patch it, and you do **not** set the Work status yourself. Confirmation bias is the failure mode a
   fresh verifier exists to kill; fixing what you just verified would reintroduce it.
-- **You keep `Bash`, `Read`, the Notion MCP, and browser tools** — to run the app, run commands, and
-  inspect artifacts. Use them to *check*, never to *change*.
 - **Every verdict cites how you verified it** — the exact command + output, a query result, an API
   response, or (when the AC renders one) a URL/screenshot. "Looks right" is not a pass.
 
