@@ -1,42 +1,31 @@
 # core/content — `@kotodama/core/content`
 
-The word-generation seam. `ContentEngine` is the `Context.Service` port called once per stage
-(`produce(stage, …)` → the stage's typed slice); `MockContentEngine` and the real OpenAI engine are
-layers behind the same interface. It speaks backend domain types (`database` content schemas),
-which is why it lives in `core`, not `platform/ai` (a `platform/*` leaf may not import
-`@kotodama/database`).
+The word-generation seam. `ContentEngine` is the per-stage port; `MockContentEngine` and the real
+OpenAI engine are layers behind it. It speaks `database` content schemas — **which is why it lives in
+`core`, not `platform/ai`** (a `platform/*` leaf may not import `@kotodama/database`).
 
-- **Two abstraction levels, two errors:** the port fails per-stage (`ContentEngineError`); the
-  recipe (`generateWordContent` — the private body of `WordGenerationServiceLive`, not exported)
-  drives the whole build and fails with `WordGenerationError` carrying **both** the failed and the
-  succeeded passes, so a caller records the full per-stage picture. Sequential gates fail fast
-  (`fetch_source` grounds, `final_review` closes); the enrich fan-out runs under
-  `Effect.partition` so one bad enrich doesn't interrupt siblings.
-- **`STAGE_SLICES` (`stage-slices.ts`) is the single source of stage → output shape** — each slice
-  `pick`ed off `WordContent` (the entity-minus-envelope selection, authored here because it's a
-  derived domain shape; fields keep one author in `database`), `satisfies Record<WordJobStage,
-  Schema.Top>` for compiler exhaustiveness. Both the type and the engine's `generateObject`
-  runtime schema come from here, so a stage's promise and its generation can't drift.
+- **Two levels, two errors:** the port fails per-stage (`ContentEngineError`); the recipe
+  (`WordGenerationServiceLive`'s body) fails with `WordGenerationError` carrying **both** failed and
+  succeeded passes, so the caller records the full picture. Sequential gates fail fast; the enrich
+  fan-out runs under `Effect.partition` so one bad enrich doesn't interrupt siblings.
+- **`STAGE_SLICES` is the single source of stage → output shape** — each slice `pick`ed off
+  `WordContent`, `satisfies Record<WordJobStage, Schema.Top>` for exhaustiveness. Both the type AND
+  the engine's `generateObject` runtime schema come from here, so promise and generation can't drift.
 - **`WordGenerationService` exists so the build budget can be a layer** — `…Timed(budget)` is a
-  single-tag decorator over `…Live`; the error union (`WordGenerationError | TimeoutError`) is
-  fixed at the tag. The one justified service promotion of a recipe: an I/O unit decorated at
-  wiring.
-- **Provenance rides the engine, not a stage result** — `ContentEngine.provenance` (model map +
-  prompt hash) is bundled with `generate`'s result and stamped by `createWord`; each engine
-  reports its own. Rejected: smuggling provenance as reserved keys on a stage result — one design
-  decision split across two packages.
-- **`generation-defaults.ts` is the one OpenAI-tuning surface** — models, reasoning effort, image
-  options, `NO_TEXT_DIRECTIVE`, and the resilience preset *values* (`TEXT_RESILIENCE` /
-  `IMAGE_RESILIENCE`). Deliberately not split: one retune touches one file. The resilience
-  *mechanism* lives in `@kotodama/platform/ai`; the engine makes **bare** `ai.*` calls — the presets are
-  applied by the `AiServiceResilient` decorator at the worker entrypoint, never inline here.
-- The real engine's media stages share `renderToStorage` (generate → `storage.put` → key), which is
-  **key-scheme-agnostic** — the caller builds keys so the path scheme stays solely in
-  `@kotodama/platform/storage`. `mediaFailure` keeps error `cause`s JSON-serializable: a `StorageError`'s
-  cause is a live S3 rejection, so it's dropped for a `{ tag, key }` snapshot.
-- `MockContentEngine` is deterministic by construction (same `(word, stage)` → same content, no
-  faker/clock); its failure paths are an injectable `ContentPolicy`.
+  single-tag decorator over `…Live`, error union fixed at the tag. The one justified service promotion
+  of a recipe.
+- **Provenance rides the engine, not a stage result** — `ContentEngine.provenance` is bundled with
+  `generate`'s result and stamped by `createWord`. Rejected: smuggling it as reserved keys on a stage
+  result (one decision split across two packages).
+- **`generation-defaults.ts` is the one OpenAI-tuning surface** — models, effort, image options,
+  `NO_TEXT_DIRECTIVE`, the resilience preset *values*. The resilience *mechanism* is in
+  `@kotodama/platform/ai`; the engine makes **bare** `ai.*` calls — presets are applied by the
+  `AiServiceResilient` decorator at the worker entrypoint, never inline.
+- Media stages share `renderToStorage`, **key-scheme-agnostic** — the caller builds keys so the path
+  scheme stays solely in `@kotodama/platform/storage`. `mediaFailure` drops a `StorageError`'s live
+  S3 cause for a JSON-serializable `{ tag, key }` snapshot.
+- `MockContentEngine` is deterministic (no faker/clock); its failure paths are an injectable
+  `ContentPolicy`.
 
-**May import:** `@kotodama/database`, `@kotodama/platform/*`, `effect`. **MUST NOT import:**
-`apps/*` or `@kotodama/core/use-cases` (Biome-enforced on `core/content/**`);
-`@kotodama/database/factories` belongs in tests, never `src/**`.
+MUST NOT import `apps/*` or `@kotodama/core/use-cases` (Biome-enforced); `database/factories` → tests
+only.

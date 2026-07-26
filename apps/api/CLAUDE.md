@@ -1,49 +1,35 @@
 # apps/api — `@kotodama/app-api`
 
-HttpApi server (Effect v4); Bun locally, AWS Lambda via the Lambda Web Adapter. `src/kotodama.api.ts`
-is the single root `HttpApi` that composes every resource's `HttpApiGroup`; each resource is a folder
-pairing its group contract (`src/words/words.api.ts`) with its handlers (`words.handler.ts`). Adding a
-resource is one `.add(...)` on the root — the OpenAPI doc (served from `main.ts` via `openapiPath`) is
-derived from the root, so it reflects new groups automatically. Patterns:
-`.claude/agent-patterns/effect-httpapi.md`.
+HttpApi server (Effect v4), Bun locally / AWS Lambda via the Lambda Web Adapter. Root `HttpApi` +
+per-resource group/handler pattern: `.claude/agent-patterns/effect-httpapi.md`.
 
-## What this edge owns (and why it's here, not core)
+## What this edge owns
 
-- **The computed view models** (`word-state.view.ts`, `word-counts.view.ts`) — presentation shapes
-  with no backing row; their leaf payloads derive from `WordEntity`/the content schemas so they
-  can't drift. The collapse is this edge's concern — the use-case and repos return raw rows.
-  **`/search` has no view of its own** — it returns the core `Word` union verbatim (same shape
-  `getWord`/`getWordState` speak), never an edge-only summary. A renamed/flattened list projection
-  was deleted: a field rename is not a storage transform, so by `core/words`' "no per-row model"
-  rule it doesn't earn a projection; trim (if ever needed) by *picking* `WordEntity` fields into a
-  `Word`-derived leaf, never by renaming.
-- **Offset paging is `pagination.view.ts`** — the shared reuse across resource groups: `pageQuery`
-  builds the `page`/`limit` query fields, `Paginated(items)` the response envelope (only the item
-  schema varies). `pageQuery` self-defaults `page`/`limit` at decode via `withDecodingDefaultKey`,
-  so the handler reads both as required (no `?? default`). Consequence: the field is required on the
-  decoded `Type`, so the **typed Effect client must pass `page`/`limit`** (the default only fills an
-  omitting *wire* caller); the constants (`WORD_SEARCH_DEFAULT_LIMIT`, `WORD_SEARCH_MAX_LIMIT`) are
-  this edge's policy, passed into `pageQuery`. `counts` and `search` read the same `wordSearchFilter`,
-  so counts always equal what the list can page.
+- **The computed view models** (`*.view.ts`) collapse rows for presentation — the use-case and repos
+  return raw rows, so the collapse is the edge's concern. **`/search` returns the core `Word` union
+  verbatim** (same shape as `getWord`/`getWordState`), never an edge-only summary; trim only by
+  *picking* `WordEntity` fields into a `Word`-derived leaf, never by renaming (a rename isn't a
+  storage transform → no projection, per `core/words`).
+- **Offset paging is `pagination.view.ts`** (shared across groups). `pageQuery` self-defaults
+  `page`/`limit` at decode (`withDecodingDefaultKey`) → the field is required on the decoded type, so
+  the **typed Effect client MUST pass `page`/`limit`** (the default only fills an omitting *wire*
+  caller). `WORD_SEARCH_{DEFAULT,MAX}_LIMIT` are this edge's policy. `counts` and `search` share
+  `wordSearchFilter`, so counts always equal what the list can page.
 
-## Wire semantics that aren't guessable
+## Wire semantics (not guessable)
 
-- Absence is 200 `null`; an existing-but-building word is the declared `WordNotReadyError` **409,
-  not 404** (404 would read as non-existence while the word exists and is building).
-- Handlers `die` infrastructure faults (`EffectDrizzleQueryError`, `QueueError`, `SqlError`,
-  decode `SchemaError` on a succeeded row = impossible state) into 500s; only the declared typed
-  errors (409/422) pass through.
+- Absence → 200 `null`; an existing-but-building word → `WordNotReadyError` **409, not 404** (404
+  would read as non-existence while the word exists).
+- Handlers `die` infra faults (`EffectDrizzleQueryError`, `QueueError`, `SqlError`, a decode error on
+  a succeeded row) into 500s; only the declared typed errors (409/422) pass through.
 
 ## Gotchas
 
-- **Provide handler deps *after* `HttpRouter.serve`** — HttpApi wraps each handler's service
-  requirement in a `HttpRouter.Request<"Requires", …>` marker that only `serve` unwraps; providing
-  the domain layer to the pre-serve `HttpApiBuilder.layer` does NOT satisfy it.
-- `main.ts` provides only boundary services (`DatabaseLive`, `JobsQueueLive`, `AiServiceProd`) —
-  handler flows are plain functions whose `R` bottoms out there. The API's `AiServiceProd`
-  deliberately duplicates the worker's (~10 lines) and omits its resilience decorator: the input
-  judge is fail-open, so retry buys little and would pull image-path tuning into a text-only app.
+- **Provide handler deps *after* `HttpRouter.serve`** — HttpApi wraps each handler's requirement in a
+  `HttpRouter.Request<"Requires">` marker only `serve` unwraps; providing to the pre-serve
+  `HttpApiBuilder.layer` does NOT satisfy it.
+- `main.ts` provides only boundary services (`DatabaseLive`, `JobsQueueLive`, `AiServiceProd`). Its
+  `AiServiceProd` deliberately omits the worker's resilience decorator — the input judge is fail-open,
+  so retry buys little and would pull image tuning into a text-only app.
 
-**May import:** all `@kotodama/core/*` layers (`use-cases`, `words`, `content`, `repositories`,
-`database`), `@kotodama/platform/*`, `effect`, `@effect/platform-bun`. **MUST NOT import:** another
-app. `@kotodama/database/factories` belongs in tests, not `src/**`.
+No cross-app import; `@kotodama/database/factories` belongs in tests, never `src/**`.
