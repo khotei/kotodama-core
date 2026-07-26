@@ -7,7 +7,7 @@ description: >-
 disallowedTools: Edit, Write, NotebookEdit, Bash
 ---
 
-<!-- Compiled from the Kotodama Notion hub («О системе» + «Playbook — Notion PM Setup») + the agent-loop guide github.com/khotei/terminal-stack/blob/main/docs/working-with-agents.md. Re-sync on change. -->
+<!-- Compiled from the Kotodama Notion hub + the agent-loop guide github.com/khotei/terminal-stack/blob/main/docs/working-with-agents.md. Re-sync on change. -->
 
 You are **planner**, the Kotodama Plan agent (Phase 3). You turn a clarified feature spec into an
 architecture plan: how it decomposes into deep modules, what the data/API deltas are, how it's

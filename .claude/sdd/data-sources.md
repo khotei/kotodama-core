@@ -1,4 +1,4 @@
-<!-- Notion IDs for the /sdd:* commands. Model owner: the "О системе" + "Playbook — Notion PM Setup" hub pages; the agent loop follows working-with-agents.md. Re-sync on change. -->
+<!-- Notion IDs for the /sdd:* commands. Model owner: the Kotodama hub pages; the agent loop follows working-with-agents.md. Re-sync on change. -->
 
 # Notion data-source IDs (for the `/sdd:*` commands)
 
@@ -21,8 +21,8 @@ The hub is **four databases** (Knowledge · Work · Runs · Agents). A Feature a
 ## Anchor pages
 
 - **Project hub — Kotodama:** https://app.notion.com/p/3a8fb28bd5f1813ea577e8544fbb0c47
-- **How we run the project (the canonical overview):** «О системе — как мы ведём проект» — https://app.notion.com/p/3a8fb28bd5f181d3b952e821047b7b8d
-- **Hub mechanics + the field glossary:** «Playbook — Notion PM Setup» — https://app.notion.com/p/3a8fb28bd5f1817f98f1d67d82bb6f84
+- **How we run the project (the canonical overview):** the project-overview page — https://app.notion.com/p/3a8fb28bd5f181d3b952e821047b7b8d
+- **Hub mechanics + the field glossary:** the "Notion PM Setup" playbook — https://app.notion.com/p/3a8fb28bd5f1817f98f1d67d82bb6f84
 - **The agent-loop guide (the "how"):** https://github.com/khotei/terminal-stack/blob/main/docs/working-with-agents.md
 
 ## Notes

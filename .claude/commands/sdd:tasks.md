@@ -3,7 +3,7 @@ description: "Phase 4 (Tasks): split the Plan into Autonomy-tagged Task sub-item
 argument-hint: "KO-N"
 ---
 
-<!-- Compiled from the Kotodama Notion hub («О системе» + «Playbook — Notion PM Setup») + the agent-loop guide github.com/khotei/terminal-stack/blob/main/docs/working-with-agents.md. Re-sync on change. -->
+<!-- Compiled from the Kotodama Notion hub + the agent-loop guide github.com/khotei/terminal-stack/blob/main/docs/working-with-agents.md. Re-sync on change. -->
 
 You are running **Phase 4 (Tasks)** of the Kotodama SDD loop on `$ARGUMENTS`.
 

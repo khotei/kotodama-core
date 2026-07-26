@@ -5,7 +5,7 @@ context: fork
 agent: researcher
 ---
 
-<!-- Compiled from the Kotodama Notion hub («О системе» + «Playbook — Notion PM Setup») + the agent-loop guide github.com/khotei/terminal-stack/blob/main/docs/working-with-agents.md. Re-sync on change. -->
+<!-- Compiled from the Kotodama Notion hub + the agent-loop guide github.com/khotei/terminal-stack/blob/main/docs/working-with-agents.md. Re-sync on change. -->
 
 You are running the **Research** phase of the Kotodama SDD loop on the topic `$ARGUMENTS`.
 (The project constitution already exists as the repo-root `CLAUDE.md`, so this optional pre-Specify

@@ -1,4 +1,4 @@
-<!-- Notion property contract for the /sdd:* writes. Model owner: «Playbook — Notion PM Setup» (the field glossary). Re-sync on change. -->
+<!-- Notion property contract for the /sdd:* writes. Model owner: the "Notion PM Setup" playbook (the field glossary). Re-sync on change. -->
 
 # Notion property contract
 

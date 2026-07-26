@@ -2,7 +2,7 @@
 
 The `/sdd:*` commands run the Spec-Driven Development loop inside Claude Code, reading and writing
 the **live feature in Notion**. They are **compiled from** the Kotodama agent-loop model — the hub
-pages («О системе — как мы ведём проект» + «Playbook — Notion PM Setup») and the agent-loop guide
+pages (the project-overview page + the "Notion PM Setup" playbook) and the agent-loop guide
 [working-with-agents.md](https://github.com/khotei/terminal-stack/blob/main/docs/working-with-agents.md)
 — this file is a thin index, **not** a copy. The build conventions live in `@.claude/rules/sdd.md`.
 
@@ -52,7 +52,7 @@ from Notion. So a command still works with a hub page renamed or moved.
 ## Cadence
 
 Per-feature **start**: run specify → tasks in one sitting. Per-feature **end**: run verify. Full
-rhythm in the «О системе» hub page (operating cadence).
+rhythm in the project-overview page (operating cadence).
 
 ## Requirements
 

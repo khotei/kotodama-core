@@ -8,8 +8,8 @@ paths:
 # SDD command & agent toolkit — conventions
 
 The `/sdd:*` slash commands + their subagents are the **compiled, runnable form** of the Kotodama
-agent-loop model — owned by the Notion hub pages («О системе — как мы ведём проект» +
-«Playbook — Notion PM Setup») and the agent-loop guide
+agent-loop model — owned by the Notion hub pages (the project-overview page +
+the "Notion PM Setup" playbook) and the agent-loop guide
 ([working-with-agents.md](https://github.com/khotei/terminal-stack/blob/main/docs/working-with-agents.md)).
 This file is the build contract every `commands/sdd:*.md` + `agents/*.md` follows. It is loaded
 **on demand** (referenced when authoring or running the toolkit), not in the always-loaded block —
@@ -38,7 +38,7 @@ protect it — this is the *why* behind their shape:
 
 Engineer the durable; vibe-code only the throwaway (a spike, a prototype). The moment code must be
 *evolved*, Verify and Comprehend come back on. Full rationale: the agent-loop guide
-(`working-with-agents.md`) + the «О системе» hub page.
+(`working-with-agents.md`) + the project-overview page.
 
 ## File layout & naming
 
@@ -58,7 +58,7 @@ Engineer the durable; vibe-code only the throwaway (a spike, a prototype). The m
 Each generated file begins with:
 
 ```
-<!-- Compiled from the Kotodama Notion hub («О системе» + «Playbook — Notion PM Setup») + the agent-loop guide github.com/khotei/terminal-stack/blob/main/docs/working-with-agents.md. Re-sync on change. -->
+<!-- Compiled from the Kotodama Notion hub + the agent-loop guide github.com/khotei/terminal-stack/blob/main/docs/working-with-agents.md. Re-sync on change. -->
 ```
 
 It points a future reader back at the model owners so a hand-edit can be reconciled.
@@ -161,5 +161,5 @@ Standardise on EARS across `/sdd:specify` and the feature template.
 | `/sdd:implement` | `implementer` | full tools (writes code) | code + a Run, task → `Needs review` |
 | `/sdd:verify` | `verifier` | denylist: no code writes; fresh ctx | AC check → Run Verdict; human Accept/Return gate |
 
-The model owners are the hub pages («О системе» + «Playbook — Notion PM Setup») and the agent-loop
+The model owners are the hub pages and the agent-loop
 guide (`working-with-agents.md`) — not a numbered playbook.

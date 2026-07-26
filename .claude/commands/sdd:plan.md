@@ -5,7 +5,7 @@ context: fork
 agent: planner
 ---
 
-<!-- Compiled from the Kotodama Notion hub («О системе» + «Playbook — Notion PM Setup») + the agent-loop guide github.com/khotei/terminal-stack/blob/main/docs/working-with-agents.md. Re-sync on change. -->
+<!-- Compiled from the Kotodama Notion hub + the agent-loop guide github.com/khotei/terminal-stack/blob/main/docs/working-with-agents.md. Re-sync on change. -->
 
 You are running **Phase 3 (Plan)** of the Kotodama SDD loop on `$ARGUMENTS`.
 
