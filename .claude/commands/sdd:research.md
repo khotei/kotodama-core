@@ -1,38 +1,37 @@
 ---
-description: "Research: deep, source-grounded findings written to a cited Research page in the Specs DB"
+description: "Research: deep, source-grounded findings written to a cited Research page in the Knowledge DB"
 argument-hint: "<topic>"
 context: fork
 agent: researcher
 ---
 
-<!-- Generated from SDD playbook §1.5 (grounding) + §4 — https://www.notion.so/36dfb28bd5f181238a86d26457bc24e7. Re-sync on change. -->
+<!-- Compiled from the Kotodama Notion hub + the agent-loop guide github.com/khotei/terminal-stack/blob/main/docs/working-with-agents.md. Re-sync on change. -->
 
-You are running the **Research** phase of the Kotodama SDD playbook on the topic `$ARGUMENTS`.
-(This stands in for the playbook's phase-0 `/sdd:constitution` — the constitution already exists as
-the repo-root `CLAUDE.md`, so the optional pre-Specify step here is evidence-gathering.)
+You are running the **Research** phase of the Kotodama SDD loop on the topic `$ARGUMENTS`.
+(The project constitution already exists as the repo-root `CLAUDE.md`, so this optional pre-Specify
+step is evidence-gathering.)
 
 **Embedded — do NOT fetch from Notion:** the data-source IDs `@.claude/sdd/data-sources.md` (the
-Specs collection id lives there); the target is `Doc type = Research`.
-**Fetch live:** the web sources, plus any existing Kotodama specs / `kotodama-core/` code that bear on the
-topic.
+Knowledge collection id lives there); the target is `Doc type = Research`.
+**Fetch live:** the web sources, plus any existing Kotodama Knowledge docs / `kotodama-core/` code
+that bear on the topic.
 
 ## Steps
 
 1. **Scope** the topic `$ARGUMENTS` into the specific questions the research must answer.
 2. **Gather evidence** from multiple sources — `WebSearch`/`WebFetch` for external, the Notion MCP +
-   `Read`/`Grep` for internal specs/code. Prefer primary/authoritative sources; triangulate.
+   `Read`/`Grep` for internal Knowledge docs/code. Prefer primary/authoritative sources; triangulate.
    Prefer platform-native capabilities over hand-rolled approaches in what you surface — findings
    should present the best-in-class option, cited, not the naive default a later Plan would
    otherwise inherit.
 3. **Ground every claim.** Each factual statement gets an inline citation to a real, retrievable
    source. A claim with no source **does not ship** — drop it or list it as an open question
-   (invention is forbidden — playbook §1.5).
+   (invention is forbidden).
 4. **Synthesise** into a Research-findings page: **summary**, **findings** (each cited), **open
    questions / gaps**, **sources**.
-5. **Create the page** in the Specs DB (data-source id from `@.claude/sdd/data-sources.md`) with
-   `Doc type = Research`, `Status = Draft`, `Version = 0.1`, `Last updated = today`. Link related
-   features if any apply.
-6. **End with one line:** `Research page created: <title>. Findings: <n> (all cited). Use it as a Linked spec for /sdd:specify.`
+5. **Create the page** in the Knowledge DB (data-source id from `@.claude/sdd/data-sources.md`) with
+   `Doc type = Research`, `Status = Draft`. Link related features if any apply.
+6. **End with one line:** `Research page created: <title>. Findings: <n> (all cited). Link it as the /sdd:specify feature's Knowledge relation.`
 
 ## Do not
 
