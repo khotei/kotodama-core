@@ -30,5 +30,13 @@ can't express + cross-file/cross-package coupling · non-obvious gotchas (footgu
 quirks) · boundaries (import rules, ownership, single-source-of-X) · pointers (Notion,
 `agent-patterns/*`, the file where the surface lives).
 
+## On-demand reference (`agent-patterns/*`)
+
+Pointer-loaded, so it doesn't tax the always-on budget — but the why-not-what test applies *harder*:
+a cheat-sheet for a **stable, well-known API** (standard SQL, generic TS, textbook design theory)
+teaches what the model already knows → cut it. Keep only a **beta/moving target it gets wrong**
+(Effect v4, Drizzle-rc) or **this repo's own decisions**. Every anchor must name a symbol that exists
+in THIS repo — a dangling or wrong-repo anchor is worse than no file.
+
 Refresh only when a real change lands, as part of the commit — never on exploratory edits. When in
 doubt, cut.
