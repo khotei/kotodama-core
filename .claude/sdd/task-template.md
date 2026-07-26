@@ -1,53 +1,50 @@
-<!-- Generated from SDD playbook §6.2 — https://www.notion.so/36dfb28bd5f181238a86d26457bc24e7. Re-sync on change. -->
+<!-- Task body /sdd:tasks writes into a Work sub-item (Type=Task). Model owner: «Template — Features» → the Tasks-are-sub-items block. Re-sync on change. -->
 
-# Task row template (§6.2)
+# Task sub-item template
 
-The body `/sdd:tasks` writes into each Tasks-DB row. It is what Claude Code sees when it picks up
-the task in a fresh `/sdd:implement` session — self-contained but tight. The Notion `Title`
-property is imperative, single-outcome, prefixed with the task number (e.g. *T07 — Scaffold
-apps/api with Bun + Effect entrypoint*).
+The body `/sdd:tasks` writes into each **Task sub-item** of a Feature (Work `Type = Task`, linked by
+**Parent item**). It is what Claude Code sees when it picks the task up in a fresh `/sdd:implement`
+session — self-contained but tight. The Notion `Title` is imperative, single-outcome, prefixed with
+the slice number (e.g. *T3 · loader — library.loader.ts*). The body carries a **Context Pack** up
+top and, once run, an **Evidence** section.
 
 ```markdown
-> **Feature:** <mention parent Feature page>
-> **Source spec:** <mention spec> §<section> *(<section title>)*
-> **Autonomy:** AFK | HITL — AFK = implement + merge unattended; HITL = needs a human decision or review first (prefer AFK).
-> **Covers ACs:** <feature AC IDs this task satisfies, e.g. AC-1, AC-3>
-> **Slice:** vertical (cuts through every layer it touches; demoable on its own) | horizontal (single layer — foundational work only)
-> **Reference repo / external doc (optional):** <link>
+> **Parent item:** <the Feature this task slices — the sub-item link>
+> **Autonomy:** Operator | Collaborator | Consultant | Approver | Observer — the leash for this task (ambiguity × irreversibility). See the Autonomy scale in `@.claude/sdd/property-contract.md`.
 
-## Context
-One paragraph. Why this task exists in the feature's task chain. What it builds on (dependencies); what depends on it. Anchors the agent before it starts editing files.
-
-## Goal
-One sentence. The single observable outcome. *"A fresh `git clone` followed by X completes cleanly"*, *"endpoint Y returns Z for input W"*, *"running V passes T"*. If you need a comma, you have two goals — split the task.
+## Context Pack
+> **Goal:** the single observable outcome (if you need a comma, it's two tasks).
+> **Hard AC:** the exact feature AC IDs this task must satisfy (e.g. AC-1, AC-3) — the contract, committed first.
+> **In / out:** what this task touches, and what it must NOT touch.
+> **No mid-task rescoping:** if the slice proves wrong or grows past its boundary (or past ~400 LOC), STOP and return to shaping — do not silently expand.
+> **Linked files & playbooks:** explicit repo paths + the playbook(s) to follow. Point, don't restate.
 
 ## What to do
-1. <Imperative step. Name the file or surface it touches; include the relevant config or shape inline.>
+1. <Imperative step. Name the file / surface it touches; include the relevant config or shape inline.>
 2. <Next imperative step.>
-3. ...
 
-## Files to create
+## Files to create / touch
 - /path/to/file.ext
-- ...
-(Or **Files to touch** if the task modifies existing files. List explicit paths; do not say "see folder X".)
+(List explicit paths; do not say "see folder X".)
 
 ## Acceptance criteria
 - [ ] <AC verifiable by running a command, or by observing UI / API output.>
-- [ ] <AC...>
-- [ ] Tests added (happy + failure path, if applicable to this task).
-- [ ] Spec change-log row added if implementation revealed a behaviour change.
+- [ ] Tests added (happy + failure path, if applicable).
+
+## Evidence (filled by the run, read by the human at the review gate)
+The proof a reviewer needs, not a claim: the check that ran + its **actual output**; the diff summary (≤400 LOC); which ACs are satisfied and how (URL / command / screenshot). Recorded on the **Run** row (Handoff + Evidence). "It works" is not evidence.
 
 ## Notes & gotchas
-- <Anti-pattern to avoid (e.g. "don't add `type: module` — Bun handles ESM natively").>
-- <Subtle constraint from the Constitution / source spec the agent might miss.>
-- <Decision deferred to a later task + rationale.>
+- <Anti-pattern to avoid.>
+- <An invariant the type can't express that the agent might miss.>
 ```
 
 ## Sizing & autonomy (Kotodama)
 
-- **Estimate** is **XS–M only** — `XS` ≤30 min · `S` ≤2 h · `M` ≤1 day. An `L` task splits; an
-  `XL` is refused (it's a hidden mini-feature).
+- **Estimate** is **XS–M only** — `XS` ≤30 min · `S` ≤2 h · `M` ≤1 day. An `L` splits; an `XL` is
+  refused. Also keep the diff **≤ ~400 LOC** (the Runs `Slice size` flag) — larger reviews collapse.
 - A task is correctly scoped when it ships in **one** `/sdd:implement` session with a **single
   verifiable outcome**. Bigger → split; smaller → merge.
-- Tag **Autonomy** `AFK` by default; `HITL` only for a real human gate (architecture call, design
-  review, irreversible/data-destructive action). See `@.claude/sdd/property-contract.md`.
+- **Autonomy** is the 5-level scale (Operator → Observer), set from ambiguity × irreversibility —
+  low for irreversible / data-destructive work. See `@.claude/sdd/property-contract.md`.
+- **Decisions** made mid-task go in the git commit `Decision:` paragraph — never a Notion change-log.
