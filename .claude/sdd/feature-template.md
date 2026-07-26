@@ -40,6 +40,7 @@ Each observable from outside and verifiable by a fresh-context agent or a single
 
 ## References
 - **Product "why":** the Knowledge doc(s) this serves (brief, research, personas).
+- **Research:** the linked research **Spike** (Work) holding the cited findings behind this shape.
 - **Playbooks:** any playbook a task must follow.
 - **Repo:** the codebase is the source of truth for *how* — link a path or commit if a reader must open it to act; do not restate architecture, schema, or design tokens here.
 ```

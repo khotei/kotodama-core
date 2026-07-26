@@ -1,5 +1,5 @@
 ---
-description: "Phase 1 (Specify): draft a Shaped feature row in Notion from a one-line idea"
+description: "Shape: gather evidence + draft a Shaped Feature (EARS) with a linked research Spike"
 argument-hint: "<feature idea>"
 context: fork
 agent: spec-author
@@ -7,42 +7,36 @@ agent: spec-author
 
 <!-- Compiled from the Kotodama Notion hub + the agent-loop guide github.com/khotei/terminal-stack/blob/main/docs/working-with-agents.md. Re-sync on change. -->
 
-You are running **Phase 1 (Specify)** of the Kotodama SDD loop.
+You are running the **Shape** phase of the Kotodama SDD loop — evidence-gathering and spec in one run.
 
 **Input:** a one-line feature idea — `$ARGUMENTS`.
-**Goal:** one fully-filled **Work row** (`Type = Feature`), `Status = Shaped`, in the Work DB.
-Notion-only — no local `spec.md` (see `@.claude/rules/sdd.md`).
+**Output:** two linked **Work** rows — a Feature (`Type = Feature`, `Status = Shaped`) + a research
+**Spike** sub-item holding the cited findings. Notion-only (no local `spec.md`; see `@.claude/rules/sdd.md`).
 
-**Embedded — do NOT fetch from Notion** (in-repo, so the run works even if a hub page is
-renamed/moved): the feature template `@.claude/sdd/feature-template.md`, the property contract
-`@.claude/sdd/property-contract.md`, and the data-source IDs `@.claude/sdd/data-sources.md` (the
-Work collection id lives there).
-**Fetch live — volatile content:** the Knowledge docs to cite and the personas.
+**Embedded — do NOT fetch from Notion:** the feature template `@.claude/sdd/feature-template.md`, the
+property contract `@.claude/sdd/property-contract.md`, the data-source IDs `@.claude/sdd/data-sources.md`.
+**Fetch live:** the evidence — existing Knowledge docs, this repo's code, the open web/docs.
 
 ## Steps
 
-1. **Set the row's dials.** A Feature is a Work row with `Type = Feature`; its auto-key is `KO-<n>`
-   (do not invent an ID or an Area). Choose `Appetite` (Small / Batch), `Priority` (P0–P3), and
-   `Persona` (one or more of Learner · Creator · Contributor — never empty).
-2. **Read the sources to cite.** Search the Knowledge DB (scope to its data-source id from
-   `@.claude/sdd/data-sources.md`) for the product "why" / research / personas that justify this
-   feature; read the sections behind its choices. Open the relevant `kotodama-core/` code if it
-   grounds a claim — the repo, not a Notion Tech spec, is the source of truth for *how*.
-3. **Fill every section** of `@.claude/sdd/feature-template.md` — the **why** only (Goal · Why ·
-   Outcomes · Scope · EARS ACs · Open questions · References). Do **not** restate a source; cite the
-   repo path / Knowledge doc. No architecture, data-model, or design sections — those are the Plan.
-4. **Write acceptance criteria in EARS** — *WHEN \<event\> THE SYSTEM SHALL \<behavior\>*. Each AC
-   observable from outside the system; checkable by a fresh-context agent or one command. No Gherkin.
-5. **Mark unresolved decisions `[TBD]`** with a one-line note on what blocks each — never invent an
-   answer to close a gap.
-6. **Create the Work row** (data-source id from `@.claude/sdd/data-sources.md`) with `Type = Feature`
-   and **every field set** per `@.claude/sdd/property-contract.md`, `Status = Shaped`. Link the
-   `Knowledge` relation to the research/why doc(s). `Persona` must not be empty. Put the template body
-   in the page.
-7. **End with one line:** `Spec drafted at KO-<n>. Open TBDs: <count>. Next: /sdd:clarify KO-<n>.`
+1. **Gather (in context).** Scope the idea into the questions the spec must answer; pull cited
+   evidence to answer them. Surface the best-in-class option, not the naive default the Plan would
+   inherit. Hold the findings in context — no separate hand-off.
+2. **Set the row's dials.** `Appetite` (Small / Batch), `Priority` (P0–P3), `Persona` (≥1 of
+   Learner · Creator · Contributor — never empty). Auto-key `KO-<n>` (invent no ID).
+3. **Fill every section** of the feature template — the **why** only (Goal · Why · Outcomes · Scope ·
+   EARS ACs · Open questions · References). Cite, don't restate. No architecture/data-model/design —
+   that's the Plan.
+4. **ACs in EARS** — *WHEN <event> THE SYSTEM SHALL <behavior>*; observable, one-command-checkable. No Gherkin.
+5. **Mark `[TBD]`** every unresolved decision with what blocks it — never invent an answer.
+6. **Write the two rows.** Create the **Feature** (every field per the property contract,
+   `Status = Shaped`, `Knowledge` relation → any doc you cited); then create the **research Spike**
+   (`Type = Spike`, `Status = Done`, `Parent item` = the Feature), body = Summary · Findings (each
+   cited) · gaps · sources. Knowledge is NOT written (human-promoted only).
+7. **End with one line:** `Shaped KO-<n> (+ research Spike). Open TBDs: <count>. Next: /sdd:clarify KO-<n>.`
 
 ## Do not
 
-- Do **not** plan or implement. If you catch yourself designing tables, modules, or APIs, **stop** —
-  that's Phase 3 (`/sdd:plan`). (Writing code is impossible for you by tool policy anyway.)
-- Do **not** fetch the template / contract / data-source IDs from Notion — they're embedded above.
+- Do **not** plan or implement (Phase 3+). Designing tables/modules/APIs → stop.
+- Do **not** write research to Knowledge — the Spike lives in Work; Knowledge is curated by hand.
+- Do **not** fetch the template / contract / data-source IDs from Notion — embedded above.

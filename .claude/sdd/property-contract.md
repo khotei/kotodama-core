@@ -5,7 +5,8 @@
 When a `/sdd:*` command creates or updates rows via the Notion MCP, these field values are the
 **structured contract** the rest of the loop relies on — a missing field is a defect. Data-source
 IDs to write against live in `@.claude/sdd/data-sources.md`. The hub is four databases; the loop
-**writes** to three (Work, Runs, Knowledge) and **reads** the fourth (Agents).
+**writes** to two (Work, Runs) and **reads** the other two (Knowledge, Agents) — Knowledge is
+human-curated, so the loop never auto-writes it (a durable finding is *promoted* there by hand).
 
 ## Work item (Work DB) — one DB, Feature ▸ Task via sub-items
 
@@ -41,6 +42,17 @@ native **Parent item / Sub-items** self-relation. There is **no** separate Tasks
 - **`Blocks` / `Blocked by`** — the dependency graph. Publish rows **blockers-first** so
   `Blocked by` can reference real URLs.
 - **`Runs`** — reverse relation to the Run rows this task produced (auto-populated from Runs).
+
+## Research Spike (Work DB, `Type = Spike`) — a Feature's shaping evidence
+
+Written by `/sdd:specify` as a **sub-item of the Feature**, so it closes/archives with it and is
+**not** a Knowledge doc.
+
+- **`Type`** = `Spike`; **`Parent item`** = the Feature; **`Status`** = `Done` at creation (recon is
+  complete when the spec is written).
+- **Body** — Summary · Findings (each cited) · gaps · sources.
+- As a Done sub-item it nudges the Feature's `Progress` rollup upward — cosmetic; filter the rollup to
+  `Type = Task` if it ever matters.
 
 **Computed — never set by hand:** `Progress` (rollup), `Done?` (formula `Status == Done`).
 **Removed** (do not set — the field no longer exists): `Area`, `Sprint`, `Due date`,
@@ -79,11 +91,13 @@ Run — read the latest for current evidence.
 **Computed — never set by hand:** `Slice size` (formula), `Accepted?` (formula — feeds the Agents
 accept-rate).
 
-## Knowledge doc (Knowledge DB) — `/sdd:research` target
+## Knowledge doc (Knowledge DB) — human-curated; the loop reads, never auto-writes
 
-- **`Title`** — "Research findings — <topic>".
-- **`Doc type`** — `Research` (the research phase). Other docs: `Product brief` · `Personas` ·
-  `Playbook` · `Onboarding`.
+The durable wiki. `/sdd:specify` **reads** it to cite the product "why" / research / personas; it does
+**not** create docs here — feature research lives as a Work **Spike**. A `Research` doc appears only
+when a human **promotes** a durable finding.
+
+- **`Doc type`** — `Product brief` · `Personas` · `Playbook` · `Onboarding` · `Research` (promoted only).
 - **`Status`** — `Draft` → `Verified` → `Stale` (a freshness flag, not a workflow state).
 - **`Re-verify by`** — the wiki review date (optional).
 

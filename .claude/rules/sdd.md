@@ -23,8 +23,8 @@ keep it that way so unrelated sessions don't pay for it.
 
 ## The loop every phase instantiates (why the commands are shaped this way)
 
-SDD is one loop at two scales: **Frame → Delegate → Verify → Comprehend**. The seven phases are that
-loop at *feature* scale — `research → … → verify` is the **Frame** beat one floor up (the plan is
+SDD is one loop at two scales: **Frame → Delegate → Verify → Comprehend**. The six phases are that
+loop at *feature* scale — `specify → … → verify` is the **Frame** beat one floor up (the plan is
 where the whole picture exists before any code); each task then runs its own small turn of it. The
 scarce resource is **your comprehension**, not the agent's tokens, so every command is built to
 protect it — this is the *why* behind their shape:
@@ -82,7 +82,7 @@ defense**; the re-sync header just points back at the model owners.
   - **`disallowedTools:`** — a *denylist*: the agent inherits everything from the main session
     **except** the named tools.
 - **Kotodama uses `disallowedTools` for the "refuses to write code" agents** (spec-author, planner,
-  task-splitter, researcher, verifier): e.g. `disallowedTools: Edit, Write, NotebookEdit` (add
+  task-splitter, verifier): e.g. `disallowedTools: Edit, Write, NotebookEdit` (add
   `Bash` for the non-implementer agents). **Decision — why denylist, not an allowlist:** the hard
   boundary we care about is "cannot touch code." A denylist expresses exactly that **and** lets the
   agent **inherit the connected Notion MCP under whatever name it has** — so no agent file hardcodes
@@ -107,8 +107,7 @@ ask the user something while it runs has to live in the **main context**.
 
 | Phase command | Runs in | Why |
 |---|---|---|
-| `/sdd:research` | **fork** → `researcher` | autonomous; clean tool-restricted context |
-| `/sdd:specify` | **fork** → `spec-author` | autonomous draft; enforce no-code |
+| `/sdd:specify` | **fork** → `spec-author` | autonomous; gathers evidence + drafts the Feature (no-code) |
 | `/sdd:clarify` | **main context** | grill-me `AskUserQuestion` loop — can't fork |
 | `/sdd:plan` | **fork** → `planner` | autonomous; enforce no-code |
 | `/sdd:tasks` | **main context** | presents the breakdown and iterates to *approval* |
@@ -131,8 +130,8 @@ recipe. (Connecting Notion needs no repo config — there is no committed `.mcp.
 ## The why/how boundary — artifacts split by side
 
 **Notion carries the "why" + the review surface; the repo carries the "how."** The `/sdd:*` loop
-writes the "why" **only** to Notion — the Feature Work row, its Task sub-items, the Knowledge
-Research page, the Plan toggle — and never mirrors a local `specs/F-NNN-slug/` folder (no
+writes the "why" **only** to Notion — the Feature Work row, its Task sub-items, the research Spike
+sub-item, the Plan toggle — and never mirrors a local `specs/F-NNN-slug/` folder (no
 `spec.md` / `plan.md` / `tasks.md`). Architecture and decisions live in the **repo**: the code is
 the source of truth for *how*, and every non-obvious choice goes in a git commit `Decision:`
 paragraph, **never** a Notion change-log. Recorded so a future reader doesn't "restore" the folder or
@@ -153,8 +152,7 @@ Standardise on EARS across `/sdd:specify` and the feature template.
 
 | Command | Agent | Restriction | Role in the model |
 |---|---|---|---|
-| `/sdd:research` | `researcher` | denylist: no code writes | grounded Knowledge doc (the "why") |
-| `/sdd:specify` | `spec-author` | denylist: no code writes | Work Feature row, `Status = Shaped` |
+| `/sdd:specify` | `spec-author` | denylist: no code writes | Work Feature (`Shaped`) + a linked research Spike |
 | `/sdd:clarify` | `spec-author` (reused) | denylist: no code writes | resolve every `[TBD]` on the Feature |
 | `/sdd:plan` | `planner` | denylist: no code writes | Plan toggle on the Feature (deep modules) |
 | `/sdd:tasks` | `task-splitter` | denylist: no code writes | Task sub-items under the Feature |
