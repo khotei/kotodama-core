@@ -42,11 +42,30 @@ Sources: `Data.ts` (`TaggedError`, `TaggedClass`, `$is`, `$match`), `Cause.ts`, 
 - Errors that cross the wire (HttpApi responses) must be schema-backed so they encode/decode —
   `unstable/httpapi/HttpApiError.ts`.
 
-## Stdlib reuse — reach for the module before hand-rolling
+## Stdlib first — the default for ANY utility logic, not just `Array`
 
-Before hand-rolling any array / option / result / predicate / struct / record / order / string /
-number helper, reach for the matching `effect` module — a custom `toArray`, an
-`isSome`-filter-then-map, a `pick`, a `(a,b) => a-b` comparator all already exist, typed and tested.
+**Before hand-writing any helper — a data transform, comparator, grouping/dedup, string/number/date
+math, a retry loop, coordination, caching — assume `effect` already ships it and check the matching
+module first.** The stdlib is ~130 modules (`ls repos/effect-smol/packages/effect/src` is the
+inventory; grep the module file for the function). Hand-rolling what the stdlib provides is the same
+defect as hand-rolling SQL the engine owns; write custom code only after the matching module came up
+empty. Task → module map:
+
+- **Data:** `Array` · `Chunk` · `Iterable` · `Record` · `Struct` · `Tuple` · `HashMap`/`HashSet`
+  (+ `Mutable*`).
+- **Absence & fallibility:** `Option` · `Result` · `UndefinedOr`.
+- **Primitives:** `String` · `Number` · `Boolean` · `BigInt` · `BigDecimal` · `RegExp` ·
+  `Encoding` (base64/hex).
+- **Comparison & identity:** `Order`/`Ordering` (composable comparators — never a bare
+  `(a,b) => a-b`) · `Equal`/`Equivalence` · `Hash`.
+- **Functions & matching:** `Function` (`identity`, `constant`, `flow`, `dual`) · `Predicate` ·
+  `Match` (exhaustive matching).
+- **Time:** `DateTime` · `Duration` (accepts `'5 seconds'`) · `Cron` · `Clock` (testable now).
+- **Effect-land:** `Schedule` (retry/backoff policy — never a hand-rolled retry loop) ·
+  `Cache`/`ScopedCache` · `Ref`/`Deferred`/`Semaphore`/`Latch`/`Queue`/`PubSub` (coordination) ·
+  `Random` (seedable) · `Stream`/`Sink`.
+
+### Gotchas
 
 - **Namespace imports shadow globals** (`Array`, `String`, `Number`, `Boolean`, `Function`) and trip
   Biome `noShadowRestrictedNames` — alias: `import { Array as Arr } from 'effect'`.

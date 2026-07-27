@@ -21,6 +21,9 @@ holds only the **Kotodama usage decisions** the catalog can't tell you.
 
 ## Kotodama usage
 
+- **Stdlib first:** before hand-writing any helper (data transform, comparator, grouping, retry,
+  string/date math…), check the matching `effect` module — the task → module map is in the
+  cheat-sheet above; custom code only after the module came up empty.
 - **Domain schemas are authored in `database/`** (`effect/Schema`); core + the API edge consume those
   entities and author only computed read/view models — never re-declare a domain shape.
 - **In-beta APIs live under `effect/unstable/*`** (notably parts of HttpApi) — import from there, not a
