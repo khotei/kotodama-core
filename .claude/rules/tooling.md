@@ -5,7 +5,7 @@
 | `bun run lint` | `biome lint .` | pre-commit + CI |
 | `bun run tsc` | `bun run --filter '*' typecheck` (per-workspace `bun --bun tsc --noEmit`) | pre-commit + CI |
 | `bun run test` | `bun run --filter '*' test` (per-workspace `bun --bun vitest run`) | CI only |
-| `bun run check` | `lint` + `tsc` | manual / `/check` |
+| `bun run check` | `lint` + `tsc` | manual |
 | `bun run format` | `biome format --write .` | local only |
 
 ## Root-less config — the whole design

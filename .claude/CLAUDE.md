@@ -30,7 +30,8 @@ bottom workspace (distinct drizzle/migration tooling); `platform/*` are folders 
 domain is a folder in its aggregate, never a new package.** `database` single-authors the word
 vocabulary (content schemas, value tuples/`pgEnum`s, `WordEntity`), so every tier takes a **direct
 downward edge to `database`** — no cycle. Enforcement: Biome `noRestrictedImports` per-folder globs
-in `biome.base.json` are the sole gate; `/scan-deps` verifies.
+in `biome.base.json` are the sole gate (`bun run lint` verifies; application code also never
+imports from `repos/**` — effect-conventions.md).
 
 ## Commands & gate
 
@@ -56,7 +57,7 @@ ancestors (this file) always load.
 
 ## Slash commands
 
-`/check` · `/scan-deps` · `/new-package`. **SDD toolkit** —
+`/new-package`. **SDD toolkit** —
 `/sdd:{research,specify,clarify,plan,tasks,implement,verify}` drive the spec-driven loop against the
 live Notion feature, compiled from the
 [playbook](https://www.notion.so/36dfb28bd5f181238a86d26457bc24e7) §6/§7/§8. Quickstart:
