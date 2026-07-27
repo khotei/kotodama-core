@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "local:up": "docker compose -f local/docker-compose.yml up -d --wait && bun run --filter '@kotodama/core' db:migrate && bun run local:provision",
+    "local:up": "docker compose -f local/docker-compose.yml up -d --wait && bun run --filter '@kotodama/database' db:migrate && bun run local:provision",
     "local:down": "docker compose -f local/docker-compose.yml down",
     "local:clean": "docker compose -f local/docker-compose.yml down -v",
     "local:logs": "docker compose -f local/docker-compose.yml logs -f",
