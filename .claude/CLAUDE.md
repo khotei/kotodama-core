@@ -8,9 +8,11 @@ This file + the auto-loaded `.claude/rules/` are the working context.
 
 ## Runtime
 
-**Bun 1.3** (pinned via `packageManager`, runs `.ts` directly) · **TypeScript strict** · **Effect v4
-(beta)** — `Context.Service`/`Context.Tag`, in-beta APIs under `effect/unstable/*`. Full table:
-`.claude/rules/tech-stack.md`.
+**Bun 1.3** (pinned via `packageManager`, runs `.ts` directly) · **TypeScript strict** — prefer
+type-fest over a hand-rolled mapped/conditional type · **Effect v4 (beta)** —
+`Context.Service`/`Context.Tag`, in-beta APIs under `effect/unstable/*`; **pinned EXACT
+`4.0.0-beta.78`, never the floating `beta` tag** (a new effect edge once re-resolved it to a fresh
+beta, skewing versions monorepo-wide and breaking `tsc`).
 
 ## Dependency hierarchy
 
@@ -44,7 +46,7 @@ Auto-discovered; **always-loaded** cross-cutting rules vs **path-scoped** (`path
 load on match) keep the always-on context lean. On-demand depth lives in `.claude/agent-patterns/*`
 (pointer-loaded, never in `rules/`).
 
-- **Always:** `tech-stack` · `naming` · `comments` · `tooling` · `commits` · `pull-requests` · `claude-md`.
+- **Always:** `naming` · `comments` · `tooling` · `commits` · `pull-requests` · `claude-md`.
 - **Path-scoped:** `effect-conventions`, `vendored-sources` → `**/*.ts` · `drizzle-effect` → `database/**`, `core/repositories/**` · `testing` → `**/test/**`, `**/*.test.ts` · `sdd` → `.claude/{commands,agents,sdd}/**`.
 
 ## Per-layer context
