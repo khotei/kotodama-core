@@ -35,10 +35,9 @@ in `biome.base.json` are the sole gate; `/scan-deps` verifies.
 ## Commands & gate
 
 Root scripts (`bootstrap`/`format`/`lint`/`tsc`/`test`/`check`, `vendor:*:update`, per-package
-`--filter`) live in `package.json`; conventions in `.claude/rules/tooling.md`. **`bun run test`,
-never `bun test`.** Every commit follows `.claude/rules/commits.md`; husky runs `biome check
---staged` + `bun run tsc` (`--no-verify` = emergencies, never on `main`). PRs squash-merge into one
-such commit (`.claude/rules/pull-requests.md`).
+`--filter`) live in `package.json`; the command table, gates, and the `bun --bun`/`bun test` traps:
+`.claude/rules/tooling.md`. Every commit follows `.claude/rules/commits.md`; PRs squash-merge into
+one such commit (`.claude/rules/pull-requests.md`).
 
 ## Rules (`.claude/rules/`)
 
