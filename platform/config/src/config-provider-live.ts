@@ -5,7 +5,7 @@ import { ConfigProvider, Effect, type Layer } from 'effect'
 
 // Loads the repo-root `.env` as a FALLBACK under `process.env` — a real exported
 // var (and Bun's own `.env` auto-load) wins. Provide it where the `index.ts`
-// `Config`s resolve. See @.claude/rules/config.md.
+// `Config`s resolve.
 
 // Repo root by fixed offset from this file's URL, so it is cwd-independent (a
 // `bun run --filter … test` runs from the package dir, not the root).

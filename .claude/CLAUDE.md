@@ -42,7 +42,7 @@ load on match) keep the always-on context lean. On-demand depth lives in `.claud
 (pointer-loaded, never in `rules/`).
 
 - **Always:** `tech-stack` · `dependency-hierarchy` · `naming` · `comments` · `tooling` · `commits` · `pull-requests` · `claude-md`.
-- **Path-scoped:** `effect-conventions`, `vendored-sources` → `**/*.ts` · `drizzle-effect` → `database/**`, `core/repositories/**` · `config` → `platform/config/**`, `**/main.ts` · `testing` → `**/test/**`, `**/*.test.ts` · `observability` → `platform/observability/**`, `apps/**` · `sdd` → `.claude/{commands,agents,sdd}/**` · `human-docs` → `readme.md`.
+- **Path-scoped:** `effect-conventions`, `vendored-sources` → `**/*.ts` · `drizzle-effect` → `database/**`, `core/repositories/**` · `testing` → `**/test/**`, `**/*.test.ts` · `observability` → `platform/observability/**`, `apps/**` · `sdd` → `.claude/{commands,agents,sdd}/**` · `human-docs` → `readme.md`.
 
 ## Per-layer context
 

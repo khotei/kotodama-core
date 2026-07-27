@@ -1,7 +1,9 @@
 # platform/config — `@kotodama/platform/config`
 
 Env config from `effect/Config` (Tech spec §2.5). Registry + loader both live here; the loading
-contract is in config.md (the path-scoped rule) — this file adds only the AWS bundle.
+contract is documented on `config-provider-live.ts` itself. **Env files live git-ignored at the repo
+root only** (`.env.example` is the template) — never a per-package `.env*` (Bun would silently
+auto-load it from cwd, forking the config source).
 
 - **`AwsClientConfig`** — the **single source of AWS client wiring** for every SDK client (SQS + S3):
   `{ region, endpoint?, credentials }`, resolved from env and **flattened from `Option` here, once**,
