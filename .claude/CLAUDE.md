@@ -56,7 +56,7 @@ ancestors (this file) always load.
 
 ## Slash commands
 
-`/check` · `/scan-deps` · `/new-package` · `/sweep` (expensive — run deliberately). **SDD toolkit** —
+`/check` · `/scan-deps` · `/new-package`. **SDD toolkit** —
 `/sdd:{research,specify,clarify,plan,tasks,implement,verify}` drive the spec-driven loop against the
 live Notion feature, compiled from the
 [playbook](https://www.notion.so/36dfb28bd5f181238a86d26457bc24e7) §6/§7/§8. Quickstart:
