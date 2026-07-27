@@ -112,11 +112,10 @@ bun install
 
 # 3. Local infra in ONE command — Postgres + LocalStack + Jaeger, waits healthy, migrates the DB,
 #    provisions the SQS queue + S3 bucket.
-bun run --filter '@kotodama/infra' local:up
+bun run local:up
 
-# 4. The two backend apps, each in its own terminal.
-bun run --filter '@kotodama/app-api' dev            # HTTP API on :3000
-bun run --filter '@kotodama/app-worker' dev         # the worker poll-loop
+# 4. The two backend apps — one terminal for both, or dev:api / dev:worker each in its own.
+bun run dev                                       # api on :3000 + the worker poll-loop
 
 # 5. Prove the real-engine path end to end — request a build, then poll until `succeeded`
 #    (a cold real-engine build — text + image stages — takes a minute or two).
@@ -125,7 +124,8 @@ curl localhost:3000/api/words/en/lacuna/state
 ```
 
 Traces at Jaeger **http://localhost:16686**; generated images land in the LocalStack `kotodama-images`
-bucket. Full reset: `local:clean && local:up` (both bring-up steps are idempotent).
+bucket. Ctrl-C stops the apps; the containers stay up until `bun run local:down`. Full reset:
+`local:clean && local:up` (both bring-up steps are idempotent).
 
 ## Environments
 

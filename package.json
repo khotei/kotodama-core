@@ -71,6 +71,13 @@
   "scripts": {
     "prepare": "husky",
     "bootstrap": "bun install",
+    "dev": "bun run local:up && bun run --filter './apps/*' dev",
+    "dev:api": "bun run --filter '@kotodama/app-api' dev",
+    "dev:worker": "bun run --filter '@kotodama/app-worker' dev",
+    "local:up": "bun run --filter '@kotodama/infra' local:up",
+    "local:down": "bun run --filter '@kotodama/infra' local:down",
+    "local:clean": "bun run --filter '@kotodama/infra' local:clean",
+    "local:logs": "bun run --filter '@kotodama/infra' local:logs",
     "format": "biome format --write --config-path infra/presets/src/biome.base.json .",
     "lint": "biome lint --config-path infra/presets/src/biome.base.json .",
     "tsc": "bun run --filter '*' typecheck",
