@@ -5,26 +5,37 @@ paths:
 
 # Effect v4 conventions
 
-**Source of truth: `repos/effect-smol/`** (the vendored v4 beta source). Never guess v4 APIs from
-v3 docs or training memory — the beta moved (ServiceMap→Context, Schema consolidation, HttpApi
-reshape). When unsure of an API shape, verify against the vendored source or the matching
-`.claude/agent-patterns/*.md` cheat-sheet — don't invent, but don't ritually re-read them when the
-codebase already shows the idiom.
+**Source of truth: the vendored v4-beta source** (`repos/effect-smol/`) — NOT v3 docs or training
+memory. The beta moved (ServiceMap→Context, Schema consolidation, HttpApi reshape, `Result` not
+`Either`), so your v3 prior is actively wrong: it will "correct" valid v4 back to v3. **Verify an
+unfamiliar API against the vendored source — don't invent it.** The idiom catalog is single-sourced
+below; do NOT re-enumerate it in this file:
 
-## Core idioms
+- **Effect's own LLM guide:** `repos/effect-smol/LLMS.md` (+ `MIGRATION.md`, `packages/effect/SCHEMA.md`).
+- **Project cheat-sheet** (on-demand): `.claude/agent-patterns/effect-v4-deltas.md` — the v3→v4
+  correction set + stdlib-reuse catalog.
 
-- **Schema, not Zod** — `effect/Schema` for all domain types. Word shapes are authored in
-  `database/`; core and the API edge consume them and author only computed read/view models.
-- **Reuse Effect's stdlib** before hand-rolling any array/option/predicate/struct/order helper —
-  blessed index + gotchas: `.claude/agent-patterns/effect-stdlib.md`. `Result`, not `Either` (gone
-  in v4). Alias global-shadowing namespaces: `import { Array as Arr } from 'effect'`.
-- **`Context.Service` / `Context.Tag`** for DI; **`Layer`** for wiring — compose at the app
-  entrypoint, never construct dependencies inside use cases.
-- **In-beta APIs live under `effect/unstable/*`** (notably parts of HttpApi) — import from there,
-  not a guessed stable path.
-- Errors: `Data.TaggedError` + `Effect.catchTag(s)`. Config: `effect/Config` via `@kotodama/platform/config`.
-  DB: `drizzle-orm/effect-postgres` (see `.claude/rules/drizzle-effect.md`). Entrypoints:
-  `BunRuntime.runMain`.
+Those hold the mechanics — `fnUntraced`-over-`gen`, class-syntax `Context.Service` + `Layer`,
+`Data.TaggedError` + `catchTag`, `effect/Config`, `Result`, no `try/catch` in a generator. This file
+holds only the **Kotodama usage decisions** the catalog can't tell you.
+
+## Kotodama usage
+
+- **Stdlib first:** before hand-writing any helper (data transform, comparator, grouping, retry,
+  string/date math…), check the matching `effect` module — the task → module map is in the
+  cheat-sheet above; custom code only after the module came up empty.
+- **Domain schemas are authored in `database/`** (`effect/Schema` — the only schema lib, never
+  Zod/`io-ts`); core + the API edge consume those entities and author only computed read/view
+  models — never re-declare a domain shape.
+- **Failures live in the error channel as `Data.TaggedError`s** — never `throw` a plain `Error`
+  inside an Effect (callers `catchTag` exhaustively); an error crossing the wire is schema-backed
+  (`HttpApiError`).
+- **In-beta APIs live under `effect/unstable/*`** (notably parts of HttpApi) — import from there, not a
+  guessed stable path.
+- Config: `effect/Config` via `@kotodama/platform/config`. DB: `drizzle-orm/effect-postgres` (see
+  `drizzle-effect.md`). Entrypoint: `BunRuntime.runMain`. Alias global-shadowing namespaces:
+  `import { Array as Arr } from 'effect'`.
+- **Never import from `repos/`** in application code — import the published `effect`/`@effect/*`.
 
 ## Service vs plain function — when to reach for `Context.Service`
 
@@ -48,26 +59,22 @@ Decomposition is orthogonal: pure logic → a module-level function (unit-testab
 context-closing helpers → local closures inside the body (lifting them would force pass-through
 param threading) — test those at the public seam.
 
-## Composition style — `gen` / `fnUntraced` / `pipe`
+## Composition — the project's rule on top of the idiom
 
-- **A value (an `Effect`)** → `Effect.gen(function* () { … })`; acquire services with `yield*`
-  inside — never `Service.pipe(Effect.flatMap(s => …))`.
-- **A function returning an `Effect`** → `Effect.fnUntraced(function* (args) { … })`, never
-  `(args) => Effect.gen(…)`. **Type the parameters inline and let `E`/`R` infer** — a hand-written
-  `Effect.Effect<…>` return signature is drift bait recomputed from every nested call; annotate the
-  full signature only for an overload, a `Context.Service` shape, or a file where inference makes
-  errors unreadable.
-- **`fnUntraced`, not `fn("name")`** — `fn` auto-attaches a span; spans are placed manually on
-  meaningful units (`.claude/rules/observability.md`).
-- Attach a fn's tail combinators as extra args (`Effect.fnUntraced(function* …, Effect.mapError(…))`),
-  not `.pipe` on the fn.
-- **`return yield*`** for terminal effects so TS sees the dead code. Never `try/catch` in a
-  generator.
-- `.pipe` stays correct for: a single-combinator tail, point-free pipelines, provision/error tails,
-  and **layer/config composition** (`gen` is wrong for wiring). Keep `Effect.all({ … })` for
-  parallel acquisition.
+- **`fnUntraced`, not `fn("name")`** — `fn` auto-attaches a span; we place spans manually on
+  meaningful units (Tracing below).
+- **Type params inline, let `E`/`R` infer** — a hand-written `Effect.Effect<…>` return signature is
+  drift bait recomputed from every nested call; annotate the full signature only for an overload, a
+  `Context.Service` shape, or a file where inference makes errors unreadable.
 
-## Avoid
+## Tracing
 
-- Importing from `repos/` in application code — keep importing the published `effect`/`@effect/*`
-  packages.
+- **Debugging the running dev apps? Read the trace before adding prints:** both entrypoints provide
+  `TracingLive` (`@kotodama/platform/observability`; mechanics documented in its source) —
+  `bun run --filter '@kotodama/infra' local:up`, reproduce, open Jaeger at http://localhost:16686
+  (prod: set `OTEL_EXPORTER_OTLP_ENDPOINT`). Vitest suites do NOT wire tracing — to trace a flow,
+  drive it through the app. **OTel→Jaeger, not Effect DevTools** (VS Code-only, no cloud story;
+  this repo's IDE is JetBrains) — don't wire DevTools.
+- **Span only the meaningful units** (use cases, repo/AI/queue ops):
+  `Effect.withSpan('PascalCaseSubject.operation', { attributes })`, attribute keys
+  lowercase-dotted — `@effect/sql-pg` + `HttpApi` auto-span their own layers, don't duplicate them.

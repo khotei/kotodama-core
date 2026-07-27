@@ -7,8 +7,6 @@ import { relations } from '../schema'
 /**
  * Provide ConfigProviderLive at the entrypoint/tests for the repo-root .env;
  * otherwise the default provider reads process.env only.
- *
- * @see @.claude/rules/config.md
  */
 export const PgClientLive = PgClient.layerConfig({ url: DatabaseUrl })
 
