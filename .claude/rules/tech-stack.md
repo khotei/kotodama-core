@@ -10,5 +10,5 @@ picks only (versions live in `package.json` catalogs; tooling in `tooling.md`):
 | Storage | AWS S3 (LocalStack locally) | Uses **`Bun.S3Client`** (a Bun global), not `@aws-sdk/client-s3`. |
 | Queue | AWS SQS (`@aws-sdk/client-sqs`) | — |
 | AI | `@effect/ai-openai` | text + image generation. |
-| Observability | `@effect/opentelemetry` | See `observability.md`. |
+| Observability | `@effect/opentelemetry` | Tracing conventions: `effect-conventions.md` § Tracing. |
 | Type utils | **type-fest** | Prefer over a hand-rolled mapped/conditional type (types-only, never reaches a bundle). |
