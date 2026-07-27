@@ -58,7 +58,19 @@ param threading) — test those at the public seam.
 ## Composition — the project's rule on top of the idiom
 
 - **`fnUntraced`, not `fn("name")`** — `fn` auto-attaches a span; we place spans manually on
-  meaningful units (`observability.md`).
+  meaningful units (Tracing below).
 - **Type params inline, let `E`/`R` infer** — a hand-written `Effect.Effect<…>` return signature is
   drift bait recomputed from every nested call; annotate the full signature only for an overload, a
   `Context.Service` shape, or a file where inference makes errors unreadable.
+
+## Tracing
+
+- **Debugging the running dev apps? Read the trace before adding prints:** both entrypoints provide
+  `TracingLive` (`@kotodama/platform/observability`; mechanics documented in its source) —
+  `bun run --filter '@kotodama/infra' local:up`, reproduce, open Jaeger at http://localhost:16686
+  (prod: set `OTEL_EXPORTER_OTLP_ENDPOINT`). Vitest suites do NOT wire tracing — to trace a flow,
+  drive it through the app. **OTel→Jaeger, not Effect DevTools** (VS Code-only, no cloud story;
+  this repo's IDE is JetBrains) — don't wire DevTools.
+- **Span only the meaningful units** (use cases, repo/AI/queue ops):
+  `Effect.withSpan('PascalCaseSubject.operation', { attributes })`, attribute keys
+  lowercase-dotted — `@effect/sql-pg` + `HttpApi` auto-span their own layers, don't duplicate them.

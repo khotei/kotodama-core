@@ -1,5 +1,5 @@
 // Reads `OTEL_EXPORTER_OTLP_ENDPOINT` directly, not via `@kotodama/platform/config`: leaf
-// package, may not import `config`. See @.claude/rules/observability.md.
+// package, may not import `config`; env-var config is OTel's own idiom.
 
 // NodeSdk subpath, not the package barrel — the barrel re-exports WebSdk, which
 // pulls the browser-only `@opentelemetry/sdk-trace-web`; this is a backend layer.
