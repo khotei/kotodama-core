@@ -22,34 +22,26 @@ file only flags what the v3 training prior actively gets wrong. If anything drif
   `isNotNull`/`isNotUndefined` · `isTagged` (`_tag === tag`).
 - **The Schema API was consolidated during the beta** — grep `Schema.ts` exports, never guess v3
   method names; refinements are `.check(Schema.isMinLength(1))`, NOT the v3
-  `.pipe(Schema.minLength(1))`. One schema lib only — `effect/Schema`, never Zod/`io-ts`. Sources:
-  `Schema.ts`, `SchemaAST.ts`, `SchemaTransformation.ts`, `SchemaGetter.ts`, `SchemaIssue.ts`;
-  worked usage in `test/schema/*.test.ts`.
+  `.pipe(Schema.minLength(1))`. Sources: `Schema.ts`, `SchemaAST.ts`, `SchemaTransformation.ts`,
+  `SchemaGetter.ts`, `SchemaIssue.ts`; worked usage in `test/schema/*.test.ts`.
 - **HttpApi is beta and lives under `effect/unstable/httpapi`** — never a guessed stable path;
   confirm imports against `src/unstable/httpapi/` (`HttpApi`, `HttpApiGroup`, `HttpApiEndpoint`,
   `HttpApiBuilder`, `HttpApiClient`, `HttpApiSecurity`, `HttpApiError`, `HttpApiSchema`,
   `HttpApiTest`, `OpenApi`). HTTP primitives: `src/unstable/http/`. Derive the typed client from the
   contract with `HttpApiClient.*` — never hand-roll one.
 
-## Errors
+## Errors — API locations
 
-Sources: `Data.ts` (`TaggedError`, `TaggedClass`, `$is`, `$match`), `Cause.ts`, `Effect.ts`
-(`catchTag`/`catchTags`/`catchCause`).
+Sources: `Data.ts` (`TaggedError(tag)<fields>`, `TaggedClass`, `$is`, `$match`), `Cause.ts`,
+`Effect.ts` (`catchTag`/`catchTags`/`catchCause`); wire-facing schema-backed errors:
+`unstable/httpapi/HttpApiError.ts`. **`Data.$is(tag)` / `Data.$match` are v4 additions** — prefer
+them over manual `_tag` string comparisons. (The error-modelling policy itself lives in
+`effect-conventions.md`.)
 
-- Define tagged errors with `Data.TaggedError(tag)<fields>`; **don't throw plain `Error`s inside
-  Effects** — model failures in the error channel so callers `catchTag` exhaustively.
-- Prefer `Data.$is(tag)` / `Data.$match` over manual `_tag` string comparisons.
-- Errors that cross the wire (HttpApi responses) must be schema-backed so they encode/decode —
-  `unstable/httpapi/HttpApiError.ts`.
+## The stdlib map — task → v4 module
 
-## Stdlib first — the default for ANY utility logic, not just `Array`
-
-**Before hand-writing any helper — a data transform, comparator, grouping/dedup, string/number/date
-math, a retry loop, coordination, caching — assume `effect` already ships it and check the matching
-module first.** The stdlib is ~130 modules (`ls repos/effect-smol/packages/effect/src` is the
-inventory; grep the module file for the function). Hand-rolling what the stdlib provides is the same
-defect as hand-rolling SQL the engine owns; write custom code only after the matching module came up
-empty. Task → module map:
+The reuse policy is `effect-conventions.md`'s ("Stdlib first"); this is its map. ~130 modules —
+`ls repos/effect-smol/packages/effect/src` is the inventory; grep the module file for the function.
 
 - **Data:** `Array` · `Chunk` · `Iterable` · `Record` · `Struct` · `Tuple` · `HashMap`/`HashSet`
   (+ `Mutable*`).
@@ -67,8 +59,6 @@ empty. Task → module map:
 
 ### Gotchas
 
-- **Namespace imports shadow globals** (`Array`, `String`, `Number`, `Boolean`, `Function`) and trip
-  Biome `noShadowRestrictedNames` — alias: `import { Array as Arr } from 'effect'`.
 - **`Array.ensure(undefined)` → `[undefined]`, NOT `[]`** (it's `isArray(x) ? x : [x]`). For a single
   nullish value → `[]` use `Array.fromNullishOr`; for a value-or-array that may be absent, guard the
   undefined yourself: `x === undefined ? [] : Arr.ensure(x)`.

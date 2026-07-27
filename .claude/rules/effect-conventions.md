@@ -24,8 +24,12 @@ holds only the **Kotodama usage decisions** the catalog can't tell you.
 - **Stdlib first:** before hand-writing any helper (data transform, comparator, grouping, retry,
   string/date math…), check the matching `effect` module — the task → module map is in the
   cheat-sheet above; custom code only after the module came up empty.
-- **Domain schemas are authored in `database/`** (`effect/Schema`); core + the API edge consume those
-  entities and author only computed read/view models — never re-declare a domain shape.
+- **Domain schemas are authored in `database/`** (`effect/Schema` — the only schema lib, never
+  Zod/`io-ts`); core + the API edge consume those entities and author only computed read/view
+  models — never re-declare a domain shape.
+- **Failures live in the error channel as `Data.TaggedError`s** — never `throw` a plain `Error`
+  inside an Effect (callers `catchTag` exhaustively); an error crossing the wire is schema-backed
+  (`HttpApiError`).
 - **In-beta APIs live under `effect/unstable/*`** (notably parts of HttpApi) — import from there, not a
   guessed stable path.
 - Config: `effect/Config` via `@kotodama/platform/config`. DB: `drizzle-orm/effect-postgres` (see
