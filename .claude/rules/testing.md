@@ -7,10 +7,8 @@ paths:
 
 # Testing
 
-- **Runner `@effect/vitest`** — import helpers from it, not `vitest`; prefer `it.effect`/`it.scoped`.
-- **`bun run test`, never `bun test`** (per-package `bun run --filter '@kotodama/<name>' test`); the `--bun` flag + aggregate-run ban live in `tooling.md`.
-- **Files:** `*.test.ts` under each workspace's `test/` (sibling of `src/`, mirroring it), imported via `../src/…`; `test/` is in tsconfig `include` so `tsc` checks it.
-- **Keep the trailing `(AC-n)`** on `it` names — the one exception to no-provenance: it maps a test to the feature AC that `/sdd:verify` checks.
+**Keep the trailing `(AC-n)` on `it` names** — the one exception to comments.md's no-provenance
+rule: it maps a test to the feature AC that `/sdd:verify` checks.
 
 ## DAMP, not lifecycle hooks
 
@@ -27,6 +25,9 @@ need one success + one representative typed error. When you stop short, leave a 
 
 ## Test infra (needs Docker)
 
-- DB tests run against **ephemeral Testcontainers Postgres** — URL is per-container, so there is **no `.env.test`** and no way to hit dev. Surface `@kotodama/database/testing`: `TestDatabaseLive` (self-migrating) + `resetDb`.
-- Queue/storage tests run the real `*Live` layers over per-file LocalStack (`@kotodama/platform/{queue,storage}/testing`); prefer the real adapter over a fake. A suite doing no S3 I/O provides the no-op `UnusedStorage` instead of a container.
-- LocalStack pinned `localstack/localstack:4.4.0` (last free community release — don't float `:latest`).
+- DB tests: ephemeral Testcontainers Postgres via `@kotodama/database/testing` (`TestDatabaseLive`,
+  self-migrating, + `resetDb`) — the URL is per-container, so there is **no `.env.test`** and no way
+  to hit dev.
+- Queue/storage tests: the real `*Live` layers over per-file LocalStack — surfaces + rules in
+  `platform/{queue,storage}/CLAUDE.md`. LocalStack stays pinned `4.4.0` (`:latest` now demands an
+  auth token — the full story is a comment in `infra/local/docker-compose.yml`).
