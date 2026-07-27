@@ -141,8 +141,8 @@ from** — resource *identity* (queue/bucket names) is single-sourced in
 | **Resources** | created by `local:provision` | created per file (`ensureQueue`/`ensureBucket`) | IaC-owned; the app only consumes |
 
 The invariants behind the matrix — why a test structurally cannot touch the dev stack, why prod
-never self-provisions — are owned by [`.claude/rules/config.md`](.claude/rules/config.md) ·
-[`.claude/rules/testing.md`](.claude/rules/testing.md).
+never self-provisions — are owned by [`.claude/rules/testing.md`](.claude/rules/testing.md) ·
+[`infra/CLAUDE.md`](infra/CLAUDE.md).
 
 ## Contributing
 
