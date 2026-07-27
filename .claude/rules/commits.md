@@ -28,6 +28,3 @@ Refs: <Notion sub-task URL>
 - **Gitmoji → type:** ✨ `feat` · 🐛 `fix` · ♻️ `refactor` · 🔨 tooling · 📝 `docs` · 🔧 `config` ·
   ✅ `test` · 💄 UI · 🔒 security · 🚧 WIP · 🎉 bootstrap only.
 - **Types:** `feat` · `fix` · `refactor` · `chore` · `docs` · `test` · `build` · `ci`.
-
-Worked examples (`feat`/`fix`/`refactor`/bootstrap `chore`) — `.claude/agent-patterns/commit-examples.md`
-(on-demand; read when a non-trivial commit needs a model).

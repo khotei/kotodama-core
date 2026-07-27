@@ -1,7 +1,7 @@
 # apps/api — `@kotodama/app-api`
 
 HttpApi server (Effect v4), Bun locally / AWS Lambda via the Lambda Web Adapter. Root `HttpApi` +
-per-resource group/handler pattern: `.claude/agent-patterns/effect-httpapi.md`.
+one folder per resource group (`words.api.ts` beside `words.handler.ts`).
 
 ## What this edge owns
 

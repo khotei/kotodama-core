@@ -11,4 +11,4 @@ picks only (versions live in `package.json` catalogs; tooling in `tooling.md`):
 | Queue | AWS SQS (`@aws-sdk/client-sqs`) | — |
 | AI | `@effect/ai-openai` | text + image generation. |
 | Observability | `@effect/opentelemetry` | See `observability.md`. |
-| Type utils | **type-fest** | Prefer over a hand-rolled mapped/conditional type — `.claude/agent-patterns/type-fest.md`. |
+| Type utils | **type-fest** | Prefer over a hand-rolled mapped/conditional type (types-only, never reaches a bundle). |

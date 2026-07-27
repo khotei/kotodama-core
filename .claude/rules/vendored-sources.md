@@ -13,7 +13,7 @@ packages).
 - `repos/effect-smol/` — **Effect v4 beta** source, canonical for v4 APIs. Start at `LLMS.md` (the maintainers' LLM guide); `MIGRATION.md` + `packages/effect/SCHEMA.md` cover the v3→v4 moves.
 - `repos/drizzle/` — pinned to the **`1.0.0-rc` tag line**: its `effect-schema`/`effect-postgres` entrypoints are native Effect v4. **Never use the `beta.*` line (Effect v3) or vendor `main` (stable 0.45.x, no Effect entrypoints).** Kotodama is Postgres-only via `drizzle-orm/src/{effect-schema,effect-postgres}`; examples in `integration-tests/tests/pg/`.
 
-Check the `.claude/agent-patterns/` cheat sheets (`effect-*`, `drizzle-effect`) before diving into the tree.
+Check `.claude/agent-patterns/effect-v4-deltas.md` (and the `drizzle-effect` rule) before diving into the tree.
 
 **Updating:** `bun run vendor:{effect,drizzle}:update` pull upstream as one squashed commit — review
 like a dep bump, then `bun run check` + `test`. Bumping Drizzle = edit both `vendor:drizzle:*` scripts

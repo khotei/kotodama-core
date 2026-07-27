@@ -9,8 +9,15 @@ paths:
 Use Drizzle's first-party Effect subpaths **`drizzle-orm/effect-schema` + `drizzle-orm/effect-postgres`**
 (no extra npm package). **Verify against vendored `repos/drizzle/` (rc), NOT `orm.drizzle.team`** —
 published docs still show Effect **v3** shapes (`@effect/sql-drizzle`, `Context.Tag('DB')`); adapt to
-this repo's `Context.Service` + `Effect.fnUntraced` idiom. Before an app-side loop/dedup/`LIKE '%…%'`,
-check `.claude/agent-patterns/postgres-capabilities.md` for a one-construct primitive.
+this repo's `Context.Service` + `Effect.fnUntraced` idiom. Before an app-side loop/dedup/aggregate/
+`LIKE '%…%'`, reach for the one-construct Postgres primitive (`FILTER`, `ON CONFLICT`, jsonb
+operators, window fns) behind a typed repo function — always `sql` with column references
+(`` sql`… ${table.col} …` ``), never a raw untyped string.
+
+**Vendored map** (`drizzle-orm@1.0.0-rc`): `repos/drizzle/drizzle-orm/src/effect-postgres/`
+(`driver.ts` — `PgDrizzle.make`/`DefaultServices`), `src/effect-schema/` (`schema.ts` + `README.md`
+worked example), `src/pg-core/`; worked tests
+`repos/drizzle/integration-tests/tests/validators/effect-schema/pg.test.ts` + `tests/pg/`.
 
 ## DB layer — read `database/src/db.ts` first
 

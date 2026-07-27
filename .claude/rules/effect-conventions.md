@@ -12,7 +12,8 @@ unfamiliar API against the vendored source — don't invent it.** The idiom cata
 below; do NOT re-enumerate it in this file:
 
 - **Effect's own LLM guide:** `repos/effect-smol/LLMS.md` (+ `MIGRATION.md`, `packages/effect/SCHEMA.md`).
-- **Project cheat-sheets** (on-demand): `.claude/agent-patterns/effect-{stdlib,schema,context-and-layer,httpapi,errors}.md`.
+- **Project cheat-sheet** (on-demand): `.claude/agent-patterns/effect-v4-deltas.md` — the v3→v4
+  correction set + stdlib-reuse catalog.
 
 Those hold the mechanics — `fnUntraced`-over-`gen`, class-syntax `Context.Service` + `Layer`,
 `Data.TaggedError` + `catchTag`, `effect/Config`, `Result`, no `try/catch` in a generator. This file

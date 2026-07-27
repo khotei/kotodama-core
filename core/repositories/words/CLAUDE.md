@@ -27,8 +27,9 @@ function").
   so `NULLS LAST` is a semantic no-op) — plain `DESC` = `NULLS FIRST` mismatches the pathkeys and
   forces a full `Sort` + `Seq Scan`.
 - **Paging is offset-based** for numbered-page nav (needs a total/last page keyset can't jump to);
-  boundaries can drift as rows land at the top. Keyset + a deferred join are the deep-scroll levers —
-  agent-patterns/postgres-capabilities.md §16.
+  boundaries can drift as rows land at the top. Deep-scroll levers if that ever hurts: keyset (for
+  infinite-scroll) or a deferred join (walk the narrow index for the page's ids, then join back for
+  the wide jsonb).
 
 ## Constraints
 

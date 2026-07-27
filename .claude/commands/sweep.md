@@ -24,19 +24,18 @@ leverage (platform reuse, performance at expected load, correctness/failure beha
 ## Leg A — platform sweep (don't reinvent)
 
 For each subsystem the code touches, enumerate the advanced/native capabilities that could dissolve
-hand-written code or improve performance — not the CRUD basics. Consult in order: the repo catalogs
-— **`.claude/agent-patterns/postgres-capabilities.md`** (SQL primitives),
-**`.claude/agent-patterns/effect-stdlib.md`** (Effect's data/utility modules),
-**`.claude/agent-patterns/modern-typescript.md`** (ES2023–25 / TS 5.x language features),
-**`.claude/agent-patterns/type-fest.md`** (utility types) — then the vendored `repos/` source (the
-authority for exact shapes), then official docs on the web; verify a feature exists in the pinned
-version before recommending it.
+hand-written code or improve performance — not the CRUD basics. Consult in order:
+**`.claude/agent-patterns/effect-v4-deltas.md`** (what the v3 prior gets wrong + the stdlib-reuse
+catalog), then the vendored `repos/` source (the authority for exact shapes), then official docs on
+the web; verify a feature exists in the pinned version before recommending it. For SQL, prefer the
+one-construct Postgres primitive behind a typed repo function (`.claude/rules/drizzle-effect.md`);
+for type-level work, type-fest before a hand-rolled mapped/conditional type.
 
 ## Leg B — design shake (the structure the problem wants)
 
-Work from **`.claude/agent-patterns/design-principles.md`** — the symptom → structural-move
-recognition map (Ousterhout, SOLID/GRASP, the classic patterns in their functional/Effect form,
-and the simplicity tie-breakers). Scan the diff/plan against its table; for any non-trivial
+Scan the diff/plan for symptom → structural move: deep modules over shallow forwarding layers,
+composition over creation, correct-by-construction types, and deletions — a needless seam or a
+one-implementation interface removed is as valid a finding as one added. For any non-trivial
 interface, **sketch two genuinely different structures** (signature/usage first, implementation
 second) and compare against the judging criteria.
 
