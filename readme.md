@@ -86,7 +86,7 @@ folders of the single leaf `@kotodama/platform`.
 
 **Dependency direction** (enforced by Biome): `apps → use-cases → core → repositories → database`,
 and everything → `platform`. The full rule + enforcement lives in
-[`.claude/rules/dependency-hierarchy.md`](.claude/rules/dependency-hierarchy.md).
+[`.claude/CLAUDE.md`](.claude/CLAUDE.md) § Dependency hierarchy.
 
 ## Requirements
 

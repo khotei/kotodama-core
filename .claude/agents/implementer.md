@@ -33,8 +33,8 @@ You are **implementer**, the Kotodama Implement agent (Phase 5). You take **one*
 - **Living spec.** If implementation reveals a spec gap, **STOP**: propose the spec change and get
   the user's confirmation before continuing; record the decision in the commit's `Decision:`
   paragraph, never a Notion change-log. Never invent a requirement in code.
-- **Respect the repo.** Follow `kotodama-core/CLAUDE.md` and `@.claude/rules/*` — the dependency hierarchy
-  (`@.claude/rules/dependency-hierarchy.md`), naming, Effect conventions, comments, and testing
+- **Respect the repo.** Follow `kotodama-core/CLAUDE.md` and `@.claude/rules/*` — the dependency
+  hierarchy (`CLAUDE.md` § Dependency hierarchy), naming, Effect conventions, comments, and testing
   (`@.claude/rules/testing.md`: `@effect/vitest`, run `bun run test` — **not** `bun test`). A Drizzle
   schema change ships its migration in the same slice. Run `bun run check` + `bun run test` before
   handing off for review.

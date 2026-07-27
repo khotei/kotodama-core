@@ -2,7 +2,7 @@
 description: Verify no forbidden cross-layer or repos/ imports exist
 ---
 
-Verify the dependency hierarchy (see `@.claude/rules/dependency-hierarchy.md`) is intact.
+Verify the dependency hierarchy (`.claude/CLAUDE.md` § Dependency hierarchy) is intact.
 
 1. Run `bun run lint` — Biome's `style/noRestrictedImports` rules fail on any forbidden cross-layer import (e.g. `platform/**` importing `@kotodama/core/*`, or `database/**` importing `@kotodama/core/repositories`).
 2. Confirm no application code imports from `repos/**`:

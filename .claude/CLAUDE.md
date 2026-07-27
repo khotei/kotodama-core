@@ -24,8 +24,11 @@ apps/{api,worker} ─► core/use-cases ─► core/{words,content} ─► core/
 Middle tiers are subpath-exported folders of the single `@kotodama/core`; `database` is its own
 bottom workspace (distinct drizzle/migration tooling); `platform/*` are folders of the single leaf
 `@kotodama/platform`. `core/use-cases` is the top tier below `apps/*` — user-flow composers
-(`requestWordBuild`, `buildWord`) that aggregate domain + repo functions into one flow. Full rule:
-`.claude/rules/dependency-hierarchy.md`.
+(`requestWordBuild`, `buildWord`) that aggregate domain + repo functions into one flow. **A new
+domain is a folder in its aggregate, never a new package.** `database` single-authors the word
+vocabulary (content schemas, value tuples/`pgEnum`s, `WordEntity`), so every tier takes a **direct
+downward edge to `database`** — no cycle. Enforcement: Biome `noRestrictedImports` per-folder globs
+in `biome.base.json` are the sole gate; `/scan-deps` verifies.
 
 ## Commands & gate
 
@@ -41,7 +44,7 @@ Auto-discovered; **always-loaded** cross-cutting rules vs **path-scoped** (`path
 load on match) keep the always-on context lean. On-demand depth lives in `.claude/agent-patterns/*`
 (pointer-loaded, never in `rules/`).
 
-- **Always:** `tech-stack` · `dependency-hierarchy` · `naming` · `comments` · `tooling` · `commits` · `pull-requests` · `claude-md`.
+- **Always:** `tech-stack` · `naming` · `comments` · `tooling` · `commits` · `pull-requests` · `claude-md`.
 - **Path-scoped:** `effect-conventions`, `vendored-sources` → `**/*.ts` · `drizzle-effect` → `database/**`, `core/repositories/**` · `testing` → `**/test/**`, `**/*.test.ts` · `observability` → `platform/observability/**`, `apps/**` · `sdd` → `.claude/{commands,agents,sdd}/**` · `human-docs` → `readme.md`.
 
 ## Per-layer context
