@@ -5,7 +5,7 @@ symbol-name rule) — they are the convention.
 
 ## Packages
 
-Six workspaces: `apps/{api,worker}` → `@kotodama/app-{api,worker}` (apps drop the plural); the two
+Seven workspaces: `apps/{api,worker}` → `@kotodama/app-{api,worker}` (apps drop the plural); the two
 **aggregate** packages `@kotodama/core` + `@kotodama/platform`, which expose layer/adapter folders as
 **subpath exports**, not dash-flattened packages (`core/words` → `@kotodama/core/words`,
 `core/repositories/words` → `@kotodama/core/repositories`; `platform/config` →
