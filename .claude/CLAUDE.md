@@ -46,8 +46,8 @@ Auto-discovered; **always-loaded** cross-cutting rules vs **path-scoped** (`path
 load on match) keep the always-on context lean. On-demand depth lives in `.claude/agent-patterns/*`
 (pointer-loaded, never in `rules/`).
 
-- **Always:** `naming` · `comments` · `tooling` · `commits` · `pull-requests` · `claude-md`.
-- **Path-scoped:** `effect-conventions`, `vendored-sources` → `**/*.ts` · `drizzle-effect` → `database/**`, `core/repositories/**` · `testing` → `**/test/**`, `**/*.test.ts` · `sdd` → `.claude/{commands,agents,sdd}/**`.
+- **Always:** `comments` · `tooling` · `commits` · `pull-requests` · `claude-md`.
+- **Path-scoped:** `naming` → `**/*.ts`, `**/package.json` · `effect-conventions`, `vendored-sources` → `**/*.ts` · `drizzle-effect` → `database/**`, `core/repositories/**` · `testing` → `**/test/**`, `**/*.test.ts` · `sdd` → `.claude/{commands,agents,sdd}/**`.
 
 ## Per-layer context
 

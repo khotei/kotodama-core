@@ -1,7 +1,13 @@
+---
+paths:
+  - "**/*.ts"
+  - "**/package.json"
+---
+
 # Naming conventions
 
-**Always-loaded rule.** File/symbol conventions here are NOT linted (Biome has no filename or
-symbol-name rule) — they are the convention.
+File/symbol conventions here are NOT linted (Biome has no filename or symbol-name rule) — they are
+the convention.
 
 ## Packages
 
@@ -70,5 +76,5 @@ Seven workspaces: `apps/{api,worker}` → `@kotodama/app-{api,worker}` (apps dro
   dependency is a TDZ `ReferenceError`, so layer files compose bottom-up:
   `PgClientLive → DBLive → DatabaseLive`); a `Context.Service` file reads Shape → tag → helpers → `*Live`.
 - **Effect:** `Context.Tag`/`Service` ids are slash-namespaced (`"@kotodama/core/content/ContentEngine"`);
-  tagged errors are `PascalCase…Error` via `Data.TaggedError`; one `*Live` per boundary service — the
-  swappable client/config rides the service's `R` channel, provided at the app entrypoint, faked in tests.
+  tagged errors are `PascalCase…Error`. (Whether a symbol deserves a service at all, and where
+  `*Live`s are provided/faked: `effect-conventions.md`.)
