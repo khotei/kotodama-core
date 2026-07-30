@@ -1,8 +1,8 @@
 import { describe, expect, it } from '@effect/vitest'
-import { enumAsyncJobStatus } from '@kotodama/database'
+import { ASYNC_JOB_STATUSES, enumAsyncJobStatus } from '@kotodama/database'
 import { makeWordInsert } from '@kotodama/database/factories'
 import { Effect } from 'effect'
-import { decodeWord } from '../src/word.schema'
+import { decodeWord, UNREADY_STATUSES } from '../src/word.schema'
 
 // A `words` row is the permissive lifecycle row: identity + storage envelope + `status` + the 12
 // nullable content columns. A ready row carries full content; a building row carries explicit nulls,
@@ -40,6 +40,14 @@ const buildingRow = (status: 'pending' | 'running' | 'failed') => ({
   status,
   stages: [],
   ...Object.fromEntries(CONTENT_KEYS.map((k) => [k, null])),
+})
+
+describe('UNREADY_STATUSES', () => {
+  it('is exactly the non-succeeded lifecycle statuses — one source for the unready set (AC-3)', () => {
+    expect([...UNREADY_STATUSES]).toEqual(
+      ASYNC_JOB_STATUSES.filter((status) => status !== enumAsyncJobStatus.succeeded),
+    )
+  })
 })
 
 describe('Word union (decode from a words row)', () => {

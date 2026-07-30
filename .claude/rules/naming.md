@@ -38,8 +38,9 @@ Seven workspaces: `apps/{api,worker}` → `@kotodama/app-{api,worker}` (apps dro
   A file playing none of these roles stays a bare kebab name. Tests mirror the source, suffix
   included (`words.repo.test.ts`), in the workspace's `test/`.
 - **Entrypoints:** `src/main.ts` (apps), `src/index.ts` (libraries).
-- `database/schema/` groups one folder per repository boundary (named to match the repo folder);
-  the `schema/index.ts` barrel re-exports every group. See `database/CLAUDE.md`.
+- `database/schema/` groups one folder per repository boundary (named to match the repo folder),
+  plus domain-neutral `primitives/` (shared value vocabularies) and `utils/` (internal build
+  helpers); the `schema/index.ts` barrel re-exports every group. See `database/CLAUDE.md`.
 
 ## Symbols
 

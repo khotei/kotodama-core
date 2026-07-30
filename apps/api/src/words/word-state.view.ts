@@ -1,3 +1,4 @@
+import { UNREADY_STATUSES } from '@kotodama/core/words'
 import { enumAsyncJobStatus, JobErrorEntity, StageEntity, WordEntity } from '@kotodama/database'
 import { Schema, Struct } from 'effect'
 
@@ -27,11 +28,7 @@ export type StageProgress = typeof StageProgress.Type
 export const WordStateView = Schema.Union([
   Schema.Struct({ status: Schema.Literal(enumAsyncJobStatus.succeeded), word: WordEntity }),
   Schema.Struct({
-    status: Schema.Literals([
-      enumAsyncJobStatus.pending,
-      enumAsyncJobStatus.running,
-      enumAsyncJobStatus.failed,
-    ]),
+    status: Schema.Literals(UNREADY_STATUSES),
     stages: Schema.Array(StageProgress),
   }),
 ])

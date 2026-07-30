@@ -1,9 +1,9 @@
 import { type SQLWrapper, sql } from 'drizzle-orm'
 import { check, index, jsonb, snakeCase, text, unique } from 'drizzle-orm/pg-core'
-import { identifierColumn, timestampColumns } from '../columns'
-import { enumLanguage, languageEnum } from '../language'
+import { asyncJobStatus, enumAsyncJobStatus } from '../primitives/async-job-status'
+import { enumLanguage, languageEnum } from '../primitives/language'
+import { identifierColumn, timestampColumns } from '../utils/columns'
 import type { BuildStagesEntity } from './build-stages.entity'
-import { asyncJobStatus, enumAsyncJobStatus } from './word-status'
 import type {
   AuthorExampleEntity,
   BuildProvenanceEntity,

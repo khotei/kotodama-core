@@ -33,8 +33,10 @@ holds only the **Kotodama usage decisions** the catalog can't tell you.
 - **In-beta APIs live under `effect/unstable/*`** (notably parts of HttpApi) — import from there, not a
   guessed stable path.
 - Config: `effect/Config` via `@kotodama/platform/config`. DB: `drizzle-orm/effect-postgres` (see
-  `drizzle-effect.md`). Entrypoint: `BunRuntime.runMain`. Alias global-shadowing namespaces:
-  `import { Array as Arr } from 'effect'`.
+  `drizzle-effect.md`). Entrypoint: `BunRuntime.runMain`. Alias a global-shadowing namespace by its
+  library name, not a terse abbreviation: `import { Array as EffectArray, Record as EffectRecord }
+  from 'effect'` (never `Arr`/`Rec`) — the full name says which library the namespace is and keeps
+  the shadowed global (`Array`, `Record`) readable in type positions.
 - **Never import from `repos/`** in application code — import the published `effect`/`@effect/*`.
 
 ## Service vs plain function — when to reach for `Context.Service`

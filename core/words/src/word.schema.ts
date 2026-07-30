@@ -21,13 +21,20 @@ export const ReadyWord = Schema.Struct({
 })
 export type ReadyWord = typeof ReadyWord.Type
 
+/**
+ * The non-ready lifecycle statuses — the exact set {@link UnreadyWord} spans (every status but
+ * `succeeded`). One author here (core owns the ready/unready split); the API's `WordStateView`
+ * consumes it, so the two can't drift.
+ */
+export const UNREADY_STATUSES = [
+  enumAsyncJobStatus.pending,
+  enumAsyncJobStatus.running,
+  enumAsyncJobStatus.failed,
+] as const
+
 export const UnreadyWord = Schema.Struct({
   ...identityFields,
-  status: Schema.Literals([
-    enumAsyncJobStatus.pending,
-    enumAsyncJobStatus.running,
-    enumAsyncJobStatus.failed,
-  ]),
+  status: Schema.Literals(UNREADY_STATUSES),
   // The build progress the stepper reads — carried inline on the row, so an unready word decodes
   // with its stages and no second query is needed.
   stages: BuildStagesEntity,

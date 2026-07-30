@@ -1,6 +1,6 @@
 import { createInsertSchema, createSelectSchema } from 'drizzle-orm/effect-schema'
 import { Schema } from 'effect'
-import { Language } from '../language'
+import { Language } from '../primitives/language'
 import { BuildStagesEntity } from './build-stages.entity'
 import { wordsTable } from './words.table'
 import { FrequencyBand, SourceType, VisualKind } from './words.values'

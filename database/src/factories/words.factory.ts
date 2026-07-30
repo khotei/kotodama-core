@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker'
-import { LANGUAGES } from '../../schema/language'
+import { enumAsyncJobStatus } from '../../schema/primitives/async-job-status'
+import { LANGUAGES } from '../../schema/primitives/language'
 import { WORD_JOB_STAGES } from '../../schema/words/build-stages.entity'
-import { enumAsyncJobStatus } from '../../schema/words/word-status'
 import type {
   AuthorExampleEntity,
   BuildProvenanceEntity,

@@ -1,6 +1,6 @@
 import type { Word } from '@kotodama/core/words'
 import { type BuildStagesEntity, enumAsyncJobStatus, WORD_JOB_STAGES } from '@kotodama/database'
-import { Array as Arr, Option, Order } from 'effect'
+import { Array as EffectArray, Option, Order } from 'effect'
 import type { StageProgress, WordStateView } from './word-state.view'
 
 // `words.stages` is written in `WORD_JOB_STAGES` order, but sort defensively — declaration order is
@@ -13,7 +13,7 @@ const stageRank = new Map(WORD_JOB_STAGES.map((stage, index) => [stage, index] a
  * collapseWordState} and the `buildWord` handler, whose freshly-seeded build IS the running view.
  */
 export const toStageProgress = (stages: BuildStagesEntity): StageProgress[] =>
-  Arr.sort(
+  EffectArray.sort(
     stages,
     Order.mapInput(
       Order.Number,

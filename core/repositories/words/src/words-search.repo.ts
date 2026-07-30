@@ -40,20 +40,32 @@ const recencyOrder = [sql`${wordsTable.createdAt} desc nulls last`, asc(wordsTab
 
 export const searchWords = Effect.fnUntraced(function* (query: WordSearchQuery) {
   const db = yield* DB
+
   const { page = 1, limit } = query
+
   const filtered = wordSearchFilter(query)
+
   const listed = db
     .select()
     .from(wordsTable)
     .where(filtered)
     .orderBy(...recencyOrder)
     .$dynamic()
-  // A separate COUNT, not `count(*) OVER()`: the window count would materialize the whole match and
-  // defeat the paged scan; the standalone count uses the same index over the filter.
+
+  // Unpaged: the list already IS the whole match, so its length is the total — no second scan.
+  if (limit === undefined) {
+    const items = yield* listed
+    return { items, total: items.length } satisfies WordSearchResult
+  }
+
+  // Paged: a separate COUNT, not `count(*) OVER()` — the window count would materialize the whole
+  // match and defeat the paged scan; the standalone count uses the same index over the filter.
   const [counted] = yield* db
     .select({ total: sql<number>`count(*)`.mapWith(Number) })
     .from(wordsTable)
     .where(filtered)
-  const items = yield* limit === undefined ? listed : listed.limit(limit).offset((page - 1) * limit)
+
+  const items = yield* listed.limit(limit).offset((page - 1) * limit)
+
   return { items, total: counted?.total ?? 0 } satisfies WordSearchResult
 })

@@ -30,8 +30,11 @@ worked example), `src/pg-core/`; worked tests
 
 ## Schema conventions
 
-- One folder per aggregate under `database/schema/`, re-exported by `schema/index.ts` — the sole
-  `drizzle.config` `schema` entry (a directory glob would double-count the barrel's re-exports).
+- One folder per aggregate under `database/schema/` (`words/`), plus two domain-neutral folders —
+  `primitives/` (shared value vocabularies: `language`, `async-job-status`) and `utils/` (internal
+  build helpers: `columns`, `to-enum`). All re-exported by `schema/index.ts` — the sole
+  `drizzle.config` `schema` entry (a directory glob would double-count the barrel's re-exports) —
+  **except `utils/columns` (internal, not re-exported)**.
 - Tables: `…Table` suffix, `snakeCase.table` — **never also set `transformQueryNames`**. Export
   `<Entity>Row = typeof table.$inferSelect`.
 - **Value lists: one `as const` tuple is the single source** — union, `toEnum` map, `pgEnum`,

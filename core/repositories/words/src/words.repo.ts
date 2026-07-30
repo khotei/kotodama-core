@@ -1,7 +1,7 @@
 import type { EffectDrizzleQueryError, Language, WordInsert, WordRow } from '@kotodama/database'
 import { DB, patchOnConflict, wordsTable } from '@kotodama/database'
 import { and, inArray } from 'drizzle-orm'
-import { Array as Arr, Effect, Option } from 'effect'
+import { Effect, Array as EffectArray, Option } from 'effect'
 
 type Arrayable<T> = T | readonly T[]
 
@@ -30,9 +30,11 @@ export type WordQuery = {
 
 export const selectWords = Effect.fnUntraced(function* (query: WordQuery) {
   const db = yield* DB
-  const ids = query.id === undefined ? [] : Arr.ensure(query.id)
-  const words = query.word === undefined ? [] : Arr.ensure(query.word)
-  const languages = query.language === undefined ? [] : Arr.ensure(query.language)
+
+  const ids = query.id === undefined ? [] : EffectArray.ensure(query.id)
+  const words = query.word === undefined ? [] : EffectArray.ensure(query.word)
+  const languages = query.language === undefined ? [] : EffectArray.ensure(query.language)
+
   const select = db
     .select()
     .from(wordsTable)
@@ -44,6 +46,7 @@ export const selectWords = Effect.fnUntraced(function* (query: WordQuery) {
       ),
     )
     .$dynamic()
+
   return yield* query.limit === undefined ? select : select.limit(query.limit)
 })
 
@@ -62,10 +65,11 @@ export const selectWord = Effect.fnUntraced(function* (language: Language, word:
 export const upsertWords = ((content: Arrayable<WordUpsert>) =>
   Effect.gen(function* () {
     const db = yield* DB
+
     const rows: WordRow[] = []
     // One statement per item — rows carrying different optional columns can't share one SET.
     // No transaction: a failing item leaves earlier ones saved.
-    for (const c of Arr.ensure(content)) {
+    for (const c of EffectArray.ensure(content)) {
       rows.push(
         ...(yield* db
           .insert(wordsTable)
@@ -80,9 +84,11 @@ export const upsertWords = ((content: Arrayable<WordUpsert>) =>
       )
     }
 
-    if (Arr.isArray(content)) return rows
+    if (EffectArray.isArray(content)) return rows
+
     const [first] = rows
     if (!first) return yield* Effect.die(new Error('upsertWords: upsert returned no row'))
+
     return first
   })) as UpsertWords
 

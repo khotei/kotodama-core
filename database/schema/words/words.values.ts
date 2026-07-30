@@ -1,5 +1,5 @@
 import { Schema } from 'effect'
-import { toEnum } from '../to-enum'
+import { toEnum } from '../utils/to-enum'
 
 /**
  * The word content's closed value lists — each `as const` tuple is the single authored definition;

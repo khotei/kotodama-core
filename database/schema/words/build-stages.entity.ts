@@ -1,6 +1,6 @@
 import { Schema } from 'effect'
-import { toEnum } from '../to-enum'
-import { AsyncJobStatus } from './word-status'
+import { AsyncJobStatus } from '../primitives/async-job-status'
+import { toEnum } from '../utils/to-enum'
 
 /**
  * **Declaration order is the pipeline/display order** — the "being written" stepper renders
