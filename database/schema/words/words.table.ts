@@ -1,4 +1,4 @@
-import { sql } from 'drizzle-orm'
+import { type SQLWrapper, sql } from 'drizzle-orm'
 import { check, index, jsonb, snakeCase, text, unique } from 'drizzle-orm/pg-core'
 import { identifierColumn, timestampColumns } from '../columns'
 import { enumLanguage, languageEnum } from '../language'
@@ -18,6 +18,18 @@ import type {
   TranslationEntity,
   VisualsEntity,
 } from './words.entity'
+
+/**
+ * Reads as the ready-invariant it encodes: **when the row is `succeeded`, every listed column must
+ * be present (non-null)**. A not-yet-ready row (`pending`/`running`/`failed`) is free to hold NULLs,
+ * and any column left off the list — `frequency` — may be NULL even when succeeded. Hides the SQL
+ * material-implication (`status <> 'succeeded' OR …`) behind the sentence it means.
+ */
+const requireWhenSucceeded = (status: SQLWrapper, present: readonly SQLWrapper[]) =>
+  sql`${status} <> ${enumAsyncJobStatus.succeeded} OR (${sql.join(
+    present.map((column) => sql`${column} IS NOT NULL`),
+    sql` AND `,
+  )})`
 
 /**
  * A lifecycle table: content columns are nullable (a row exists from the `pending` seed, long
@@ -60,7 +72,20 @@ export const wordsTable = snakeCase.table(
     unique().on(t.word, t.language),
     check(
       'words_succeeded_content_present',
-      sql`${t.status} <> ${enumAsyncJobStatus.succeeded} OR (${t.coreDefinition} IS NOT NULL AND ${t.lexical} IS NOT NULL AND ${t.pronunciation} IS NOT NULL AND ${t.tiers} IS NOT NULL AND ${t.etymology} IS NOT NULL AND ${t.authorExamples} IS NOT NULL AND ${t.culturalGuide} IS NOT NULL AND ${t.relations} IS NOT NULL AND ${t.translations} IS NOT NULL AND ${t.visuals} IS NOT NULL AND ${t.sources} IS NOT NULL AND ${t.provenance} IS NOT NULL)`,
+      requireWhenSucceeded(t.status, [
+        t.coreDefinition,
+        t.lexical,
+        t.pronunciation,
+        t.tiers,
+        t.etymology,
+        t.authorExamples,
+        t.culturalGuide,
+        t.relations,
+        t.translations,
+        t.visuals,
+        t.sources,
+        t.provenance,
+      ]),
     ),
     index('words_language_created_at_word_idx').on(
       t.language,
