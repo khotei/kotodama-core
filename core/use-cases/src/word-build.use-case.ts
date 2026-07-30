@@ -69,28 +69,14 @@ export const buildWord = Effect.fnUntraced(function* (language: Language, word: 
       },
       // The expected domain outcome — record the full per-stage picture and succeed, so it never
       // reaches the worker edge.
-      WordGenerationError: ({ failures, succeeded }) => {
-        // Passes that neither succeeded nor failed never completed — reset to `pending` (undoing the
-        // `running` flip), so a dead build leaves no stage stuck `running`.
-        const ran = new Set([...succeeded, ...failures.map(({ stage }) => stage)])
-        return recordWordFailure(language, word, {
-          logLine: `word build failed for "${word}" (${language}): ${failures
-            .map(({ stage, error }) => `${stage} (${error.type})`)
+      WordGenerationError: (error) =>
+        recordWordFailure(language, word, {
+          logLine: `word build failed for "${word}" (${language}): ${error.outcome
+            .filter((entry) => entry.status === enumAsyncJobStatus.failed)
+            .map((failure) => `${failure.stage} (${failure.error?.type})`)
             .join(', ')}`,
-          stages: [
-            ...succeeded.map((stage) => ({ stage, status: enumAsyncJobStatus.succeeded })),
-            ...failures.map(({ stage, error }) => ({
-              stage,
-              status: enumAsyncJobStatus.failed,
-              error,
-            })),
-            ...WORD_BUILD_STAGES.filter((stage) => !ran.has(stage)).map((stage) => ({
-              stage,
-              status: enumAsyncJobStatus.pending,
-            })),
-          ],
-        })
-      },
+          stages: error.outcome,
+        }),
     }),
     // What remains is an infra fault — log before it leaves for the redrive, so a redrive is never
     // silent.
