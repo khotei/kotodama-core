@@ -1,4 +1,4 @@
-import { Duration, Effect, Schedule } from 'effect'
+import { Cause, Duration, Effect, Schedule } from 'effect'
 import { AiError } from './ai.service'
 
 /**
@@ -29,7 +29,7 @@ export const resilient = <A>(
   call.pipe(
     Effect.timeout(config.timeout),
     Effect.retry({
-      while: (error) => error._tag === 'TimeoutError' || error.isRetryable,
+      while: (error) => Cause.isTimeoutError(error) || error.isRetryable,
       times: config.retries,
       schedule: RETRY_BACKOFF,
     }),

@@ -1,7 +1,7 @@
 import * as OpenAiClient from '@effect/ai-openai/OpenAiClient'
 import * as OpenAiClientGenerated from '@effect/ai-openai/OpenAiClientGenerated'
 import * as OpenAiLanguageModel from '@effect/ai-openai/OpenAiLanguageModel'
-import { Context, Data, Effect, Encoding, Layer, Predicate, Result, type Schema } from 'effect'
+import { Context, Data, Effect, Encoding, Layer, Predicate, type Schema } from 'effect'
 import { LanguageModel, AiError as ProviderAiError } from 'effect/unstable/ai'
 
 /**
@@ -187,10 +187,9 @@ export const AiServiceLive: Layer.Layer<
           }),
         )
       }
-      return yield* Result.match(Encoding.decodeBase64(b64), {
-        onSuccess: (bytes) => Effect.succeed(bytes),
-        onFailure: (cause) => Effect.fail(AiError.fromCause('generateImage', cause)),
-      })
+      return yield* Effect.fromResult(Encoding.decodeBase64(b64)).pipe(
+        Effect.mapError((cause) => AiError.fromCause('generateImage', cause)),
+      )
     })
 
     return AiService.of({ generateObject, generateImage })

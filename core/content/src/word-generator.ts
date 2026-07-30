@@ -49,13 +49,13 @@ export const generateWordContent = Effect.fnUntraced(function* (language: Langua
       })),
     )
 
-  const abort = (
+  const genError = (
     failures: ReadonlyArray<{ stage: WordJobStage; error: JobErrorEntity }>,
     succeeded: ReadonlyArray<WordJobStage>,
-  ) => Effect.fail(new WordGenerationError({ failures, succeeded }))
+  ) => new WordGenerationError({ failures, succeeded })
 
   const source = yield* runStage(enumWordJobStage.fetch_source).pipe(
-    Effect.catch(({ stage, error }) => abort([{ stage, error }], [])),
+    Effect.mapError(({ stage, error }) => genError([{ stage, error }], [])),
   )
 
   const [failures, successes] = yield* Effect.partition(
@@ -64,10 +64,10 @@ export const generateWordContent = Effect.fnUntraced(function* (language: Langua
     { concurrency: 'unbounded' },
   )
   const succeeded = [enumWordJobStage.fetch_source, ...successes.map((s) => s.stage)]
-  if (failures.length > 0) return yield* abort(failures, succeeded)
+  if (failures.length > 0) return yield* Effect.fail(genError(failures, succeeded))
 
   const review = yield* runStage(enumWordJobStage.final_review, source).pipe(
-    Effect.catch(({ stage, error }) => abort([{ stage, error }], succeeded)),
+    Effect.mapError(({ stage, error }) => genError([{ stage, error }], succeeded)),
   )
 
   // The six disjoint slices together cover WordContent (STAGE_SLICES guarantees it), unprovable to TS.
