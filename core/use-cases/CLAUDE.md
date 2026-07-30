@@ -6,10 +6,11 @@ one end-to-end flow. A use case owns **no primitive decision and no wiring** —
 
 ## Flow invariants
 
-- **`requestWordBuild`:** the seed (`words` row `pending` + every stage `pending`) runs in **one
-  `db.transaction`** — the seeded row IS the list entry, so it must land atomically with its stages;
-  the repos join the tx via the shared `DB` connection (`tx` is never threaded into signatures). The
-  enqueue runs strictly **after** commit (a queue send can't roll back). Admission is
+- **`requestWordBuild`:** the seed is **one `upsertWord`** — the `words` row (`pending`) and every
+  stage (`pending`) ride the *same* row (`stages` is a jsonb column), so it lands **atomically by
+  construction: a single write, no `db.transaction`**. The seeded row IS the list entry. A second,
+  cross-row write here would NOT be atomic without a transaction — add one only if that lands. The
+  enqueue runs strictly **after** the write (a queue send can't roll back). Admission is
   `ensureWordBuildable`; the gibberish gate is `verifyWordInput` (never the bare normalizer). **No
   resume** — a retry reseeds all stages.
 - **`buildWord`:** journals around `createWord` and flips the row's lifecycle status. **The entry

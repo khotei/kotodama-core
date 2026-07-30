@@ -1,6 +1,6 @@
 import { Effect, Schema } from 'effect'
 
-/** The requested input was not a buildable word (empty / symbol-only). Maps to HTTP 422. */
+/** The input is not a buildable word. Maps to HTTP 422. */
 export class InvalidWordInputError extends Schema.TaggedErrorClass<InvalidWordInputError>()(
   'InvalidWordInputError',
   { input: Schema.String },

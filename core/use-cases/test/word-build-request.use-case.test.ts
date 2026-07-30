@@ -4,7 +4,6 @@ import { seedReadyWord, seedUnreadyWord } from '@kotodama/core/repositories/test
 import { WordBuildMessageFromJson, WordVerdict } from '@kotodama/core/words'
 import {
   type BuildStagesEntity,
-  DB,
   enumAsyncJobStatus,
   enumJobErrorType,
   enumLanguage,
@@ -80,7 +79,7 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
   )
 
   it.effect(
-    'seeds a pending words row in the same tx as the stages — the word is listable before the worker runs (AC-4)',
+    'seeds a pending words row in the same write as the stages — the word is listable before the worker runs (AC-4)',
     () =>
       Effect.gen(function* () {
         yield* resetDb
@@ -104,34 +103,6 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
         // The seed and its 6 pending stages landed together on the one row (same write).
         const stages = yield* readStages(EN, WORD)
         expect(stages).toHaveLength(PIPELINE_LENGTH)
-      }),
-  )
-
-  it.effect(
-    'a failure after the seed rolls the whole tx back — no orphan pending words row (AC-4)',
-    () =>
-      Effect.gen(function* () {
-        yield* resetDb
-
-        // The atomicity contract requestWordBuild leans on: the pending row and its inline stages are
-        // ONE write inside a db.transaction, so any failure in the body unwinds the seed too — a word
-        // never appears half-registered. Reproduce the composition and fail *after* the seed; the
-        // pending row must not survive.
-        const db = yield* DB
-        const boom = yield* db
-          .transaction(() =>
-            Effect.gen(function* () {
-              yield* seedUnreadyWord(EN, WORD)
-              return yield* Effect.fail(new Error('stage write failed'))
-            }),
-          )
-          .pipe(Effect.flip)
-        expect(boom.message).toBe('stage write failed')
-
-        // Rolled back: no orphan pending row (and so nothing in list/search).
-        expect(Option.isNone(yield* selectWord(EN, WORD))).toBe(true)
-        const { items } = yield* searchWords({ language: EN, limit: 20 })
-        expect(items.map((item) => item.word)).not.toContain(WORD)
       }),
   )
 
