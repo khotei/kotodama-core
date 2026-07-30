@@ -3,7 +3,7 @@ import { check, index, jsonb, snakeCase, text, unique } from 'drizzle-orm/pg-cor
 import { asyncJobStatus, enumAsyncJobStatus } from '../primitives/async-job-status'
 import { enumLanguage, languageEnum } from '../primitives/language'
 import { identifierColumn, timestampColumns } from '../utils/columns'
-import type { BuildStagesEntity } from './build-stages.entity'
+import type { WordBuildStagesEntity } from './word-build-stages.entity'
 import type {
   AuthorExampleEntity,
   BuildProvenanceEntity,
@@ -52,7 +52,7 @@ export const wordsTable = snakeCase.table(
     // Per-stage build progress on the aggregate itself (replaces a per-stage table): every
     // transition co-writes it with `status`. Defaults `[]` so the NOT NULL add is safe on existing
     // rows; the request seed writes all six `pending` immediately.
-    stages: jsonb().$type<BuildStagesEntity>().notNull().default(sql`'[]'::jsonb`),
+    stages: jsonb().$type<WordBuildStagesEntity>().notNull().default(sql`'[]'::jsonb`),
     coreDefinition: text(),
     lexical: jsonb().$type<LexicalEntity>(),
     pronunciation: jsonb().$type<PronunciationEntity>(),

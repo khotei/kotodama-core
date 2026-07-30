@@ -1,4 +1,4 @@
-import { BuildStagesEntity, enumAsyncJobStatus, WordEntity } from '@kotodama/database'
+import { enumAsyncJobStatus, WordBuildStagesEntity, WordEntity } from '@kotodama/database'
 import { Schema, Struct } from 'effect'
 
 /**
@@ -37,7 +37,7 @@ export const UnreadyWord = Schema.Struct({
   status: Schema.Literals(UNREADY_STATUSES),
   // The build progress the stepper reads — carried inline on the row, so an unready word decodes
   // with its stages and no second query is needed.
-  stages: BuildStagesEntity,
+  stages: WordBuildStagesEntity,
 })
 export type UnreadyWord = typeof UnreadyWord.Type
 

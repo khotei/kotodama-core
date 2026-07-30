@@ -1,8 +1,8 @@
 import {
-  enumWordJobStage,
-  type JobErrorEntity,
+  enumWordBuildStage,
   type Language,
-  type WordJobStage,
+  type WordBuildErrorEntity,
+  type WordBuildStage,
 } from '@kotodama/database'
 import { Data, Effect } from 'effect'
 import { ContentEngine } from './content-engine.service'
@@ -14,16 +14,19 @@ import type { WordContent } from './word-content.schema'
  * per-stage picture; passes that never ran appear in neither list and stay untouched.
  */
 export class WordGenerationError extends Data.TaggedError('WordGenerationError')<{
-  readonly failures: ReadonlyArray<{ readonly stage: WordJobStage; readonly error: JobErrorEntity }>
-  readonly succeeded: ReadonlyArray<WordJobStage>
+  readonly failures: ReadonlyArray<{
+    readonly stage: WordBuildStage
+    readonly error: WordBuildErrorEntity
+  }>
+  readonly succeeded: ReadonlyArray<WordBuildStage>
 }> {}
 
 /** Independent passes that ground on `fetch_source`, so they run concurrently. */
 const ENRICH_STAGES = [
-  enumWordJobStage.enrich_etymology,
-  enumWordJobStage.enrich_tiers,
-  enumWordJobStage.enrich_authors,
-  enumWordJobStage.enrich_visuals,
+  enumWordBuildStage.enrich_etymology,
+  enumWordBuildStage.enrich_tiers,
+  enumWordBuildStage.enrich_authors,
+  enumWordBuildStage.enrich_visuals,
 ] as const
 
 /**
@@ -37,7 +40,7 @@ export const generateWordContent = Effect.fnUntraced(function* (language: Langua
   const engine = yield* ContentEngine
 
   // Surfaces an engine error verbatim as `{ stage, error }` — `cause` is already serializable.
-  const runStage = <S extends WordJobStage>(stage: S, grounding?: WordGrounding) =>
+  const runStage = <S extends WordBuildStage>(stage: S, grounding?: WordGrounding) =>
     engine.produce(stage, language, word, grounding).pipe(
       Effect.mapError((engineError) => ({
         stage,
@@ -45,16 +48,16 @@ export const generateWordContent = Effect.fnUntraced(function* (language: Langua
           type: engineError.type,
           message: engineError.message,
           cause: engineError.cause,
-        } satisfies JobErrorEntity,
+        } satisfies WordBuildErrorEntity,
       })),
     )
 
   const genError = (
-    failures: ReadonlyArray<{ stage: WordJobStage; error: JobErrorEntity }>,
-    succeeded: ReadonlyArray<WordJobStage>,
+    failures: ReadonlyArray<{ stage: WordBuildStage; error: WordBuildErrorEntity }>,
+    succeeded: ReadonlyArray<WordBuildStage>,
   ) => new WordGenerationError({ failures, succeeded })
 
-  const source = yield* runStage(enumWordJobStage.fetch_source).pipe(
+  const source = yield* runStage(enumWordBuildStage.fetch_source).pipe(
     Effect.mapError(({ stage, error }) => genError([{ stage, error }], [])),
   )
 
@@ -63,10 +66,10 @@ export const generateWordContent = Effect.fnUntraced(function* (language: Langua
     (stage) => runStage(stage, source).pipe(Effect.map((slice) => ({ stage, slice }))),
     { concurrency: 'unbounded' },
   )
-  const succeeded = [enumWordJobStage.fetch_source, ...successes.map((s) => s.stage)]
+  const succeeded = [enumWordBuildStage.fetch_source, ...successes.map((s) => s.stage)]
   if (failures.length > 0) return yield* Effect.fail(genError(failures, succeeded))
 
-  const review = yield* runStage(enumWordJobStage.final_review, source).pipe(
+  const review = yield* runStage(enumWordBuildStage.final_review, source).pipe(
     Effect.mapError(({ stage, error }) => genError([{ stage, error }], succeeded)),
   )
 

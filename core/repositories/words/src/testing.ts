@@ -1,4 +1,4 @@
-import type { BuildStagesEntity, Language, WordInsert } from '@kotodama/database'
+import type { Language, WordBuildStagesEntity, WordInsert } from '@kotodama/database'
 import { enumAsyncJobStatus } from '@kotodama/database'
 import { makeWordInsert } from '@kotodama/database/factories'
 import { upsertWord } from './words.repo'
@@ -22,5 +22,5 @@ export const seedUnreadyWord = (
   language: Language,
   word: string,
   status: UnreadyStatus = enumAsyncJobStatus.pending,
-  stages: BuildStagesEntity = [],
+  stages: WordBuildStagesEntity = [],
 ) => upsertWord(language, word, { status, stages })

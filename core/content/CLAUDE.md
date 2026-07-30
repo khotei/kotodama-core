@@ -9,7 +9,7 @@ OpenAI engine are layers behind it. It speaks `database` content schemas — **w
   succeeded passes, so the caller records the full picture. Sequential gates fail fast; the enrich
   fan-out runs under `Effect.partition` so one bad enrich doesn't interrupt siblings.
 - **`STAGE_SLICES` is the single source of stage → output shape** — each slice `pick`ed off
-  `WordContent`, `satisfies Record<WordJobStage, Schema.Top>` for exhaustiveness. Both the type AND
+  `WordContent`, `satisfies Record<WordBuildStage, Schema.Top>` for exhaustiveness. Both the type AND
   the engine's `generateObject` runtime schema come from here, so promise and generation can't drift.
 - **`WordGenerationService` exists so the build budget can be a layer** — `…Timed(budget)` is a
   single-tag decorator over `…Live`, error union fixed at the tag. The one justified service promotion

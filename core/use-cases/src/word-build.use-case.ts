@@ -1,11 +1,11 @@
 import { selectWord, upsertWord } from '@kotodama/core/repositories'
 import { createWord, stagesAll } from '@kotodama/core/words'
 import {
-  type BuildStagesEntity,
   enumAsyncJobStatus,
-  enumJobErrorType,
+  enumWordBuildErrorType,
   type Language,
-  WORD_JOB_STAGES,
+  WORD_BUILD_STAGES,
+  type WordBuildStagesEntity,
 } from '@kotodama/database'
 import { Effect, Option } from 'effect'
 
@@ -15,7 +15,7 @@ import { Effect, Option } from 'effect'
 const recordWordFailure = Effect.fnUntraced(function* (
   language: Language,
   word: string,
-  outcome: { logLine: string; stages: BuildStagesEntity },
+  outcome: { logLine: string; stages: WordBuildStagesEntity },
 ) {
   yield* Effect.logError(outcome.logLine)
   yield* upsertWord(language, word, { status: enumAsyncJobStatus.failed, stages: outcome.stages })
@@ -60,10 +60,10 @@ export const buildWord = Effect.fnUntraced(function* (language: Language, word: 
         const message = 'generation exceeded its build budget'
         return recordWordFailure(language, word, {
           logLine: `word build timed out for "${word}" (${language}): ${message}`,
-          stages: WORD_JOB_STAGES.map((stage) => ({
+          stages: WORD_BUILD_STAGES.map((stage) => ({
             stage,
             status: enumAsyncJobStatus.failed,
-            error: { type: enumJobErrorType.timed_out, message },
+            error: { type: enumWordBuildErrorType.timed_out, message },
           })),
         })
       },
@@ -84,7 +84,7 @@ export const buildWord = Effect.fnUntraced(function* (language: Language, word: 
               status: enumAsyncJobStatus.failed,
               error,
             })),
-            ...WORD_JOB_STAGES.filter((stage) => !ran.has(stage)).map((stage) => ({
+            ...WORD_BUILD_STAGES.filter((stage) => !ran.has(stage)).map((stage) => ({
               stage,
               status: enumAsyncJobStatus.pending,
             })),

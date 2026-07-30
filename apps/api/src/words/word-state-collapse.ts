@@ -1,23 +1,27 @@
 import type { Word } from '@kotodama/core/words'
-import { type BuildStagesEntity, enumAsyncJobStatus, WORD_JOB_STAGES } from '@kotodama/database'
+import {
+  enumAsyncJobStatus,
+  WORD_BUILD_STAGES,
+  type WordBuildStagesEntity,
+} from '@kotodama/database'
 import { Array as EffectArray, Option, Order } from 'effect'
 import type { StageProgress, WordStateView } from './word-state.view'
 
-// `words.stages` is written in `WORD_JOB_STAGES` order, but sort defensively — declaration order is
+// `words.stages` is written in `WORD_BUILD_STAGES` order, but sort defensively — declaration order is
 // the pipeline order regardless of stored order.
-const stageRank = new Map(WORD_JOB_STAGES.map((stage, index) => [stage, index] as const))
+const stageRank = new Map(WORD_BUILD_STAGES.map((stage, index) => [stage, index] as const))
 
 /**
- * The stepper payload: stages sorted into `WORD_JOB_STAGES` pipeline order, each carrying its
+ * The stepper payload: stages sorted into `WORD_BUILD_STAGES` pipeline order, each carrying its
  * FE-facing error (present iff that stage failed; `cause` dropped). Shared by {@link
  * collapseWordState} and the `buildWord` handler, whose freshly-seeded build IS the running view.
  */
-export const toStageProgress = (stages: BuildStagesEntity): StageProgress[] =>
+export const toStageProgress = (stages: WordBuildStagesEntity): StageProgress[] =>
   EffectArray.sort(
     stages,
     Order.mapInput(
       Order.Number,
-      (stage: BuildStagesEntity[number]) => stageRank.get(stage.stage) ?? 0,
+      (stage: WordBuildStagesEntity[number]) => stageRank.get(stage.stage) ?? 0,
     ),
   ).map((entry) =>
     entry.error

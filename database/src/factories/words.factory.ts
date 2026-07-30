@@ -1,13 +1,13 @@
 import { faker } from '@faker-js/faker'
 import { enumAsyncJobStatus } from '../../schema/primitives/async-job-status'
 import { LANGUAGES } from '../../schema/primitives/language'
-import { WORD_JOB_STAGES } from '../../schema/words/build-stages.entity'
+import { WORD_BUILD_STAGES } from '../../schema/words/word-build-stages.entity'
 import type {
   AuthorExampleEntity,
   BuildProvenanceEntity,
   CulturalGuideEntity,
   EtymologyEntity,
-  EtymologyStageEntity,
+  EtymologyWordBuildStageEntity,
   FrequencyEntity,
   LexicalEntity,
   PronunciationEntity,
@@ -56,7 +56,7 @@ const makeTiers = (): TiersEntity => ({
   cultural: makeTier(),
 })
 
-const makeEtymologyStage = (citation?: number): EtymologyStageEntity => ({
+const makeEtymologyStage = (citation?: number): EtymologyWordBuildStageEntity => ({
   when: `${faker.number.int({ min: 800, max: 1900 })}`,
   form: faker.lorem.word(),
   languageName: faker.helpers.arrayElement(['Latin', 'Old French', 'Proto-Germanic', 'Greek']),
@@ -155,7 +155,7 @@ export const makeWordInsert = (overrides: Partial<WordInsert> = {}): WordInsert 
     word: faker.lorem.word(),
     language: faker.helpers.arrayElement(LANGUAGES),
     status: enumAsyncJobStatus.succeeded,
-    stages: WORD_JOB_STAGES.map((stage) => ({ stage, status: enumAsyncJobStatus.succeeded })),
+    stages: WORD_BUILD_STAGES.map((stage) => ({ stage, status: enumAsyncJobStatus.succeeded })),
     coreDefinition: faker.lorem.sentence(),
     lexical: makeLexical(),
     pronunciation: makePronunciation(),

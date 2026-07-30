@@ -16,7 +16,7 @@ import {
   type TranslationEntity,
   type VisualEntity,
   type VisualsEntity,
-  type WordJobStage,
+  type WordBuildStage,
 } from '@kotodama/database'
 import { STAGE_SLICES, type StageSlice } from './stage-slices'
 import type { WordContent } from './word-content.schema'
@@ -172,7 +172,7 @@ const fullMockContent = (word: string, language: Language): WordContent => ({
 
 // Sliced through STAGE_SLICES (never a re-listed partition), so the mock can't drift from the
 // real engine's stage → keys mapping; the cast bridges the runtime pick to the static slice type.
-export const mockStageContent = <S extends WordJobStage>(
+export const mockStageContent = <S extends WordBuildStage>(
   stage: S,
   word: string,
   language: Language,

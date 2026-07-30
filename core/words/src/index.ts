@@ -2,11 +2,11 @@
 // so the API contract and other core consumers speak it through core rather than reaching into the
 // persistence package for a domain primitive.
 export { Language } from '@kotodama/database'
-export * from './build-stages'
 export * from './verify-word-input'
 export * from './word.schema'
 export * from './word-build-message.schema'
 export * from './word-build-policy'
+export * from './word-build-stages'
 export * from './word-creator'
 export * from './word-input'
 export * from './word-read'

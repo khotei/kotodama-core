@@ -3,13 +3,13 @@ import { searchWords, selectWord } from '@kotodama/core/repositories'
 import { seedReadyWord, seedUnreadyWord } from '@kotodama/core/repositories/testing'
 import { WordBuildMessageFromJson, WordVerdict } from '@kotodama/core/words'
 import {
-  type BuildStagesEntity,
   enumAsyncJobStatus,
-  enumJobErrorType,
   enumLanguage,
-  enumWordJobStage,
+  enumWordBuildErrorType,
+  enumWordBuildStage,
   type Language,
-  WORD_JOB_STAGES,
+  WORD_BUILD_STAGES,
+  type WordBuildStagesEntity,
 } from '@kotodama/database'
 import { resetDb, TestDatabaseLive } from '@kotodama/database/testing'
 import { AiServiceTest } from '@kotodama/platform/ai/testing'
@@ -35,15 +35,15 @@ const TestLayer = QueueLocalStackLive.pipe(
 
 const EN = enumLanguage.en
 const WORD = 'lacuna'
-const PIPELINE_LENGTH = WORD_JOB_STAGES.length
+const PIPELINE_LENGTH = WORD_BUILD_STAGES.length
 
 // Stages now ride the `words` row (`words.stages`), so a test reads them off `selectWord`; an absent
-// word yields no stages (the old `selectWordJobStages` returned an empty set for the same case).
+// word yields no stages (the old `selectWordBuildStages` returned an empty set for the same case).
 const readStages = (language: Language, word: string) =>
   selectWord(language, word).pipe(
     Effect.map(
       Option.match({
-        onNone: (): BuildStagesEntity => [],
+        onNone: (): WordBuildStagesEntity => [],
         onSome: (row) => row.stages,
       }),
     ),
@@ -149,12 +149,12 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
       yield* drainQueue
       // Drive the word terminal-failed (the Couldn't-be-made state): a `failed` row whose stages
       // record the failing pass, which is buildable — a re-request retries it.
-      const failedStages: BuildStagesEntity = WORD_JOB_STAGES.map((stage) =>
-        stage === enumWordJobStage.fetch_source
+      const failedStages: WordBuildStagesEntity = WORD_BUILD_STAGES.map((stage) =>
+        stage === enumWordBuildStage.fetch_source
           ? {
               stage,
               status: enumAsyncJobStatus.failed,
-              error: { message: 'no source found', type: enumJobErrorType.not_found },
+              error: { message: 'no source found', type: enumWordBuildErrorType.not_found },
             }
           : { stage, status: enumAsyncJobStatus.pending },
       )

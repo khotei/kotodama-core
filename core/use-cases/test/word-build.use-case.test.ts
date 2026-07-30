@@ -11,16 +11,16 @@ import {
 import { selectWord, selectWords } from '@kotodama/core/repositories'
 import { seedUnreadyWord } from '@kotodama/core/repositories/testing'
 import {
-  type BuildStagesEntity,
   enumAsyncJobStatus,
   enumFrequencyBand,
-  enumJobErrorType,
   enumLanguage,
   enumVisualKind,
-  enumWordJobStage,
+  enumWordBuildErrorType,
+  enumWordBuildStage,
   type Language,
-  WORD_JOB_STAGES,
-  type WordJobStage,
+  WORD_BUILD_STAGES,
+  type WordBuildStage,
+  type WordBuildStagesEntity,
 } from '@kotodama/database'
 import { resetDb, TestDatabaseLive } from '@kotodama/database/testing'
 import { Duration, Effect, Layer, Option } from 'effect'
@@ -33,11 +33,11 @@ import { buildWord } from '../src/index'
 // container, so this costs exactly what two files would.
 
 const EN = enumLanguage.en
-const PIPELINE_LENGTH = WORD_JOB_STAGES.length
+const PIPELINE_LENGTH = WORD_BUILD_STAGES.length
 
 // The build's precondition, in the new model: `requestWordBuild` seeds one `words` row whose inline
 // `stages` are all `pending` (there is no separate job table). Seed it in one write.
-const PENDING_STAGES: BuildStagesEntity = WORD_JOB_STAGES.map((stage) => ({
+const PENDING_STAGES: WordBuildStagesEntity = WORD_BUILD_STAGES.map((stage) => ({
   stage,
   status: enumAsyncJobStatus.pending,
 }))
@@ -49,7 +49,7 @@ const readStages = (language: Language, word: string) =>
   selectWord(language, word).pipe(
     Effect.map(
       Option.match({
-        onNone: (): BuildStagesEntity => [],
+        onNone: (): WordBuildStagesEntity => [],
         onSome: (row) => row.stages,
       }),
     ),
@@ -66,7 +66,7 @@ const SLOW_WORD = 'slowpoke'
 // `slowpoke` delays its visuals pass past TEST_BUILD_TIMEOUT — so the whole build overruns — but well
 // under the file's 120s ceiling.
 const testPolicy: ContentPolicy = (word, stage) =>
-  word === SLOW_WORD && stage === enumWordJobStage.enrich_visuals
+  word === SLOW_WORD && stage === enumWordBuildStage.enrich_visuals
     ? { kind: 'produce', delayMillis: 1000 }
     : defaultContentPolicy(word, stage)
 
@@ -80,7 +80,7 @@ const MockEngineLayer = Layer.mergeAll(
   TestDatabaseLive,
 )
 
-const byStage = (stages: BuildStagesEntity) =>
+const byStage = (stages: WordBuildStagesEntity) =>
   new Map(stages.map((entry) => [entry.stage, entry.status] as const))
 
 it.layer(MockEngineLayer, { timeout: '120 seconds' })((it) => {
@@ -144,8 +144,8 @@ it.layer(MockEngineLayer, { timeout: '120 seconds' })((it) => {
         // enrich passes run concurrently, so the others' post-failure state is indeterminate (succeeded
         // or interrupted) and intentionally unasserted — what matters is the failure is recorded (so a
         // retry is admitted) and no word is promoted (AC-4/AC-5).
-        expect(status.get(enumWordJobStage.fetch_source)).toBe(enumAsyncJobStatus.succeeded)
-        expect(status.get(enumWordJobStage.enrich_visuals)).toBe(enumAsyncJobStatus.failed)
+        expect(status.get(enumWordBuildStage.fetch_source)).toBe(enumAsyncJobStatus.succeeded)
+        expect(status.get(enumWordBuildStage.enrich_visuals)).toBe(enumAsyncJobStatus.failed)
 
         // The seeded row is flipped `failed` with content still NULL — never promoted (AC-5 negative), and
         // `failed` is buildable so a later re-request retries (T03b's failed-retry guard).
@@ -156,7 +156,7 @@ it.layer(MockEngineLayer, { timeout: '120 seconds' })((it) => {
       }),
   )
 
-  it.effect('the failed pass records the typed JobErrorEntity (failed)', () =>
+  it.effect('the failed pass records the typed WordBuildErrorEntity (failed)', () =>
     Effect.gen(function* () {
       yield* resetDb
       yield* seedPendingWord('kaboom')
@@ -164,8 +164,8 @@ it.layer(MockEngineLayer, { timeout: '120 seconds' })((it) => {
       yield* buildWord(EN, 'kaboom')
 
       const stages = yield* readStages(EN, 'kaboom')
-      const failed = stages.find((stage) => stage.stage === enumWordJobStage.enrich_visuals)
-      expect(failed?.error?.type).toBe(enumJobErrorType.failed)
+      const failed = stages.find((stage) => stage.stage === enumWordBuildStage.enrich_visuals)
+      expect(failed?.error?.type).toBe(enumWordBuildErrorType.failed)
     }),
   )
 
@@ -185,7 +185,9 @@ it.layer(MockEngineLayer, { timeout: '120 seconds' })((it) => {
         // promoted — it is flipped `failed` (content NULL), retryable.
         const stages = yield* readStages(EN, SLOW_WORD)
         expect(stages.every((stage) => stage.status === enumAsyncJobStatus.failed)).toBe(true)
-        expect(stages.every((stage) => stage.error?.type === enumJobErrorType.timed_out)).toBe(true)
+        expect(
+          stages.every((stage) => stage.error?.type === enumWordBuildErrorType.timed_out),
+        ).toBe(true)
 
         const word = yield* selectWord(EN, SLOW_WORD)
         expect(Option.isSome(word)).toBe(true)
@@ -203,9 +205,9 @@ it.layer(MockEngineLayer, { timeout: '120 seconds' })((it) => {
       yield* buildWord(EN, 'xyzzy')
 
       const stages = yield* readStages(EN, 'xyzzy')
-      const failed = stages.find((stage) => stage.stage === enumWordJobStage.fetch_source)
+      const failed = stages.find((stage) => stage.stage === enumWordBuildStage.fetch_source)
       expect(failed?.status).toBe(enumAsyncJobStatus.failed)
-      expect(failed?.error?.type).toBe(enumJobErrorType.not_found)
+      expect(failed?.error?.type).toBe(enumWordBuildErrorType.not_found)
 
       // The first pass failed, so nothing downstream ran and no word was promoted — the row is `failed`.
       const word = yield* selectWord(EN, 'xyzzy')
@@ -224,8 +226,8 @@ const WORD = 'lacuna'
  * no longer carried on a slice; it comes off the engine's `provenance` (see `ContentEngineFake`),
  * so these are pure content slices.
  */
-const slices: { readonly [S in WordJobStage]: StageSlice<S> } = {
-  [enumWordJobStage.fetch_source]: {
+const slices: { readonly [S in WordBuildStage]: StageSlice<S> } = {
+  [enumWordBuildStage.fetch_source]: {
     coreDefinition: 'An unfilled space; a gap.',
     lexical: { partOfSpeech: 'noun', register: ['formal'] },
     pronunciation: {
@@ -235,7 +237,7 @@ const slices: { readonly [S in WordJobStage]: StageSlice<S> } = {
     },
     sources: [{ index: 1, type: 'wiktionary', title: 'lacuna' }],
   },
-  [enumWordJobStage.enrich_etymology]: {
+  [enumWordBuildStage.enrich_etymology]: {
     etymology: {
       summary: 'From Latin lacuna.',
       firstAttested: { year: 1663, language: 'English' },
@@ -243,7 +245,7 @@ const slices: { readonly [S in WordJobStage]: StageSlice<S> } = {
       descent: [],
     },
   },
-  [enumWordJobStage.enrich_tiers]: {
+  [enumWordBuildStage.enrich_tiers]: {
     tiers: {
       quick: { title: 'Quick', body: 'A gap.', examples: [] },
       everyday: { title: 'Everyday', body: 'A missing part.', examples: [] },
@@ -253,7 +255,7 @@ const slices: { readonly [S in WordJobStage]: StageSlice<S> } = {
     relations: { synonyms: [], antonyms: [], family: [] },
     translations: [{ language: 'fr', term: 'lacune' }],
   },
-  [enumWordJobStage.enrich_visuals]: {
+  [enumWordBuildStage.enrich_visuals]: {
     visuals: {
       hero: {
         kind: enumVisualKind.hero,
@@ -270,7 +272,7 @@ const slices: { readonly [S in WordJobStage]: StageSlice<S> } = {
       memes: [],
     },
   },
-  [enumWordJobStage.enrich_authors]: {
+  [enumWordBuildStage.enrich_authors]: {
     authorExamples: [
       {
         author: 'A. Writer',
@@ -282,7 +284,7 @@ const slices: { readonly [S in WordJobStage]: StageSlice<S> } = {
     ],
     culturalGuide: { timeline: [{ date: '1900', text: 'enters use.' }], notes: [] },
   },
-  [enumWordJobStage.final_review]: {
+  [enumWordBuildStage.final_review]: {
     frequency: { band: enumFrequencyBand.uncommon, trendNote: 'steady', series: [] },
   },
 }

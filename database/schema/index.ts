@@ -9,7 +9,7 @@ import { wordsTable } from './words/words.table'
 
 export * from './primitives'
 export * from './utils/to-enum'
-export * from './words/build-stages.entity'
+export * from './words/word-build-stages.entity'
 export * from './words/words.entity'
 export * from './words/words.table'
 export * from './words/words.values'

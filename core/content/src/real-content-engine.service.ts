@@ -4,13 +4,13 @@ import {
   type BuildProvenanceEntity,
   CulturalGuideEntity,
   enumVisualKind,
-  enumWordJobStage,
+  enumWordBuildStage,
   type Language,
   type StorageKey,
   VisualEntity,
   type VisualKind,
   type VisualsEntity,
-  type WordJobStage,
+  type WordBuildStage,
 } from '@kotodama/database'
 import { type AiError, AiService } from '@kotodama/platform/ai'
 import { WikiClient } from '@kotodama/platform/external-apis'
@@ -44,7 +44,7 @@ import { STAGE_SLICES, type StageSlice, type WordGrounding } from './stage-slice
 // it never reaches the persisted slice.
 const FetchSourceOutput = Schema.Struct({
   isReal: Schema.Boolean,
-  ...STAGE_SLICES[enumWordJobStage.fetch_source].fields,
+  ...STAGE_SLICES[enumWordBuildStage.fetch_source].fields,
 })
 
 // The media *plans* differ from the stored slices by exactly the render-filled keys (`imageKey`,
@@ -254,38 +254,38 @@ export const RealContentEngineLive: Layer.Layer<
     // Exhaustive by construction (a new stage fails tsc here); dispatch through a record, not a
     // `switch`, so the per-stage generic type survives.
     const handlers: {
-      readonly [S in WordJobStage]: (
+      readonly [S in WordBuildStage]: (
         language: Language,
         word: string,
         grounding?: WordGrounding,
       ) => Effect.Effect<StageSlice<S>, ContentEngineError>
     } = {
-      [enumWordJobStage.fetch_source]: (language, word) => fetchSource(language, word),
-      [enumWordJobStage.enrich_etymology]: (language, word, grounding) =>
+      [enumWordBuildStage.fetch_source]: (language, word) => fetchSource(language, word),
+      [enumWordBuildStage.enrich_etymology]: (language, word, grounding) =>
         textStage(
-          STAGE_SLICES[enumWordJobStage.enrich_etymology],
+          STAGE_SLICES[enumWordBuildStage.enrich_etymology],
           TEXT_GEN.etymology,
           enrichEtymologyPrompt(language, word, grounding),
         ),
-      [enumWordJobStage.enrich_tiers]: (language, word, grounding) =>
+      [enumWordBuildStage.enrich_tiers]: (language, word, grounding) =>
         textStage(
-          STAGE_SLICES[enumWordJobStage.enrich_tiers],
+          STAGE_SLICES[enumWordBuildStage.enrich_tiers],
           TEXT_GEN.tiers,
           enrichTiersPrompt(language, word, grounding),
         ),
-      [enumWordJobStage.enrich_authors]: (language, word, grounding) =>
+      [enumWordBuildStage.enrich_authors]: (language, word, grounding) =>
         enrichAuthors(language, word, grounding),
-      [enumWordJobStage.enrich_visuals]: (language, word, grounding) =>
+      [enumWordBuildStage.enrich_visuals]: (language, word, grounding) =>
         enrichVisuals(language, word, grounding),
-      [enumWordJobStage.final_review]: (language, word, grounding) =>
+      [enumWordBuildStage.final_review]: (language, word, grounding) =>
         textStage(
-          STAGE_SLICES[enumWordJobStage.final_review],
+          STAGE_SLICES[enumWordBuildStage.final_review],
           TEXT_GEN.finalReview,
           finalReviewPrompt(language, word, grounding),
         ),
     }
 
-    const produce = <S extends WordJobStage>(
+    const produce = <S extends WordBuildStage>(
       stage: S,
       language: Language,
       word: string,

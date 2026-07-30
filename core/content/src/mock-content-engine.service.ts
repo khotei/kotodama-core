@@ -1,9 +1,9 @@
 import {
   type BuildProvenanceEntity,
-  enumJobErrorType,
-  enumWordJobStage,
-  type JobErrorType,
-  type WordJobStage,
+  enumWordBuildErrorType,
+  enumWordBuildStage,
+  type WordBuildErrorType,
+  type WordBuildStage,
 } from '@kotodama/database'
 import { Duration, Effect, Layer } from 'effect'
 import { ContentEngine, ContentEngineError } from './content-engine.service'
@@ -12,9 +12,9 @@ import { mockStageContent } from './mock-content'
 /** Injecting a policy is how tests exercise the not_found / failed / slow paths precisely. */
 export type StagePlan =
   | { readonly kind: 'produce'; readonly delayMillis?: number }
-  | { readonly kind: 'fail'; readonly type: JobErrorType; readonly delayMillis?: number }
+  | { readonly kind: 'fail'; readonly type: WordBuildErrorType; readonly delayMillis?: number }
 
-export type ContentPolicy = (word: string, stage: WordJobStage) => StagePlan
+export type ContentPolicy = (word: string, stage: WordBuildStage) => StagePlan
 
 // Honest placeholders (never the real model/hash), so a mock-built row records that the mock made it.
 const MOCK_PROVENANCE: BuildProvenanceEntity = {
@@ -34,15 +34,15 @@ const SLOW_STAGE_DELAY_MILLIS = 30_000
 export const defaultContentPolicy: ContentPolicy = (word, stage) => {
   switch (word.trim().toLowerCase()) {
     case 'xyzzy':
-      return stage === enumWordJobStage.fetch_source
-        ? { kind: 'fail', type: enumJobErrorType.not_found }
+      return stage === enumWordBuildStage.fetch_source
+        ? { kind: 'fail', type: enumWordBuildErrorType.not_found }
         : { kind: 'produce' }
     case 'kaboom':
-      return stage === enumWordJobStage.enrich_visuals
-        ? { kind: 'fail', type: enumJobErrorType.failed }
+      return stage === enumWordBuildStage.enrich_visuals
+        ? { kind: 'fail', type: enumWordBuildErrorType.failed }
         : { kind: 'produce' }
     case 'molasses':
-      return stage === enumWordJobStage.enrich_visuals
+      return stage === enumWordBuildStage.enrich_visuals
         ? { kind: 'produce', delayMillis: SLOW_STAGE_DELAY_MILLIS }
         : { kind: 'produce' }
     default:

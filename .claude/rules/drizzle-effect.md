@@ -40,7 +40,7 @@ worked example), `src/pg-core/`; worked tests
 - **Value lists: one `as const` tuple is the single source** — union, `toEnum` map, `pgEnum`,
   `Schema.Literals` all derive from it; reference by name, never hardcode. **Derive from the tuple,
   never from a `pgEnum` object** (`enumValues` mutates to objects at runtime — drizzle #2753). A
-  jsonb-nested union gets no `pgEnum`. **`WORD_JOB_STAGES` declaration order is load-bearing** —
+  jsonb-nested union gets no `pgEnum`. **`WORD_BUILD_STAGES` declaration order is load-bearing** —
   pipeline + Postgres sort + UX stepper order; reorder only to reorder the stepper.
 
 ## Entities — `createSelectSchema` WITH jsonb overrides

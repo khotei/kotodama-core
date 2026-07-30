@@ -2,7 +2,7 @@ import { BunHttpServer } from '@effect/platform-bun'
 import { describe, expect, it } from '@effect/vitest'
 import { seedReadyWord, seedUnreadyWord } from '@kotodama/core/repositories/testing'
 import { WordVerdict } from '@kotodama/core/words'
-import { enumAsyncJobStatus, enumLanguage, enumWordJobStage } from '@kotodama/database'
+import { enumAsyncJobStatus, enumLanguage, enumWordBuildStage } from '@kotodama/database'
 import { resetDb, TestDatabaseLive } from '@kotodama/database/testing'
 import { AiServiceTest } from '@kotodama/platform/ai/testing'
 import { QueueLocalStackLive } from '@kotodama/platform/queue/testing'
@@ -85,7 +85,7 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
         // The `words` row is the state's discriminant, seeded atomically with its inline `stages`
         // (F-CONT-006: build progress lives on the word row, not a separate stage table).
         yield* seedUnreadyWord(EN, 'lacuna', 'running', [
-          { stage: enumWordJobStage.fetch_source, status: enumAsyncJobStatus.running },
+          { stage: enumWordBuildStage.fetch_source, status: enumAsyncJobStatus.running },
         ])
 
         const state = yield* getWordState(EN, 'lacuna')
@@ -94,7 +94,7 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
         // (word-state-collapse.test.ts), so assert membership, not position.
         assertStatus(state, 'running')
         expect(state.stages).toContainEqual({
-          stage: enumWordJobStage.fetch_source,
+          stage: enumWordBuildStage.fetch_source,
           status: enumAsyncJobStatus.running,
         })
       }),
