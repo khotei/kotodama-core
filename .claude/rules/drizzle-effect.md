@@ -24,7 +24,7 @@ worked example), `src/pg-core/`; worked tests
 - `PgDrizzle.make({ relations })` over a `PgClient` layer; `PgDrizzle.DefaultServices` supplies its
   no-op logger/cache.
 - `PgClient` config via `@kotodama/platform/config` (`PgClient.layerConfig({ url: DatabaseUrl })`) —
-  take the one config, not the whole `AppConfig`. **Tests bypass this layer** (ephemeral
+  take just the one config it needs (`DatabaseUrl`), never a broad bundle. **Tests bypass this layer** (ephemeral
   Testcontainers Postgres, `@kotodama/database/testing`).
 - Expose **layers only**; repositories `yield* DB` — **never** a bare `drizzle(...)`/driver.
 

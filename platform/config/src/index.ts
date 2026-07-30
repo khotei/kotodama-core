@@ -61,13 +61,3 @@ export const Port = Config.int('PORT').pipe(Config.withDefault(3000))
 
 /** Worker build fan-out; the default-1 rationale lives on `BatchConcurrency` (`apps/worker/process-batch.ts`). */
 export const WorkerConcurrency = Config.int('WORKER_CONCURRENCY').pipe(Config.withDefault(1))
-
-export const AppConfig = Config.all({
-  databaseUrl: DatabaseUrl,
-  imagesBucket: ImagesBucket,
-  jobsQueueUrl: JobsQueueUrl,
-  openaiApiKey: OpenaiApiKey,
-  awsRegion: AwsRegion,
-  logLevel: LogLevel,
-  port: Port,
-})

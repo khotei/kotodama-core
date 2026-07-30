@@ -40,7 +40,7 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
       }),
     )
 
-    it.effect('filters by id/word/language (value or array), search prefix, and limit', () =>
+    it.effect('filters by id/word/language (value or array) and limit', () =>
       Effect.gen(function* () {
         yield* resetDb
 
@@ -57,10 +57,6 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
         expect(yield* selectWords({ language: EN })).toHaveLength(3)
         // word as an array.
         expect(yield* selectWords({ word: ['lacuna', 'ephemeral'] })).toHaveLength(3)
-        // case-insensitive prefix search on `word`.
-        expect(
-          (yield* selectWords({ language: EN, search: 'LAC' })).map((r) => r.word).sort(),
-        ).toEqual(['lacrimal', 'lacuna'])
         // limit caps the result.
         expect(yield* selectWords({ language: EN, limit: 1 })).toHaveLength(1)
         // by id.

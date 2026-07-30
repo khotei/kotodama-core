@@ -1,6 +1,6 @@
 import type { EffectDrizzleQueryError, Language, WordInsert, WordRow } from '@kotodama/database'
 import { DB, patchOnConflict, wordsTable } from '@kotodama/database'
-import { and, ilike, inArray } from 'drizzle-orm'
+import { and, inArray } from 'drizzle-orm'
 import { Array as Arr, Effect, Option } from 'effect'
 
 type Arrayable<T> = T | readonly T[]
@@ -20,12 +20,11 @@ type UpsertWords = {
   (content: readonly WordUpsert[]): Effect.Effect<readonly WordRow[], EffectDrizzleQueryError, DB>
 }
 
-// `search` is a case-insensitive PREFIX match; rows come back unordered.
+// A plain unordered filter; `searchWords` (words-search.repo) owns ordered + paged reads.
 export type WordQuery = {
   readonly id?: Arrayable<string>
   readonly word?: Arrayable<string>
   readonly language?: Arrayable<Language>
-  readonly search?: string
   readonly limit?: number
 }
 
@@ -42,7 +41,6 @@ export const selectWords = Effect.fnUntraced(function* (query: WordQuery) {
         ids.length > 0 ? inArray(wordsTable.id, ids) : undefined,
         words.length > 0 ? inArray(wordsTable.word, words) : undefined,
         languages.length > 0 ? inArray(wordsTable.language, languages) : undefined,
-        query.search ? ilike(wordsTable.word, `${query.search}%`) : undefined,
       ),
     )
     .$dynamic()
