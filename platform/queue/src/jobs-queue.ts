@@ -60,9 +60,9 @@ export const JobsQueueLive = Layer.effect(
           ),
         ).pipe(
           Effect.map((out) =>
-            EffectArray.filterMap(out.Messages ?? [], (m) =>
-              m.Body !== undefined && m.ReceiptHandle !== undefined
-                ? Result.succeed({ body: m.Body, handle: m.ReceiptHandle })
+            EffectArray.filterMap(out.Messages ?? [], (message) =>
+              message.Body !== undefined && message.ReceiptHandle !== undefined
+                ? Result.succeed({ body: message.Body, handle: message.ReceiptHandle })
                 : Result.failVoid,
             ),
           ),
