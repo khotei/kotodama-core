@@ -31,5 +31,3 @@ one folder per resource group (`words.api.ts` beside `words.handler.ts`).
 - `main.ts` provides only boundary services (`DatabaseLive`, `JobsQueueLive`, `AiServiceProd`). Its
   `AiServiceProd` deliberately omits the worker's resilience decorator — the input judge is fail-open,
   so retry buys little and would pull image tuning into a text-only app.
-
-No cross-app import; `@kotodama/database/factories` belongs in tests, never `src/**`.

@@ -21,6 +21,3 @@ Drizzle schema, relations, migrations, seed, and the `DB` layer. Schema *mechani
 - Migrations use the drizzle-kit rc format (per-migration folder chained via `prevIds`, no central
   `_journal.json`). `db:*` scripts target the **dev** DB; tests use ephemeral Testcontainers
   (`@kotodama/database/testing`) — see `.claude/rules/testing.md`.
-
-Bottom of the chain (Biome-enforced on `database/**`): never imports the core layers or `apps/*`.
-`@kotodama/database/factories` belongs in tests, never `src/**`.

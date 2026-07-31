@@ -29,6 +29,3 @@ a projection earns its way back only if a read truly *transforms* storage (e.g. 
   full content instead of trusting the discriminant, so a `succeeded` shell is a `WordNotReadyError`
   (409), not a broken cast.
 - Re-exports `Language` so the API speaks the vocabulary through core.
-
-MUST NOT import `apps/*`, `@kotodama/core/use-cases`, or HTTP code (Biome-enforced);
-`@kotodama/database/factories` → tests only.

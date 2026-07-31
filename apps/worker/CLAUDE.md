@@ -19,5 +19,3 @@ Lambda (`handler.ts`) and local poll-loop (`consume.ts`).
 - **`main.ts` interposes the infra decorators** — the whole-build timeout
   (`WordGenerationServiceTimed`) and per-call AI retry (`AiServiceResilient`) are wired only here,
   never in core; `MockContentEngine` is wired only by tests. Engine swap = one layer line.
-
-No cross-app import; `@kotodama/database/factories` belongs in tests, never `src/**`.

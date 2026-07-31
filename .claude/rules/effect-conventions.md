@@ -24,20 +24,13 @@ holds only the **Kotodama usage decisions** the catalog can't tell you.
 - **Stdlib first:** before hand-writing any helper (data transform, comparator, grouping, retry,
   string/date math…), check the matching `effect` module — the task → module map is in the
   cheat-sheet above; custom code only after the module came up empty.
-- **Domain schemas are authored in `database/`** (`effect/Schema` — the only schema lib, never
-  Zod/`io-ts`); core + the API edge consume those entities and author only computed read/view
-  models — never re-declare a domain shape.
-- **Failures live in the error channel as `Data.TaggedError`s** — never `throw` a plain `Error`
-  inside an Effect (callers `catchTag` exhaustively); an error crossing the wire is schema-backed
-  (`HttpApiError`).
-- **In-beta APIs live under `effect/unstable/*`** (notably parts of HttpApi) — import from there, not a
-  guessed stable path.
+- **An error crossing the wire is schema-backed** (`HttpApiError`) — the tagged errors on the channel
+  don't serialize themselves.
 - Config: `effect/Config` via `@kotodama/platform/config`. DB: `drizzle-orm/effect-postgres` (see
   `drizzle-effect.md`). Entrypoint: `BunRuntime.runMain`. Alias a global-shadowing namespace by its
   library name, not a terse abbreviation: `import { Array as EffectArray, Record as EffectRecord }
   from 'effect'` (never `Arr`/`Rec`) — the full name says which library the namespace is and keeps
   the shadowed global (`Array`, `Record`) readable in type positions.
-- **Never import from `repos/`** in application code — import the published `effect`/`@effect/*`.
 
 ## Service vs plain function — when to reach for `Context.Service`
 

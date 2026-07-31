@@ -23,37 +23,18 @@ apps/{api,worker} ─► core/use-cases ─► core/{words,content} ─► core/
                                     (everything → @kotodama/platform, platform → nothing internal)
 ```
 
-Middle tiers are subpath-exported folders of the single `@kotodama/core`; `database` is its own
-bottom workspace (distinct drizzle/migration tooling); `platform/*` are folders of the single leaf
-`@kotodama/platform`. `core/use-cases` is the top tier below `apps/*` — user-flow composers
-(`requestWordBuild`, `buildWord`) that aggregate domain + repo functions into one flow. **A new
-domain is a folder in its aggregate, never a new package.** `database` single-authors the word
-vocabulary (content schemas, value tuples/`pgEnum`s, `WordEntity`), so every tier takes a **direct
-downward edge to `database`** — no cycle. Enforcement: Biome `noRestrictedImports` per-folder globs
-in `biome.base.json` are the sole gate (`bun run lint` verifies; application code also never
-imports from `repos/**` — effect-conventions.md).
+**A new domain is a folder in its aggregate, never a new package.** `database` single-authors the
+word vocabulary (`database/CLAUDE.md`), so every tier takes a **direct downward edge to `database`**
+— no cycle. Enforcement: the Biome `noRestrictedImports` per-folder globs in `biome.base.json` are
+the **sole** gate (`bun run lint` verifies).
 
-## Commands & gate
+## Conventions & commands
 
-Root scripts (`bootstrap`/`format`/`lint`/`tsc`/`test`/`check`, `vendor:*:update`, per-package
-`--filter`) live in `package.json`; the command table, gates, and the `bun --bun`/`bun test` traps:
-`.claude/rules/tooling.md`. Every commit follows `.claude/rules/commits.md`; PRs squash-merge into
-one such commit (`.claude/rules/pull-requests.md`).
-
-## Rules (`.claude/rules/`)
-
-Auto-discovered; **always-loaded** cross-cutting rules vs **path-scoped** (`paths:` frontmatter,
-load on match) keep the always-on context lean. On-demand depth lives in `.claude/agent-patterns/*`
-(pointer-loaded, never in `rules/`).
-
-- **Always:** `comments` · `tooling` · `commits` · `pull-requests` · `claude-md`.
-- **Path-scoped:** `naming` → `**/*.ts`, `**/package.json` · `effect-conventions`, `vendored-sources` → `**/*.ts` · `drizzle-effect` → `database/**`, `core/repositories/**` · `testing` → `**/test/**`, `**/*.test.ts` · `sdd` → `.claude/{commands,agents,sdd}/**`.
-
-## Per-layer context
-
-One `CLAUDE.md` per subtree (`apps/{api,worker}`, `core/use-cases`, `core/{words,content}`,
-`database`, `core/repositories/words`, `platform/*`, `infra`) — loads when you touch that folder;
-ancestors (this file) always load.
+Gate, root scripts, and the `bun --bun`/`bun test` traps: `.claude/rules/tooling.md`; commits:
+`commits.md`; PRs: `pull-requests.md`. Conventions live in `.claude/rules/` — always-loaded
+cross-cutting vs `paths:`-scoped (load on match); on-demand depth in `.claude/agent-patterns/*`
+(pointer-loaded, never in `rules/`). Each subtree carries its own `CLAUDE.md` (loads on touch;
+ancestors always load).
 
 ## Slash commands
 

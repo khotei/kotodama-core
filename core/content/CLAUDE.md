@@ -28,6 +28,3 @@ OpenAI engine are layers behind it. It speaks `database` content schemas — **w
   S3 cause for a JSON-serializable `{ tag, key }` snapshot.
 - `MockContentEngine` is deterministic (no faker/clock); its failure paths are an injectable
   `ContentPolicy`.
-
-MUST NOT import `apps/*` or `@kotodama/core/use-cases` (Biome-enforced); `database/factories` → tests
-only.
