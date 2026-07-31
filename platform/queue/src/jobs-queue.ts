@@ -5,7 +5,7 @@ import {
   SQSClient,
 } from '@aws-sdk/client-sqs'
 import { AwsClientConfig, JobsQueueUrl } from '@kotodama/platform/config'
-import { Context, Effect, Layer } from 'effect'
+import { Context, Effect, Array as EffectArray, Layer, Result } from 'effect'
 import { QueueError, type QueueMessage, type ReceiveOptions } from './queue-types'
 
 export interface JobsQueueShape {
@@ -39,11 +39,16 @@ export const JobsQueueLive = Layer.effect(
     const call = <A>(run: () => Promise<A>) =>
       Effect.tryPromise({ try: run, catch: (cause) => new QueueError({ cause }) })
 
+    // @aws-sdk/client-sqs isn't auto-instrumented (unlike @effect/sql-pg / HttpApi), so span send/delete
+    // by hand — otherwise a discrete queue op is a blind spot next to its BuildWord span. `receive` is
+    // deliberately NOT spanned: it's a ≤20s long-poll that runs only in the local dev loop, so a span
+    // would flood the trace with idle root spans timing the wait, not real work.
+    const attributes = { 'messaging.system': 'aws_sqs' }
     return {
       send: (body) =>
         call(() =>
           client.send(new SendMessageCommand({ QueueUrl: queueUrl, MessageBody: body })),
-        ).pipe(Effect.asVoid),
+        ).pipe(Effect.asVoid, Effect.withSpan('JobsQueue.send', { attributes })),
       receive: (options) =>
         call(() =>
           client.send(
@@ -55,17 +60,17 @@ export const JobsQueueLive = Layer.effect(
           ),
         ).pipe(
           Effect.map((out) =>
-            (out.Messages ?? []).flatMap((m) =>
+            EffectArray.filterMap(out.Messages ?? [], (m) =>
               m.Body !== undefined && m.ReceiptHandle !== undefined
-                ? [{ body: m.Body, handle: m.ReceiptHandle }]
-                : [],
+                ? Result.succeed({ body: m.Body, handle: m.ReceiptHandle })
+                : Result.failVoid,
             ),
           ),
         ),
       delete: (handle) =>
         call(() =>
           client.send(new DeleteMessageCommand({ QueueUrl: queueUrl, ReceiptHandle: handle })),
-        ).pipe(Effect.asVoid),
+        ).pipe(Effect.asVoid, Effect.withSpan('JobsQueue.delete', { attributes })),
     }
   }),
 )
