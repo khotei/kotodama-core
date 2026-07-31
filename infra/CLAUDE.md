@@ -24,8 +24,8 @@ Resource identity lives in **one** list — `awsResources` in `@kotodama/platfor
 1. Another queue/bucket of an existing kind = one `{ kind, name }` entry.
 2. A genuinely new *kind* also needs a new `ensure<Resource>` in the owning package (`ensureQueue`,
    `ensureBucket`).
-3. To *consume* it: one `Config` value + **one bound `Layer`** over the existing `QueueClient` /
-   `StorageClient` base (the base already takes the resource per call — unchanged).
+3. To *consume* it: one `Config` value + a second bound `*Live` layer (another `JobsQueueLive` /
+   `ImagesStoreLive`) reading that config — the resource binds at layer build, never a per-call arg.
 4. `ensure*` is **dev/test-only**; prod `*Live` layers only consume by URL/name, never self-provision
    (the `@aws-sdk/client-s3` devDependency boundary keeps `ensureBucket` off the `Bun.S3Client` prod
    path).

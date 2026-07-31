@@ -5,18 +5,20 @@ OpenAI engine are layers behind it. It speaks `database` content schemas — **w
 `core`, not `platform/ai`** (a `platform/*` leaf may not import `@kotodama/database`).
 
 - **Two levels, two errors:** the port fails per-stage (`ContentEngineError`); the recipe
-  (`WordGenerationServiceLive`'s body) fails with `WordGenerationError` carrying **both** failed and
-  succeeded passes, so the caller records the full picture. Sequential gates fail fast; the enrich
-  fan-out runs under `Effect.partition` so one bad enrich doesn't interrupt siblings.
+  (`WordGenerationServiceLive`'s body) fails with `WordGenerationError` carrying a self-complete
+  `outcome` (a `WordBuildStagesEntity` over all stages — never-ran ones `pending`), so `buildWord`
+  persists it verbatim. Sequential gates fail fast; the enrich fan-out runs under `Effect.partition`
+  so one bad enrich doesn't interrupt siblings.
 - **`STAGE_SLICES` is the single source of stage → output shape** — each slice `pick`ed off
   `WordContent`, `satisfies Record<WordBuildStage, Schema.Top>` for exhaustiveness. Both the type AND
   the engine's `generateObject` runtime schema come from here, so promise and generation can't drift.
 - **`WordGenerationService` exists so the build budget can be a layer** — `…Timed(budget)` is a
   single-tag decorator over `…Live`, error union fixed at the tag. The one justified service promotion
   of a recipe.
-- **Provenance rides the engine, not a stage result** — `ContentEngine.provenance` is bundled with
-  `generate`'s result and stamped by `createWord`. Rejected: smuggling it as reserved keys on a stage
-  result (one decision split across two packages).
+- **Provenance rides the engine, not a stage result** — `ContentEngine.provenance` is a standing
+  service property (not a `produce` result), bundled into the generation result and stamped by
+  `createWord`. Rejected: smuggling it as reserved keys on a stage result (one decision split across
+  two packages).
 - **`generation-defaults.ts` is the one OpenAI-tuning surface** — models, effort, image options,
   `NO_TEXT_DIRECTIVE`, the resilience preset *values*. The resilience *mechanism* is in
   `@kotodama/platform/ai`; the engine makes **bare** `ai.*` calls — presets are applied by the

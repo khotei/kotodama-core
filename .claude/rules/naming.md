@@ -32,7 +32,7 @@ Seven workspaces: `apps/{api,worker}` → `@kotodama/app-{api,worker}` (apps dro
   | `.schema.ts` | other `effect/Schema` definitions | `core/**` |
   | `.api.ts` / `.handler.ts` | an `HttpApi` contract / its handler bindings | `apps/api/**` |
   | `.view.ts` / `.model.ts` | computed view model (edge) / read model (core) — no backing row | edge / `core/**` |
-  | `.entity.ts` / `.table.ts` / `.values.ts` / `.enums.ts` | storage schemas / table / value tuples / `pgEnum`s | `database/**` |
+  | `.entity.ts` / `.table.ts` / `.values.ts` | storage schemas / table / value tuples + their `pgEnum`s | `database/**` |
   | `*.factory.ts` | test-data factories | `database/src/factories/` |
 
   A file playing none of these roles stays a bare kebab name. Tests mirror the source, suffix
