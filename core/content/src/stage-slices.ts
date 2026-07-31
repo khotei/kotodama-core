@@ -1,4 +1,4 @@
-import { enumWordJobStage, type WordJobStage } from '@kotodama/database'
+import { enumWordBuildStage, type WordBuildStage } from '@kotodama/database'
 import { type Schema, Struct } from 'effect'
 import { WordContent } from './word-content.schema'
 
@@ -11,21 +11,21 @@ import { WordContent } from './word-content.schema'
  * exhaustive at compile time while preserving each value's precise struct type for indexing.
  */
 export const STAGE_SLICES = {
-  [enumWordJobStage.fetch_source]: WordContent.mapFields(
+  [enumWordBuildStage.fetch_source]: WordContent.mapFields(
     Struct.pick(['coreDefinition', 'lexical', 'pronunciation', 'sources']),
   ),
-  [enumWordJobStage.enrich_etymology]: WordContent.mapFields(Struct.pick(['etymology'])),
-  [enumWordJobStage.enrich_tiers]: WordContent.mapFields(
+  [enumWordBuildStage.enrich_etymology]: WordContent.mapFields(Struct.pick(['etymology'])),
+  [enumWordBuildStage.enrich_tiers]: WordContent.mapFields(
     Struct.pick(['tiers', 'relations', 'translations']),
   ),
-  [enumWordJobStage.enrich_authors]: WordContent.mapFields(
+  [enumWordBuildStage.enrich_authors]: WordContent.mapFields(
     Struct.pick(['authorExamples', 'culturalGuide']),
   ),
-  [enumWordJobStage.enrich_visuals]: WordContent.mapFields(Struct.pick(['visuals'])),
-  [enumWordJobStage.final_review]: WordContent.mapFields(Struct.pick(['frequency'])),
-} satisfies Record<WordJobStage, Schema.Top>
+  [enumWordBuildStage.enrich_visuals]: WordContent.mapFields(Struct.pick(['visuals'])),
+  [enumWordBuildStage.final_review]: WordContent.mapFields(Struct.pick(['frequency'])),
+} satisfies Record<WordBuildStage, Schema.Top>
 
-export type StageSlice<S extends WordJobStage> = (typeof STAGE_SLICES)[S]['Type']
+export type StageSlice<S extends WordBuildStage> = (typeof STAGE_SLICES)[S]['Type']
 
 /**
  * The grounded sense fed into every later stage (one consistent reading of a polysemous word). A

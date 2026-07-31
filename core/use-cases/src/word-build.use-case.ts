@@ -1,11 +1,11 @@
 import { selectWord, upsertWord } from '@kotodama/core/repositories'
 import { createWord, stagesAll } from '@kotodama/core/words'
 import {
-  type BuildStagesEntity,
   enumAsyncJobStatus,
-  enumJobErrorType,
+  enumWordBuildErrorType,
   type Language,
-  WORD_JOB_STAGES,
+  WORD_BUILD_STAGES,
+  type WordBuildStagesEntity,
 } from '@kotodama/database'
 import { Effect, Option } from 'effect'
 
@@ -15,7 +15,7 @@ import { Effect, Option } from 'effect'
 const recordWordFailure = Effect.fnUntraced(function* (
   language: Language,
   word: string,
-  outcome: { logLine: string; stages: BuildStagesEntity },
+  outcome: { logLine: string; stages: WordBuildStagesEntity },
 ) {
   yield* Effect.logError(outcome.logLine)
   yield* upsertWord(language, word, { status: enumAsyncJobStatus.failed, stages: outcome.stages })
@@ -60,37 +60,23 @@ export const buildWord = Effect.fnUntraced(function* (language: Language, word: 
         const message = 'generation exceeded its build budget'
         return recordWordFailure(language, word, {
           logLine: `word build timed out for "${word}" (${language}): ${message}`,
-          stages: WORD_JOB_STAGES.map((stage) => ({
+          stages: WORD_BUILD_STAGES.map((stage) => ({
             stage,
             status: enumAsyncJobStatus.failed,
-            error: { type: enumJobErrorType.timed_out, message },
+            error: { type: enumWordBuildErrorType.timed_out, message },
           })),
         })
       },
       // The expected domain outcome — record the full per-stage picture and succeed, so it never
       // reaches the worker edge.
-      WordGenerationError: ({ failures, succeeded }) => {
-        // Passes that neither succeeded nor failed never completed — reset to `pending` (undoing the
-        // `running` flip), so a dead build leaves no stage stuck `running`.
-        const ran = new Set([...succeeded, ...failures.map(({ stage }) => stage)])
-        return recordWordFailure(language, word, {
-          logLine: `word build failed for "${word}" (${language}): ${failures
-            .map(({ stage, error }) => `${stage} (${error.type})`)
+      WordGenerationError: (error) =>
+        recordWordFailure(language, word, {
+          logLine: `word build failed for "${word}" (${language}): ${error.outcome
+            .filter((entry) => entry.status === enumAsyncJobStatus.failed)
+            .map((failure) => `${failure.stage} (${failure.error?.type})`)
             .join(', ')}`,
-          stages: [
-            ...succeeded.map((stage) => ({ stage, status: enumAsyncJobStatus.succeeded })),
-            ...failures.map(({ stage, error }) => ({
-              stage,
-              status: enumAsyncJobStatus.failed,
-              error,
-            })),
-            ...WORD_JOB_STAGES.filter((stage) => !ran.has(stage)).map((stage) => ({
-              stage,
-              status: enumAsyncJobStatus.pending,
-            })),
-          ],
-        })
-      },
+          stages: error.outcome,
+        }),
     }),
     // What remains is an infra fault — log before it leaves for the redrive, so a redrive is never
     // silent.

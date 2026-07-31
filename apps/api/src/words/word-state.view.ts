@@ -1,18 +1,24 @@
-import { enumAsyncJobStatus, JobErrorEntity, StageEntity, WordEntity } from '@kotodama/database'
+import { UNREADY_STATUSES } from '@kotodama/core/words'
+import {
+  enumAsyncJobStatus,
+  WordBuildErrorEntity,
+  WordBuildStageEntity,
+  WordEntity,
+} from '@kotodama/database'
 import { Schema, Struct } from 'effect'
 
 // `cause` is debugging-only and never FE-facing; omit keeps the rest from drifting.
-export const JobErrorView = JobErrorEntity.mapFields(Struct.omit(['cause']))
-export type JobErrorView = typeof JobErrorView.Type
+export const WordBuildErrorView = WordBuildErrorEntity.mapFields(Struct.omit(['cause']))
+export type WordBuildErrorView = typeof WordBuildErrorView.Type
 
 /**
  * One stage of the stepper. The error rides the stage it belongs to (present iff that stage
  * failed), so a build failing on several stages surfaces every reason — there is no single
- * top-level error. The consumer sorts into `WORD_JOB_STAGES` pipeline order.
+ * top-level error. The consumer sorts into `WORD_BUILD_STAGES` pipeline order.
  */
 export const StageProgress = Schema.Struct({
-  ...StageEntity.mapFields(Struct.pick(['stage', 'status'])).fields,
-  error: Schema.optionalKey(JobErrorView),
+  ...WordBuildStageEntity.mapFields(Struct.pick(['stage', 'status'])).fields,
+  error: Schema.optionalKey(WordBuildErrorView),
 })
 export type StageProgress = typeof StageProgress.Type
 
@@ -27,11 +33,7 @@ export type StageProgress = typeof StageProgress.Type
 export const WordStateView = Schema.Union([
   Schema.Struct({ status: Schema.Literal(enumAsyncJobStatus.succeeded), word: WordEntity }),
   Schema.Struct({
-    status: Schema.Literals([
-      enumAsyncJobStatus.pending,
-      enumAsyncJobStatus.running,
-      enumAsyncJobStatus.failed,
-    ]),
+    status: Schema.Literals(UNREADY_STATUSES),
     stages: Schema.Array(StageProgress),
   }),
 ])

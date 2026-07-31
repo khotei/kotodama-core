@@ -1,44 +1,20 @@
 import { expect, it } from '@effect/vitest'
-import {
-  MockContentEngine,
-  WordGenerationService,
-  WordGenerationServiceLive,
-} from '@kotodama/core/content'
 import { selectWords } from '@kotodama/core/repositories'
 import { seedUnreadyWord } from '@kotodama/core/repositories/testing'
-import { WordBuildMessageFromJson } from '@kotodama/core/words'
 import { enumLanguage } from '@kotodama/database'
 import { resetDb, TestDatabaseLive } from '@kotodama/database/testing'
-import { Effect, Layer, Schema } from 'effect'
+import { Effect, Layer } from 'effect'
 import { processBatch } from '../src/process-batch'
+import { BOOM, DefectGenerationLive, encode } from './worker-test-utils'
 
 const EN = enumLanguage.en
-const encode = Schema.encodeSync(WordBuildMessageFromJson)
-
-// The sentinel word whose generation *dies* (an unrecoverable defect, not a typed failure) — the way
-// `createWord`'s `orDie` on a malformed assembly would — so the batch-isolation contract can be
-// exercised without a malformed-content fixture.
-const BOOM = 'boom'
-
-// A generation seam that delegates every word to the real mock-backed service, except BOOM, which it
-// `die`s. A single-tag decorator over WordGenerationServiceLive (same shape as withBuildBudget).
-const DefectGenerationLive = Layer.effect(
-  WordGenerationService,
-  Effect.gen(function* () {
-    const base = yield* WordGenerationService
-    return WordGenerationService.of({
-      generate: (language, word) =>
-        word === BOOM ? Effect.die(new Error('malformed assembly')) : base.generate(language, word),
-    })
-  }),
-).pipe(Layer.provide(WordGenerationServiceLive.pipe(Layer.provide(MockContentEngine))))
 
 // processBatch runs real builds over the mock engine + a test DB (buildWord is a plain function, no
 // service to stub). This unit owns: a foreign body is **skipped** (neither built nor failed); valid
 // messages build, so a happy batch reports no failures; and a build that **dies** is isolated to its
-// own failed id (`matchCause`) rather than poisoning the batch. The DB-fault redrive path is exercised
-// end-to-end in consume.test.ts. The mock engine is wrapped in the defect decorator, transparent for
-// every non-BOOM word.
+// own failed id (`matchCause`) rather than poisoning the batch. The end-to-end request → enqueue →
+// consume → Ready path (and idempotent redelivery) lives in consume.test.ts. The mock engine is wrapped
+// in the defect decorator, transparent for every non-BOOM word.
 const TestLayer = Layer.mergeAll(DefectGenerationLive, TestDatabaseLive)
 
 it.layer(TestLayer, { timeout: '120 seconds' })((it) => {

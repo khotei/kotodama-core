@@ -19,8 +19,6 @@ fake. SQS's non-deterministic receive is contained by:
 - **`drainQueue`** — receive-and-delete every visible message in a loop; both the per-test purge and
   the "what got enqueued?" assertion source. `receive({ max: 1000 })` is a removed fake idiom — never
   reintroduce it.
-- **`ConsumePoll`** (`Context.Reference`, default 20s long-poll) — tests `Layer.succeed` a 1s wait so
-  an empty-queue poll returns promptly.
 - **`withSqs(use)`** — a short-lived SDK client at the container endpoint for raw SQS primitives.
 - **Dev-untouched invariant:** the harness overrides the config AWS seam with a **replacement**
   `ConfigProvider` built from the container URI — `ConfigProviderLive` never enters the test graph, so

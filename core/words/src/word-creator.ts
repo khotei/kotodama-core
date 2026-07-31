@@ -2,7 +2,7 @@ import { WordGenerationService } from '@kotodama/core/content'
 import { upsertWord } from '@kotodama/core/repositories'
 import { enumAsyncJobStatus, type Language, WordEntityInsert } from '@kotodama/database'
 import { Effect, Schema } from 'effect'
-import { stagesAll } from './build-stages'
+import { stagesAll } from './word-build-stages'
 
 const decodeWordInsert = Schema.decodeUnknownEffect(WordEntityInsert)
 

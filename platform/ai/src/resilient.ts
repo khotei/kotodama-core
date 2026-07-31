@@ -1,4 +1,4 @@
-import { Duration, Effect, Schedule } from 'effect'
+import { Cause, Duration, Effect, Schedule } from 'effect'
 import { AiError } from './ai.service'
 
 /**
@@ -22,14 +22,14 @@ const RETRY_BACKOFF = Schedule.exponential(Duration.seconds(3)).pipe(Schedule.ji
  * A standalone wrapper, not a service method: retry is opt-in at wiring, and it knows only
  * `AiError`, so any consumer can reuse it.
  */
-export const resilient = <A>(
+export function resilient<A>(
   call: Effect.Effect<A, AiError>,
   config: ResilienceConfig,
-): Effect.Effect<A, AiError> =>
-  call.pipe(
+): Effect.Effect<A, AiError> {
+  return call.pipe(
     Effect.timeout(config.timeout),
     Effect.retry({
-      while: (error) => error._tag === 'TimeoutError' || error.isRetryable,
+      while: (error) => Cause.isTimeoutError(error) || error.isRetryable,
       times: config.retries,
       schedule: RETRY_BACKOFF,
     }),
@@ -37,3 +37,4 @@ export const resilient = <A>(
       Effect.fail(AiError.fromCause(config.method, cause)),
     ),
   )
+}

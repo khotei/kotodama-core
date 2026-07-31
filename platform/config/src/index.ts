@@ -55,19 +55,16 @@ export const AwsClientConfig: Config.Config<AwsClientConfig> = Config.map(
     },
   }),
 )
-export const LogLevel = Config.string('LOG_LEVEL').pipe(Config.withDefault('info'))
+// Observability env, single-sourced here so `platform/observability` reads it through config, not
+// `process.env`. NODE_ENV and the OTLP endpoint are required — a deploy that omits either fails fast
+// at startup rather than silently mis-tracing (dev-mode exporter, or spans sent nowhere). Version
+// stays optional (`None` = off a release).
+export const OtelExporterEndpoint = Config.string('OTEL_EXPORTER_OTLP_ENDPOINT')
+export const DeployEnv = Config.string('NODE_ENV')
+export const ServiceVersion = Config.string('SERVICE_VERSION').pipe(Config.option)
+
 /** HTTP port for `apps/api`; defaults to the value the SPA's `VITE_API_BASE_URL` targets. */
 export const Port = Config.int('PORT').pipe(Config.withDefault(3000))
 
 /** Worker build fan-out; the default-1 rationale lives on `BatchConcurrency` (`apps/worker/process-batch.ts`). */
 export const WorkerConcurrency = Config.int('WORKER_CONCURRENCY').pipe(Config.withDefault(1))
-
-export const AppConfig = Config.all({
-  databaseUrl: DatabaseUrl,
-  imagesBucket: ImagesBucket,
-  jobsQueueUrl: JobsQueueUrl,
-  openaiApiKey: OpenaiApiKey,
-  awsRegion: AwsRegion,
-  logLevel: LogLevel,
-  port: Port,
-})

@@ -1,6 +1,6 @@
 import { buildWord } from '@kotodama/core/use-cases'
 import { WordBuildMessageFromJson } from '@kotodama/core/words'
-import { Array as Arr, Context, Effect, Option, Schema } from 'effect'
+import { Context, Effect, Array as EffectArray, Option, Schema } from 'effect'
 
 // The prod edge passes the SQS `messageId` as `id`; the local edge the receipt `handle`.
 export interface BatchRecord {
@@ -30,7 +30,12 @@ export const processBatch = Effect.fnUntraced(function* (records: ReadonlyArray<
     records,
     (record) =>
       Option.match(matchBuildMessage(record.body), {
-        onNone: () => Effect.succeed(Option.none<string>()),
+        // Observable, not silent: the foreign body is still ack-and-dropped, but logged first so a
+        // mis-routed producer surfaces instead of vanishing at the boundary.
+        onNone: () =>
+          Effect.logWarning('skipping foreign queue body', record.body).pipe(
+            Effect.as(Option.none<string>()),
+          ),
         onSome: ({ language, word }) =>
           buildWord(language, word).pipe(
             // Root span per build — logs only attach to a trace when a current span exists.
@@ -48,5 +53,5 @@ export const processBatch = Effect.fnUntraced(function* (records: ReadonlyArray<
       }),
     { concurrency },
   )
-  return Arr.getSomes(outcomes)
+  return EffectArray.getSomes(outcomes)
 })

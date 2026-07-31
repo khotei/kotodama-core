@@ -8,11 +8,11 @@ import { type ResilienceConfig, resilient } from './resilient'
  * (`Layer.provide` subtracts the requirement; the base builds once). Interpose only where wanted:
  * retry stays a wiring choice, never an `AiService` property.
  */
-export const AiServiceResilient = (
+export function AiServiceResilient(
   text: ResilienceConfig,
   image: ResilienceConfig,
-): Layer.Layer<AiService, never, AiService> =>
-  Layer.effect(
+): Layer.Layer<AiService, never, AiService> {
+  return Layer.effect(
     AiService,
     Effect.gen(function* () {
       const base = yield* AiService
@@ -32,3 +32,4 @@ export const AiServiceResilient = (
       return AiService.of({ generateObject, generateImage })
     }),
   )
+}

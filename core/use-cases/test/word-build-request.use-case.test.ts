@@ -1,16 +1,14 @@
 import { expect, it } from '@effect/vitest'
 import { searchWords, selectWord } from '@kotodama/core/repositories'
-import { seedReadyWord, seedUnreadyWord } from '@kotodama/core/repositories/testing'
+import { readStages, seedReadyWord, seedUnreadyWord } from '@kotodama/core/repositories/testing'
 import { WordBuildMessageFromJson, WordVerdict } from '@kotodama/core/words'
 import {
-  type BuildStagesEntity,
-  DB,
   enumAsyncJobStatus,
-  enumJobErrorType,
   enumLanguage,
-  enumWordJobStage,
-  type Language,
-  WORD_JOB_STAGES,
+  enumWordBuildErrorType,
+  enumWordBuildStage,
+  WORD_BUILD_STAGES,
+  type WordBuildStagesEntity,
 } from '@kotodama/database'
 import { resetDb, TestDatabaseLive } from '@kotodama/database/testing'
 import { AiServiceTest } from '@kotodama/platform/ai/testing'
@@ -36,19 +34,7 @@ const TestLayer = QueueLocalStackLive.pipe(
 
 const EN = enumLanguage.en
 const WORD = 'lacuna'
-const PIPELINE_LENGTH = WORD_JOB_STAGES.length
-
-// Stages now ride the `words` row (`words.stages`), so a test reads them off `selectWord`; an absent
-// word yields no stages (the old `selectWordJobStages` returned an empty set for the same case).
-const readStages = (language: Language, word: string) =>
-  selectWord(language, word).pipe(
-    Effect.map(
-      Option.match({
-        onNone: (): BuildStagesEntity => [],
-        onSome: (row) => row.stages,
-      }),
-    ),
-  )
+const PIPELINE_LENGTH = WORD_BUILD_STAGES.length
 
 // The LocalStack queue persists across this file's tests (one container per file); `drainQueue`
 // receive-and-deletes everything, so call it at the top of each test (the SQS analogue of `resetDb`)
@@ -80,7 +66,7 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
   )
 
   it.effect(
-    'seeds a pending words row in the same tx as the stages — the word is listable before the worker runs (AC-4)',
+    'seeds a pending words row in the same write as the stages — the word is listable before the worker runs (AC-4)',
     () =>
       Effect.gen(function* () {
         yield* resetDb
@@ -104,34 +90,6 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
         // The seed and its 6 pending stages landed together on the one row (same write).
         const stages = yield* readStages(EN, WORD)
         expect(stages).toHaveLength(PIPELINE_LENGTH)
-      }),
-  )
-
-  it.effect(
-    'a failure after the seed rolls the whole tx back — no orphan pending words row (AC-4)',
-    () =>
-      Effect.gen(function* () {
-        yield* resetDb
-
-        // The atomicity contract requestWordBuild leans on: the pending row and its inline stages are
-        // ONE write inside a db.transaction, so any failure in the body unwinds the seed too — a word
-        // never appears half-registered. Reproduce the composition and fail *after* the seed; the
-        // pending row must not survive.
-        const db = yield* DB
-        const boom = yield* db
-          .transaction(() =>
-            Effect.gen(function* () {
-              yield* seedUnreadyWord(EN, WORD)
-              return yield* Effect.fail(new Error('stage write failed'))
-            }),
-          )
-          .pipe(Effect.flip)
-        expect(boom.message).toBe('stage write failed')
-
-        // Rolled back: no orphan pending row (and so nothing in list/search).
-        expect(Option.isNone(yield* selectWord(EN, WORD))).toBe(true)
-        const { items } = yield* searchWords({ language: EN, limit: 20 })
-        expect(items.map((item) => item.word)).not.toContain(WORD)
       }),
   )
 
@@ -178,12 +136,12 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
       yield* drainQueue
       // Drive the word terminal-failed (the Couldn't-be-made state): a `failed` row whose stages
       // record the failing pass, which is buildable — a re-request retries it.
-      const failedStages: BuildStagesEntity = WORD_JOB_STAGES.map((stage) =>
-        stage === enumWordJobStage.fetch_source
+      const failedStages: WordBuildStagesEntity = WORD_BUILD_STAGES.map((stage) =>
+        stage === enumWordBuildStage.fetch_source
           ? {
               stage,
               status: enumAsyncJobStatus.failed,
-              error: { message: 'no source found', type: enumJobErrorType.not_found },
+              error: { message: 'no source found', type: enumWordBuildErrorType.not_found },
             }
           : { stage, status: enumAsyncJobStatus.pending },
       )

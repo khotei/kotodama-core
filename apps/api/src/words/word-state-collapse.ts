@@ -1,33 +1,38 @@
 import type { Word } from '@kotodama/core/words'
-import { type BuildStagesEntity, enumAsyncJobStatus, WORD_JOB_STAGES } from '@kotodama/database'
-import { Array as Arr, Option, Order } from 'effect'
+import {
+  enumAsyncJobStatus,
+  WORD_BUILD_STAGES,
+  type WordBuildStagesEntity,
+} from '@kotodama/database'
+import { Array as EffectArray, Option, Order } from 'effect'
 import type { StageProgress, WordStateView } from './word-state.view'
 
-// `words.stages` is written in `WORD_JOB_STAGES` order, but sort defensively — declaration order is
+// `words.stages` is written in `WORD_BUILD_STAGES` order, but sort defensively — declaration order is
 // the pipeline order regardless of stored order.
-const stageRank = new Map(WORD_JOB_STAGES.map((stage, index) => [stage, index] as const))
+const stageRank = new Map(WORD_BUILD_STAGES.map((stage, index) => [stage, index] as const))
 
 /**
- * The stepper payload: stages sorted into `WORD_JOB_STAGES` pipeline order, each carrying its
+ * The stepper payload: stages sorted into `WORD_BUILD_STAGES` pipeline order, each carrying its
  * FE-facing error (present iff that stage failed; `cause` dropped). Shared by {@link
  * collapseWordState} and the `buildWord` handler, whose freshly-seeded build IS the running view.
  */
-export const toStageProgress = (stages: BuildStagesEntity): StageProgress[] =>
-  Arr.sort(
+export function toStageProgress(stages: WordBuildStagesEntity): StageProgress[] {
+  return EffectArray.sort(
     stages,
     Order.mapInput(
       Order.Number,
-      (stage: BuildStagesEntity[number]) => stageRank.get(stage.stage) ?? 0,
+      (stage: WordBuildStagesEntity[number]) => stageRank.get(stage.stage) ?? 0,
     ),
-  ).map((entry) =>
-    entry.error
+  ).map((stage) =>
+    stage.error
       ? {
-          stage: entry.stage,
-          status: entry.status,
-          error: { message: entry.error.message, type: entry.error.type },
+          stage: stage.stage,
+          status: stage.status,
+          error: { message: stage.error.message, type: stage.error.type },
         }
-      : { stage: entry.stage, status: entry.status },
+      : { stage: stage.stage, status: stage.status },
   )
+}
 
 /**
  * The single author of the state derivation for a word read. Pure — no I/O, unit-testable without a
@@ -39,12 +44,12 @@ export const toStageProgress = (stages: BuildStagesEntity): StageProgress[] =>
  * word, every other status carries the stepper read off the same row's `stages`. No status is
  * coerced — a value the view can't hold fails to typecheck here rather than being silently relabelled.
  */
-export const collapseWordState = (word: Option.Option<Word>): Option.Option<WordStateView> => {
+export function collapseWordState(word: Option.Option<Word>): Option.Option<WordStateView> {
   if (Option.isNone(word)) return Option.none()
-  const value = word.value
+  const presentWord = word.value
   return Option.some(
-    value.status === enumAsyncJobStatus.succeeded
-      ? { status: value.status, word: value }
-      : { status: value.status, stages: toStageProgress(value.stages) },
+    presentWord.status === enumAsyncJobStatus.succeeded
+      ? { status: presentWord.status, word: presentWord }
+      : { status: presentWord.status, stages: toStageProgress(presentWord.stages) },
   )
 }

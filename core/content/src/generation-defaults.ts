@@ -1,4 +1,4 @@
-import { enumVisualKind, enumWordJobStage, type VisualKind } from '@kotodama/database'
+import { enumVisualKind, enumWordBuildStage, type VisualKind } from '@kotodama/database'
 import type { ImageOptions, ImageSize, ResilienceConfig } from '@kotodama/platform/ai'
 import { Duration } from 'effect'
 
@@ -58,12 +58,12 @@ const SECONDARY_IMAGE_MODEL = 'gpt-image-1.5'
 
 // Stamped into provenance, so swapping any model shifts it.
 export const PROVENANCE_STAGE_MODELS: Record<string, string> = {
-  [enumWordJobStage.fetch_source]: TEXT_GEN.fetchSource.model,
-  [enumWordJobStage.enrich_etymology]: TEXT_GEN.etymology.model,
-  [enumWordJobStage.enrich_tiers]: TEXT_GEN.tiers.model,
-  [enumWordJobStage.enrich_authors]: TEXT_GEN.authors.model,
-  [enumWordJobStage.enrich_visuals]: TEXT_GEN.visuals.model,
-  [enumWordJobStage.final_review]: TEXT_GEN.finalReview.model,
+  [enumWordBuildStage.fetch_source]: TEXT_GEN.fetchSource.model,
+  [enumWordBuildStage.enrich_etymology]: TEXT_GEN.etymology.model,
+  [enumWordBuildStage.enrich_tiers]: TEXT_GEN.tiers.model,
+  [enumWordBuildStage.enrich_authors]: TEXT_GEN.authors.model,
+  [enumWordBuildStage.enrich_visuals]: TEXT_GEN.visuals.model,
+  [enumWordBuildStage.final_review]: TEXT_GEN.finalReview.model,
   hero_image: HERO_IMAGE_MODEL,
   secondary_image: SECONDARY_IMAGE_MODEL,
 }
@@ -98,8 +98,10 @@ export const IMAGE_CONCURRENCY = 2
 export const NO_TEXT_DIRECTIVE =
   ' The image must be a pure illustration: absolutely no text, letters, words, captions, numbers, or signage anywhere in it.'
 
-export const imageOptionsFor = (kind: ImageRole): ImageOptions => ({
-  model: kind === enumVisualKind.hero ? HERO_IMAGE_MODEL : SECONDARY_IMAGE_MODEL,
-  size: IMAGE_SIZE,
-  quality: IMAGE_QUALITY,
-})
+export function imageOptionsFor(kind: ImageRole): ImageOptions {
+  return {
+    model: kind === enumVisualKind.hero ? HERO_IMAGE_MODEL : SECONDARY_IMAGE_MODEL,
+    size: IMAGE_SIZE,
+    quality: IMAGE_QUALITY,
+  }
+}

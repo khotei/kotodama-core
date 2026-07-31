@@ -2,13 +2,13 @@ import { describe, expect, it } from '@effect/vitest'
 import type { ReadyWord, UnreadyWord, Word } from '@kotodama/core/words'
 import {
   type AsyncJobStatus,
-  type BuildStagesEntity,
   enumAsyncJobStatus,
-  enumJobErrorType,
-  enumWordJobStage,
-  type JobErrorEntity,
-  type StageEntity,
-  type WordJobStage,
+  enumWordBuildErrorType,
+  enumWordBuildStage,
+  type WordBuildErrorEntity,
+  type WordBuildStage,
+  type WordBuildStageEntity,
+  type WordBuildStagesEntity,
 } from '@kotodama/database'
 import { Option } from 'effect'
 import { collapseWordState } from '../src/words/word-state-collapse'
@@ -16,23 +16,31 @@ import { assertStatus } from './words-api-test-utils'
 
 // A `words.stages` entry — `collapseWordState` reads only `stage`/`status`/`error`. The error rides
 // the stage it belongs to (present iff that stage failed).
-const stage = (stage: WordJobStage, status: AsyncJobStatus, error?: JobErrorEntity): StageEntity =>
-  error ? { stage, status, error } : { stage, status }
+const stage = (
+  stage: WordBuildStage,
+  status: AsyncJobStatus,
+  error?: WordBuildErrorEntity,
+): WordBuildStageEntity => (error ? { stage, status, error } : { stage, status })
 
 // The collapse keys every branch off the decoded `Word` union's own `status` (the `words` row and
 // its inline `stages` are one write, so the status is authoritative). The succeeded branch embeds +
 // reads only `.word`, so a minimal cast suffices; the unready branch reads `.stages`, so those are
 // real. `stages` on the ready fixture models the pre-collapse state a ready word still carries.
-const ready = (stages: BuildStagesEntity = []): Option.Option<Word> =>
+const ready = (stages: WordBuildStagesEntity = []): Option.Option<Word> =>
   Option.some({ word: 'lacuna', status: enumAsyncJobStatus.succeeded, stages } as ReadyWord)
-const building = (status: UnreadyWord['status'], stages: BuildStagesEntity): Option.Option<Word> =>
+const building = (
+  status: UnreadyWord['status'],
+  stages: WordBuildStagesEntity,
+): Option.Option<Word> =>
   Option.some({ word: 'lacuna', language: 'en', status, stages } as UnreadyWord)
 const NO_WORD = Option.none<Word>()
 
 describe('collapseWordState', () => {
   it('succeeded: a ready word wins over its stages, carrying the word row', () => {
     const state = Option.getOrThrow(
-      collapseWordState(ready([stage(enumWordJobStage.fetch_source, enumAsyncJobStatus.running)])),
+      collapseWordState(
+        ready([stage(enumWordBuildStage.fetch_source, enumAsyncJobStatus.running)]),
+      ),
     )
     assertStatus(state, 'succeeded')
     expect(state.word.word).toBe('lacuna')
@@ -41,14 +49,14 @@ describe('collapseWordState', () => {
   it('discriminant from status: a present non-succeeded word collapses off its stages, not to succeeded (AC-14)', () => {
     const state = Option.getOrThrow(
       collapseWordState(
-        building('running', [stage(enumWordJobStage.fetch_source, enumAsyncJobStatus.running)]),
+        building('running', [stage(enumWordBuildStage.fetch_source, enumAsyncJobStatus.running)]),
       ),
     )
     // The word exists but its `status` is `running`, so the state is the stage-derived `running` view —
     // presence alone must not win the succeeded branch (the pre-F-CONT-006 behaviour).
     assertStatus(state, 'running')
     expect(state.stages).toContainEqual({
-      stage: enumWordJobStage.fetch_source,
+      stage: enumWordBuildStage.fetch_source,
       status: enumAsyncJobStatus.running,
     })
   })
@@ -60,12 +68,12 @@ describe('collapseWordState', () => {
   it('pending: a pending word surfaces as `pending`, not folded to `running`', () => {
     const state = Option.getOrThrow(
       collapseWordState(
-        building('pending', [stage(enumWordJobStage.fetch_source, enumAsyncJobStatus.pending)]),
+        building('pending', [stage(enumWordBuildStage.fetch_source, enumAsyncJobStatus.pending)]),
       ),
     )
     assertStatus(state, 'pending')
     expect(state.stages).toContainEqual({
-      stage: enumWordJobStage.fetch_source,
+      stage: enumWordBuildStage.fetch_source,
       status: enumAsyncJobStatus.pending,
     })
   })
@@ -74,33 +82,33 @@ describe('collapseWordState', () => {
     const state = Option.getOrThrow(
       collapseWordState(
         building('running', [
-          stage(enumWordJobStage.fetch_source, enumAsyncJobStatus.running),
-          stage(enumWordJobStage.enrich_etymology, enumAsyncJobStatus.pending),
+          stage(enumWordBuildStage.fetch_source, enumAsyncJobStatus.running),
+          stage(enumWordBuildStage.enrich_etymology, enumAsyncJobStatus.pending),
         ]),
       ),
     )
     assertStatus(state, 'running')
     expect(state.stages).toEqual([
-      { stage: enumWordJobStage.fetch_source, status: enumAsyncJobStatus.running },
-      { stage: enumWordJobStage.enrich_etymology, status: enumAsyncJobStatus.pending },
+      { stage: enumWordBuildStage.fetch_source, status: enumAsyncJobStatus.running },
+      { stage: enumWordBuildStage.enrich_etymology, status: enumAsyncJobStatus.pending },
     ])
   })
 
-  it('orders stages by WORD_JOB_STAGES declaration order regardless of input order', () => {
+  it('orders stages by WORD_BUILD_STAGES declaration order regardless of input order', () => {
     const state = Option.getOrThrow(
       collapseWordState(
         building('running', [
-          stage(enumWordJobStage.final_review, enumAsyncJobStatus.pending),
-          stage(enumWordJobStage.fetch_source, enumAsyncJobStatus.succeeded),
-          stage(enumWordJobStage.enrich_tiers, enumAsyncJobStatus.pending),
+          stage(enumWordBuildStage.final_review, enumAsyncJobStatus.pending),
+          stage(enumWordBuildStage.fetch_source, enumAsyncJobStatus.succeeded),
+          stage(enumWordBuildStage.enrich_tiers, enumAsyncJobStatus.pending),
         ]),
       ),
     )
     assertStatus(state, 'running')
     expect(state.stages.map((s) => s.stage)).toEqual([
-      enumWordJobStage.fetch_source,
-      enumWordJobStage.enrich_tiers,
-      enumWordJobStage.final_review,
+      enumWordBuildStage.fetch_source,
+      enumWordBuildStage.enrich_tiers,
+      enumWordBuildStage.final_review,
     ])
   })
 
@@ -108,18 +116,21 @@ describe('collapseWordState', () => {
     const state = Option.getOrThrow(
       collapseWordState(
         building('failed', [
-          stage(enumWordJobStage.fetch_source, enumAsyncJobStatus.failed, {
+          stage(enumWordBuildStage.fetch_source, enumAsyncJobStatus.failed, {
             message: 'no source found',
-            type: enumJobErrorType.not_found,
+            type: enumWordBuildErrorType.not_found,
             cause: 'debug-only',
           }),
-          stage(enumWordJobStage.enrich_etymology, enumAsyncJobStatus.pending),
+          stage(enumWordBuildStage.enrich_etymology, enumAsyncJobStatus.pending),
         ]),
       ),
     )
     assertStatus(state, 'failed')
-    const failed = state.stages.find((s) => s.stage === enumWordJobStage.fetch_source)
-    expect(failed?.error).toEqual({ message: 'no source found', type: enumJobErrorType.not_found })
+    const failed = state.stages.find((s) => s.stage === enumWordBuildStage.fetch_source)
+    expect(failed?.error).toEqual({
+      message: 'no source found',
+      type: enumWordBuildErrorType.not_found,
+    })
     expect(failed?.error).not.toHaveProperty('cause')
   })
 
@@ -127,14 +138,14 @@ describe('collapseWordState', () => {
     const state = Option.getOrThrow(
       collapseWordState(
         building('failed', [
-          stage(enumWordJobStage.enrich_tiers, enumAsyncJobStatus.failed, {
+          stage(enumWordBuildStage.enrich_tiers, enumAsyncJobStatus.failed, {
             message: 'tier timeout',
-            type: enumJobErrorType.timed_out,
+            type: enumWordBuildErrorType.timed_out,
             cause: 'debug-only',
           }),
-          stage(enumWordJobStage.fetch_source, enumAsyncJobStatus.failed, {
+          stage(enumWordBuildStage.fetch_source, enumAsyncJobStatus.failed, {
             message: 'no source found',
-            type: enumJobErrorType.not_found,
+            type: enumWordBuildErrorType.not_found,
             cause: 'debug-only',
           }),
         ]),
@@ -144,14 +155,14 @@ describe('collapseWordState', () => {
     // Errors ride their stage in pipeline order — both reasons survive, each attributed.
     expect(state.stages.flatMap((s) => (s.error ? [{ stage: s.stage, ...s.error }] : []))).toEqual([
       {
-        stage: enumWordJobStage.fetch_source,
+        stage: enumWordBuildStage.fetch_source,
         message: 'no source found',
-        type: enumJobErrorType.not_found,
+        type: enumWordBuildErrorType.not_found,
       },
       {
-        stage: enumWordJobStage.enrich_tiers,
+        stage: enumWordBuildStage.enrich_tiers,
         message: 'tier timeout',
-        type: enumJobErrorType.timed_out,
+        type: enumWordBuildErrorType.timed_out,
       },
     ])
   })
@@ -159,7 +170,7 @@ describe('collapseWordState', () => {
   it('a failed stage with no error payload still maps cleanly → failed (AC-5)', () => {
     const state = Option.getOrThrow(
       collapseWordState(
-        building('failed', [stage(enumWordJobStage.fetch_source, enumAsyncJobStatus.failed)]),
+        building('failed', [stage(enumWordBuildStage.fetch_source, enumAsyncJobStatus.failed)]),
       ),
     )
     expect(state.status).toBe('failed')

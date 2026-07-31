@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@effect/vitest'
 import { enumLanguage, enumVisualKind, VisualsEntity } from '@kotodama/database'
-import { AiError, AiService } from '@kotodama/platform/ai'
+import { AiServiceTest } from '@kotodama/platform/ai/testing'
 import { WikiClientTest } from '@kotodama/platform/external-apis/testing'
 import {
   bucketObjects,
@@ -13,7 +13,7 @@ import { RealContentEngineLive } from '../src/real-content-engine.service'
 
 /**
  * The `enrich_visuals` plan the AI step returns — a `{ visuals }` object with `imageKey: null` on
- * every visual; the image step fills the keys in. Mirrors the engine's `VisualsPlanStruct`.
+ * every visual; the image step fills the keys in. Mirrors the engine's `EnrichVisualsPlan`.
  */
 const visualsPlanObject = (word: string) => ({
   visuals: {
@@ -49,28 +49,13 @@ const visualsPlanObject = (word: string) => ({
 
 const PNG_BYTES = new Uint8Array([0x89, 0x50, 0x4e, 0x47])
 
-/**
- * A bespoke {@link AiService} fake — `AiServiceTest` returns one canned `object`, but this stage needs
- * `generateObject` (the plan) AND `generateImage` (the bytes) to return *different* values, so the
- * test layer wires both independently.
- */
-const aiTest = (object: unknown, image: Uint8Array | undefined): Layer.Layer<AiService> =>
-  Layer.succeed(
-    AiService,
-    AiService.of({
-      generateObject: (_schema, _prompt, _opts) => Effect.succeed(object as never),
-      generateImage: (_prompt, _opts) =>
-        image === undefined
-          ? Effect.fail(AiError.fromCause('generateImage', new Error('no image')))
-          : Effect.succeed(image),
-    }),
-  )
-
-// The engine over canned AI; `ImagesStore` is left on the requirements channel — the outer
-// `it.layer(StorageLocalStackLive)` provides the real S3-backed storage shared across the file.
+// The engine over canned AI — this stage needs `generateObject` (the plan) AND `generateImage` (the
+// bytes) to return *different* values, so the fixture carries both (omit `image` ⇒ that method
+// fails). `ImagesStore` is left on the requirements channel — the outer `it.layer(StorageLocalStackLive)`
+// provides the real S3-backed storage shared across the file.
 const engineLayer = (object: unknown, image: Uint8Array | undefined) =>
   RealContentEngineLive.pipe(
-    Layer.provide(aiTest(object, image)),
+    Layer.provide(AiServiceTest({ object, image })),
     Layer.provide(WikiClientTest({ summaries: {} })),
   )
 

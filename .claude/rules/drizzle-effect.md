@@ -24,20 +24,21 @@ worked example), `src/pg-core/`; worked tests
 - `PgDrizzle.make({ relations })` over a `PgClient` layer; `PgDrizzle.DefaultServices` supplies its
   no-op logger/cache.
 - `PgClient` config via `@kotodama/platform/config` (`PgClient.layerConfig({ url: DatabaseUrl })`) —
-  take the one config, not the whole `AppConfig`. **Tests bypass this layer** (ephemeral
+  take just the one config it needs (`DatabaseUrl`), never a broad bundle. **Tests bypass this layer** (ephemeral
   Testcontainers Postgres, `@kotodama/database/testing`).
 - Expose **layers only**; repositories `yield* DB` — **never** a bare `drizzle(...)`/driver.
 
 ## Schema conventions
 
-- One folder per aggregate under `database/schema/`, re-exported by `schema/index.ts` — the sole
-  `drizzle.config` `schema` entry (a directory glob would double-count the barrel's re-exports).
+- **`schema/index.ts` barrel is the sole `drizzle.config` `schema` entry** — a directory glob would
+  double-count the barrel's re-exports; `utils/` build helpers (e.g. `columns`) stay out of it.
+  (Folder layout: `database/CLAUDE.md`.)
 - Tables: `…Table` suffix, `snakeCase.table` — **never also set `transformQueryNames`**. Export
   `<Entity>Row = typeof table.$inferSelect`.
 - **Value lists: one `as const` tuple is the single source** — union, `toEnum` map, `pgEnum`,
   `Schema.Literals` all derive from it; reference by name, never hardcode. **Derive from the tuple,
   never from a `pgEnum` object** (`enumValues` mutates to objects at runtime — drizzle #2753). A
-  jsonb-nested union gets no `pgEnum`. **`WORD_JOB_STAGES` declaration order is load-bearing** —
+  jsonb-nested union gets no `pgEnum`. **`WORD_BUILD_STAGES` declaration order is load-bearing** —
   pipeline + Postgres sort + UX stepper order; reorder only to reorder the stepper.
 
 ## Entities — `createSelectSchema` WITH jsonb overrides

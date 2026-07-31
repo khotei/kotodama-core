@@ -17,7 +17,7 @@ import { RealContentEngineLive } from '../src/real-content-engine.service'
 
 /**
  * The three text-enrichment slices, rebuilt from the same content schemas the engine decodes
- * through — each stage's `StageResultEntity` must validate against the slice keyed exactly to it.
+ * through — each stage's `StageSlice` must validate against the slice keyed exactly to it.
  */
 const EtymologySlice = Schema.Struct({ etymology: EtymologyEntity })
 const TiersSlice = Schema.Struct({

@@ -25,13 +25,14 @@ const BUCKET = awsResources.imagesBucket.name
 
 // LocalStack on a custom (non-AWS) endpoint must be addressed path-style, and the SDK signs every
 // request even though LocalStack ignores the credentials.
-export const s3 = (endpoint: string) =>
-  new S3Client({
+export function s3(endpoint: string) {
+  return new S3Client({
     region: REGION,
     endpoint,
     forcePathStyle: true,
     credentials: { accessKeyId: 'test', secretAccessKey: 'test' },
   })
+}
 
 export class StorageLocalStackContainer extends Context.Service<StorageLocalStackContainer>()(
   '@kotodama/platform/storage/testing/StorageLocalStackContainer',
@@ -54,8 +55,8 @@ export class StorageLocalStackContainer extends Context.Service<StorageLocalStac
 }
 
 /** A short-lived harness SDK client (distinct from the `Bun.S3Client` under test) for S3 admin ops. */
-const withS3 = <A>(use: (client: S3Client) => Promise<A>) =>
-  Effect.gen(function* () {
+function withS3<A>(use: (client: S3Client) => Promise<A>) {
+  return Effect.gen(function* () {
     const container = yield* StorageLocalStackContainer
     const client = s3(container.getConnectionUri())
     return yield* Effect.tryPromise({
@@ -63,6 +64,7 @@ const withS3 = <A>(use: (client: S3Client) => Promise<A>) =>
       catch: (cause) => new ContainerError({ cause }),
     })
   })
+}
 
 /**
  * A **replacement** ConfigProvider built from the running container — the only way to point

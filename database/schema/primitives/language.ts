@@ -1,6 +1,6 @@
 import { pgEnum } from 'drizzle-orm/pg-core'
 import { Schema } from 'effect'
-import { toEnum } from './to-enum'
+import { toEnum } from '../utils/to-enum'
 
 /**
  * The single language vocabulary (ISO 639-1) for **both** a word's own language and its translation

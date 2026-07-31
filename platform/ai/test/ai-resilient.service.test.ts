@@ -95,9 +95,9 @@ it.effect('retries a transient generateObject failure, then succeeds', () =>
 
     const fiber = yield* program.pipe(Effect.forkChild)
     yield* TestClock.adjust(Duration.minutes(1))
-    const value = yield* Fiber.join(fiber)
+    const object = yield* Fiber.join(fiber)
 
     expect(yield* Ref.get(calls)).toBe(2) // 1 fail + 1 success
-    expect(value).toEqual({ ok: 'yes' })
+    expect(object).toEqual({ ok: 'yes' })
   }),
 )

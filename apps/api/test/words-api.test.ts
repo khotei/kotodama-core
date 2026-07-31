@@ -2,7 +2,7 @@ import { BunHttpServer } from '@effect/platform-bun'
 import { describe, expect, it } from '@effect/vitest'
 import { seedReadyWord, seedUnreadyWord } from '@kotodama/core/repositories/testing'
 import { WordVerdict } from '@kotodama/core/words'
-import { enumAsyncJobStatus, enumLanguage, enumWordJobStage } from '@kotodama/database'
+import { enumAsyncJobStatus, enumLanguage, enumWordBuildStage } from '@kotodama/database'
 import { resetDb, TestDatabaseLive } from '@kotodama/database/testing'
 import { AiServiceTest } from '@kotodama/platform/ai/testing'
 import { QueueLocalStackLive } from '@kotodama/platform/queue/testing'
@@ -85,7 +85,7 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
         // The `words` row is the state's discriminant, seeded atomically with its inline `stages`
         // (F-CONT-006: build progress lives on the word row, not a separate stage table).
         yield* seedUnreadyWord(EN, 'lacuna', 'running', [
-          { stage: enumWordJobStage.fetch_source, status: enumAsyncJobStatus.running },
+          { stage: enumWordBuildStage.fetch_source, status: enumAsyncJobStatus.running },
         ])
 
         const state = yield* getWordState(EN, 'lacuna')
@@ -94,7 +94,7 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
         // (word-state-collapse.test.ts), so assert membership, not position.
         assertStatus(state, 'running')
         expect(state.stages).toContainEqual({
-          stage: enumWordJobStage.fetch_source,
+          stage: enumWordBuildStage.fetch_source,
           status: enumAsyncJobStatus.running,
         })
       }),
@@ -158,7 +158,7 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
     it.effect('→ numbered pages carry the page envelope + a total-spanning pageCount (AC-5)', () =>
       Effect.gen(function* () {
         yield* resetDb
-        for (const w of ['alpha', 'bravo', 'delta']) yield* seedReadyWord(EN, w)
+        for (const word of ['alpha', 'bravo', 'delta']) yield* seedReadyWord(EN, word)
 
         const first = yield* search(EN, { page: 1, limit: 2 })
         expect(first.items).toHaveLength(2)
@@ -188,9 +188,9 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
         yield* seedReadyWord(EN, 'beacon', { coreDefinition: 'a lantern-lit signal' })
 
         const page = yield* search(EN, { q: 'lant' })
-        expect(page.items.map((i) => i.word).sort()).toEqual(['beacon', 'lantana', 'lantern'])
-        const lantern = page.items.find((i) => i.word === 'lantern')
-        const lantana = page.items.find((i) => i.word === 'lantana')
+        expect(page.items.map((item) => item.word).sort()).toEqual(['beacon', 'lantana', 'lantern'])
+        const lantern = page.items.find((item) => item.word === 'lantern')
+        const lantana = page.items.find((item) => item.word === 'lantana')
 
         // Ready items carry full content under the entity's own field names; the building one omits it.
         expect(lantern).toMatchObject({ status: 'succeeded', coreDefinition: 'a portable light' })
@@ -210,7 +210,7 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
         yield* seedUnreadyWord(EN, 'nimbus', 'pending') // gloss NULL — a "breeze" needle can't reach it
 
         const page = yield* search(EN, { q: 'breeze' })
-        expect(page.items.map((i) => i.word)).toEqual(['zephyr'])
+        expect(page.items.map((item) => item.word)).toEqual(['zephyr'])
       }),
     )
 
@@ -224,7 +224,7 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
         yield* seedReadyWord(EN, 'dog', { coreDefinition: 'a caterwauling pet' }) // gloss "cat" ✓
 
         const page = yield* search(EN, { q: 'cat' })
-        expect(page.items.map((i) => i.word).sort()).toEqual(['cat', 'dog', 'scatter'])
+        expect(page.items.map((item) => item.word).sort()).toEqual(['cat', 'dog', 'scatter'])
       }),
     )
   })

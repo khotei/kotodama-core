@@ -11,9 +11,9 @@ import { decodeWord } from './word.schema'
  * bare existence checks) keep using `selectWord` directly — decoding a building row is wasted work.
  */
 export const findWord = Effect.fnUntraced(function* (language: Language, word: string) {
-  const row = yield* selectWord(language, word)
-  return yield* Option.match(row, {
+  const found = yield* selectWord(language, word)
+  return yield* Option.match(found, {
     onNone: () => Effect.succeedNone,
-    onSome: (r) => Effect.asSome(decodeWord(r)),
+    onSome: (wordRow) => Effect.asSome(decodeWord(wordRow)),
   })
 })

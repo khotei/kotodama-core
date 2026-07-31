@@ -10,7 +10,7 @@ import { RealContentEngineLive } from '../src/real-content-engine.service'
 
 /**
  * The authored `fetch_source` slice, rebuilt here from the same content schemas the engine decodes
- * through. The engine's `StageResultEntity` must validate against this — and must NOT carry `isReal`.
+ * through. The engine's `StageSlice` must validate against this — and must NOT carry `isReal`.
  */
 const FetchSourceSlice = Schema.Struct({
   coreDefinition: Schema.String,
@@ -52,7 +52,7 @@ const engineLayer = (
 
 describe('RealContentEngine.produce — fetch_source', () => {
   it.effect(
-    'returns a StageResultEntity that decodes through the fetch_source slice, without isReal',
+    'returns a StageSlice that decodes through the fetch_source slice, without isReal',
     () =>
       Effect.gen(function* () {
         const engine = yield* ContentEngine

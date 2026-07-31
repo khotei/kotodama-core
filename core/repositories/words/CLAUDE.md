@@ -18,8 +18,10 @@ function").
   gloss (`core_definition`, NULL on a building row ⇒ ready-only by construction) — one indexable path.
 - **`wordSearchFilter` lives in exactly one file** (search), imported by counts — that single
   authorship is what makes counts and the list agree by construction.
-- **`searchWords` = two statements** (paged list + a standalone `count(*)`), deliberately not
-  `count(*) OVER()` — the window count materializes the whole match and defeats the paged index walk.
+- **The paged `searchWords` = two statements** (paged list + a standalone `count(*)`), deliberately
+  not `count(*) OVER()` — the window count materializes the whole match and defeats the paged index
+  walk. The **unpaged** branch (`limit` absent) skips the count entirely: the full list already *is*
+  the total.
 
 ## SQL/planner gotchas (EXPLAIN-verified — do not "simplify" away)
 

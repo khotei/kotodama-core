@@ -58,6 +58,18 @@ export const TestDatabaseLive = Layer.effectDiscard(
  * Run at the START of each test, not in an `afterEach`: the `it.layer` container is
  * shared across the file, so a hook providing its own layer spins up a second container.
  */
+/**
+ * Yield the single row an insert's `.returning()` produces, dying if it produced none — collapses the
+ * `const [row] = …; if (!row) throw` narrowing ceremony a test would otherwise repeat per insert.
+ */
+export function returningOne<A, E, R>(
+  rows: Effect.Effect<readonly A[], E, R>,
+): Effect.Effect<A, E, R> {
+  return Effect.flatMap(rows, ([row]) =>
+    row ? Effect.succeed(row) : Effect.die(new Error('insert returned no row')),
+  )
+}
+
 export const resetDb = Effect.gen(function* () {
   const db = yield* DB
   yield* db.execute(sql`

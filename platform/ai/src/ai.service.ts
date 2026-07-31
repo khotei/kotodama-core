@@ -1,7 +1,7 @@
 import * as OpenAiClient from '@effect/ai-openai/OpenAiClient'
 import * as OpenAiClientGenerated from '@effect/ai-openai/OpenAiClientGenerated'
 import * as OpenAiLanguageModel from '@effect/ai-openai/OpenAiLanguageModel'
-import { Context, Data, Effect, Encoding, Layer, Predicate, Result, type Schema } from 'effect'
+import { Context, Data, Effect, Encoding, Layer, Predicate, type Schema } from 'effect'
 import { LanguageModel, AiError as ProviderAiError } from 'effect/unstable/ai'
 
 /**
@@ -43,7 +43,7 @@ const MAX_CAUSE_DEPTH = 3
 
 const MAX_MESSAGE_LENGTH = 300
 
-const isRetryableHttp = (cause: unknown): boolean => {
+function isRetryableHttp(cause: unknown): boolean {
   if (Predicate.hasProperty(cause, 'response')) {
     const response = (cause as { readonly response?: unknown }).response
     if (Predicate.hasProperty(response, 'status') && typeof response.status === 'number') {
@@ -57,31 +57,36 @@ const isRetryableHttp = (cause: unknown): boolean => {
 
 // Absent fields are omitted (not set to `undefined`) so the snapshot survives a
 // JSON.stringify/parse round-trip unchanged.
-const snapshotCause = (raw: unknown, depth = 0): CauseSnapshot => {
+function snapshotCause(raw: unknown, depth = 0): CauseSnapshot {
   const snapshot: { tag?: string; message?: string; cause?: CauseSnapshot } = {}
   if (Predicate.hasProperty(raw, '_tag') && typeof raw._tag === 'string') snapshot.tag = raw._tag
   if (Predicate.hasProperty(raw, 'message') && typeof raw.message === 'string')
     snapshot.message = raw.message
+
   const next: unknown = Predicate.hasProperty(raw, 'cause') ? raw.cause : undefined
   if (depth < MAX_CAUSE_DEPTH && next != null && next !== raw)
     snapshot.cause = snapshotCause(next, depth + 1)
+
   return snapshot
 }
 
 // Becomes the user-facing failure reason downstream (→ the DB row + /state).
-const describeCause = (raw: unknown): string => {
+function describeCause(raw: unknown): string {
   const seen: string[] = []
   let cursor: unknown = raw
+
   for (let depth = 0; depth <= MAX_CAUSE_DEPTH && cursor != null; depth++) {
     const message =
       Predicate.hasProperty(cursor, 'message') && typeof cursor.message === 'string'
         ? cursor.message.trim()
         : undefined
     if (message && !seen.includes(message)) seen.push(message)
+
     const next: unknown = Predicate.hasProperty(cursor, 'cause') ? cursor.cause : undefined
     if (next == null || next === cursor) break
     cursor = next
   }
+
   const text = seen.length > 0 ? seen.join(' ‹ ') : String(raw ?? 'unknown error')
   const line = text.replace(/\s+/g, ' ').trim()
   return line.length > MAX_MESSAGE_LENGTH ? `${line.slice(0, MAX_MESSAGE_LENGTH - 1)}…` : line
@@ -187,10 +192,9 @@ export const AiServiceLive: Layer.Layer<
           }),
         )
       }
-      return yield* Result.match(Encoding.decodeBase64(b64), {
-        onSuccess: (bytes) => Effect.succeed(bytes),
-        onFailure: (cause) => Effect.fail(AiError.fromCause('generateImage', cause)),
-      })
+      return yield* Effect.fromResult(Encoding.decodeBase64(b64)).pipe(
+        Effect.mapError((cause) => AiError.fromCause('generateImage', cause)),
+      )
     })
 
     return AiService.of({ generateObject, generateImage })

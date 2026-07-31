@@ -2,8 +2,8 @@ import { describe, expect, it } from '@effect/vitest'
 import {
   enumAsyncJobStatus,
   enumLanguage,
-  enumWordJobStage,
-  WORD_JOB_STAGES,
+  enumWordBuildStage,
+  WORD_BUILD_STAGES,
   WordEntityInsert,
 } from '@kotodama/database'
 import { Duration, Effect, Schema } from 'effect'
@@ -16,7 +16,7 @@ describe('MockContentEngine — default policy', () => {
   it.effect('the six passes assemble into a valid word insert', () =>
     Effect.gen(function* () {
       const engine = yield* ContentEngine
-      const slices = yield* Effect.forEach(WORD_JOB_STAGES, (stage) =>
+      const slices = yield* Effect.forEach(WORD_BUILD_STAGES, (stage) =>
         engine.produce(stage, enumLanguage.en, 'lacuna'),
       )
       for (const slice of slices) expect(Object.keys(slice).length).toBeGreaterThan(0)
@@ -31,7 +31,7 @@ describe('MockContentEngine — default policy', () => {
           language: enumLanguage.en,
           provenance: { model: 'mock', promptHash: 'mock' },
           status: enumAsyncJobStatus.succeeded,
-          stages: WORD_JOB_STAGES.map((stage) => ({
+          stages: WORD_BUILD_STAGES.map((stage) => ({
             stage,
             status: enumAsyncJobStatus.succeeded,
           })),
@@ -47,9 +47,17 @@ describe('MockContentEngine — default policy', () => {
   it.effect('produce is deterministic — same (word, stage) yields identical content', () =>
     Effect.gen(function* () {
       const engine = yield* ContentEngine
-      const a = yield* engine.produce(enumWordJobStage.fetch_source, enumLanguage.en, 'lacuna')
-      const b = yield* engine.produce(enumWordJobStage.fetch_source, enumLanguage.en, 'lacuna')
-      expect(a).toEqual(b)
+      const first = yield* engine.produce(
+        enumWordBuildStage.fetch_source,
+        enumLanguage.en,
+        'lacuna',
+      )
+      const second = yield* engine.produce(
+        enumWordBuildStage.fetch_source,
+        enumLanguage.en,
+        'lacuna',
+      )
+      expect(first).toEqual(second)
     }).pipe(Effect.provide(MockContentEngine)),
   )
 
@@ -57,7 +65,7 @@ describe('MockContentEngine — default policy', () => {
     Effect.gen(function* () {
       const engine = yield* ContentEngine
       const error = yield* engine
-        .produce(enumWordJobStage.fetch_source, enumLanguage.en, 'xyzzy')
+        .produce(enumWordBuildStage.fetch_source, enumLanguage.en, 'xyzzy')
         .pipe(Effect.flip)
       expect(error).toBeInstanceOf(ContentEngineError)
       expect(error.type).toBe('not_found')
@@ -68,7 +76,7 @@ describe('MockContentEngine — default policy', () => {
     Effect.gen(function* () {
       const engine = yield* ContentEngine
       const error = yield* engine
-        .produce(enumWordJobStage.enrich_visuals, enumLanguage.en, 'kaboom')
+        .produce(enumWordBuildStage.enrich_visuals, enumLanguage.en, 'kaboom')
         .pipe(Effect.flip)
       expect(error.type).toBe('failed')
     }).pipe(Effect.provide(MockContentEngine)),
@@ -80,7 +88,7 @@ describe('MockContentEngine — injectable policy', () => {
     Effect.gen(function* () {
       const engine = yield* ContentEngine
       const error = yield* engine
-        .produce(enumWordJobStage.fetch_source, enumLanguage.ru, 'whatever')
+        .produce(enumWordBuildStage.fetch_source, enumLanguage.ru, 'whatever')
         .pipe(Effect.flip)
       expect(error.type).toBe('timed_out')
     }).pipe(Effect.provide(makeMockContentEngine(() => ({ kind: 'fail', type: 'timed_out' })))),
@@ -92,7 +100,7 @@ describe('MockContentEngine — injectable policy', () => {
       const done: Array<Record<string, unknown>> = []
       yield* Effect.forkChild(
         engine
-          .produce(enumWordJobStage.fetch_source, enumLanguage.en, 'lacuna')
+          .produce(enumWordBuildStage.fetch_source, enumLanguage.en, 'lacuna')
           .pipe(Effect.map((slice) => done.push(slice))),
       )
 

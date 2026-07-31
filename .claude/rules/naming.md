@@ -11,12 +11,10 @@ the convention.
 
 ## Packages
 
-Seven workspaces: `apps/{api,worker}` → `@kotodama/app-{api,worker}` (apps drop the plural); the two
-**aggregate** packages `@kotodama/core` + `@kotodama/platform`, which expose layer/adapter folders as
-**subpath exports**, not dash-flattened packages (`core/words` → `@kotodama/core/words`,
-`core/repositories/words` → `@kotodama/core/repositories`; `platform/config` →
-`@kotodama/platform/config`); plus standalone `@kotodama/database`, `@kotodama/infra`, and
-`@kotodama/presets` (at `infra/presets/`).
+Apps are `@kotodama/app-{api,worker}` (drop the plural); the aggregates `@kotodama/core` +
+`@kotodama/platform` expose layer/adapter folders as **subpath exports, not dash-flattened packages**
+(`core/repositories/words` → `@kotodama/core/repositories`); plus standalone `@kotodama/database`,
+`@kotodama/infra`, `@kotodama/presets`. Full list: `package.json#workspaces`.
 
 ## Files
 
@@ -32,17 +30,19 @@ Seven workspaces: `apps/{api,worker}` → `@kotodama/app-{api,worker}` (apps dro
   | `.schema.ts` | other `effect/Schema` definitions | `core/**` |
   | `.api.ts` / `.handler.ts` | an `HttpApi` contract / its handler bindings | `apps/api/**` |
   | `.view.ts` / `.model.ts` | computed view model (edge) / read model (core) — no backing row | edge / `core/**` |
-  | `.entity.ts` / `.table.ts` / `.values.ts` / `.enums.ts` | storage schemas / table / value tuples / `pgEnum`s | `database/**` |
+  | `.entity.ts` / `.table.ts` / `.values.ts` | storage schemas / table / value tuples + their `pgEnum`s | `database/**` |
   | `*.factory.ts` | test-data factories | `database/src/factories/` |
 
   A file playing none of these roles stays a bare kebab name. Tests mirror the source, suffix
   included (`words.repo.test.ts`), in the workspace's `test/`.
 - **Entrypoints:** `src/main.ts` (apps), `src/index.ts` (libraries).
-- `database/schema/` groups one folder per repository boundary (named to match the repo folder);
-  the `schema/index.ts` barrel re-exports every group. See `database/CLAUDE.md`.
 
 ## Symbols
 
+- **Precision, not churn:** a name conveys what a value *is* without decoding and must not mislead
+  (`wordRow` not `row`; an `Option<Word>` is `found`, never `word`), **but a clear name is never
+  traded for a longer synonym**, and legible short handles stay (`db`/`ai`, a drizzle `(t)` callback,
+  a loop `index`). The arbiter is legibility at a glance — renaming already-clear code is churn.
 - **Every identity-bearing symbol (DI tags + domain types) ends in a role-noun `<Domain><Role>`** —
   most precise role, `Service` only as fallback. Two exemptions: `DB` (primitive infra handle), and
   the one bare-named schema per aggregate — the status-keyed domain union (`Word = ReadyWord |
@@ -71,6 +71,13 @@ Seven workspaces: `apps/{api,worker}` → `@kotodama/app-{api,worker}` (apps dro
 
 ## Order & Effect
 
+- **Module-level named functions are `function` declarations**, not `const f = () => …` — arrows are
+  only for callbacks and inline lambdas (a generator under a combinator, `Effect.fnUntraced(function*
+  …)`, already complies).
+- **Semantic blank-line grouping:** split a body's distinct steps with one blank line (setup / work /
+  return; a value tuple and its derivations each their own group — see `schema/primitives/async-job-status.ts`:
+  `tuple | Schema+type | map | pgEnum`). Never blank-pad already-grouped code, nor fracture a cohesive
+  literal (a `Schema.Struct`, a config list, a fluent `.pipe`/`.handle` chain).
 - **File-internal order:** vocabulary → behaviour, exported main function/service last. Two hard
   overrides: definition-before-use always wins (runtime `const` doesn't hoist — a layer before its
   dependency is a TDZ `ReferenceError`, so layer files compose bottom-up:

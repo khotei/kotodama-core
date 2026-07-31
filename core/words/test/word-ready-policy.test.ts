@@ -25,10 +25,10 @@ const unready = (status: UnreadyWord['status']) =>
 describe('ensureReadyWord', () => {
   it.effect('a full ready word → decodes and passes the ReadyWord through (AC-12)', () =>
     Effect.gen(function* () {
-      const result = yield* ensureReadyWord(ready)
-      expect(result.status).toBe(enumAsyncJobStatus.succeeded)
-      expect(result.word).toBe('lacuna')
-      expect(result.coreDefinition).toEqual(expect.any(String))
+      const readyWord = yield* ensureReadyWord(ready)
+      expect(readyWord.status).toBe(enumAsyncJobStatus.succeeded)
+      expect(readyWord.word).toBe('lacuna')
+      expect(readyWord.coreDefinition).toEqual(expect.any(String))
     }),
   )
 

@@ -1,19 +1,19 @@
 import type {
   BuildProvenanceEntity,
-  JobErrorType,
   Language,
-  WordJobStage,
+  WordBuildErrorType,
+  WordBuildStage,
 } from '@kotodama/database'
 import { Context, Data, type Effect } from 'effect'
 import type { StageSlice, WordGrounding } from './stage-slices'
 
 /**
- * `type` is the DB's `JobErrorType` verbatim — the worker writes it straight to
+ * `type` is the DB's `WordBuildErrorType` verbatim — the worker writes it straight to
  * `async_word_jobs.error.type`, no remapping at the swap boundary. `cause` must stay a
  * JSON-serializable snapshot (it lands in the persisted jsonb column), never a live provider object.
  */
 export class ContentEngineError extends Data.TaggedError('ContentEngineError')<{
-  readonly type: JobErrorType
+  readonly type: WordBuildErrorType
   readonly message: string
   readonly cause?: unknown
 }> {}
@@ -26,7 +26,7 @@ export class ContentEngineError extends Data.TaggedError('ContentEngineError')<{
 export class ContentEngine extends Context.Service<
   ContentEngine,
   {
-    readonly produce: <S extends WordJobStage>(
+    readonly produce: <S extends WordBuildStage>(
       stage: S,
       language: Language,
       word: string,

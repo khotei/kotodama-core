@@ -13,19 +13,20 @@ export interface WikiFixtures {
 }
 
 /** Mirrors the production client's absence semantics, incl. disambiguation → `Option.none`. */
-export const WikiClientTest = (fixtures: WikiFixtures = {}): Layer.Layer<WikiClient> =>
-  Layer.succeed(
+export function WikiClientTest(fixtures: WikiFixtures = {}): Layer.Layer<WikiClient> {
+  return Layer.succeed(
     WikiClient,
     WikiClient.of({
       summary: (_language, word) => {
-        const hit = fixtures.summaries?.[word.toLowerCase()]
+        const summary = fixtures.summaries?.[word.toLowerCase()]
         return Effect.succeed(
-          hit === undefined || hit.type === 'disambiguation'
+          summary === undefined || summary.type === 'disambiguation'
             ? Option.none<WikiSummary>()
-            : Option.some(hit),
+            : Option.some(summary),
         )
       },
       searchTitle: (_language, word, _limit) =>
         Effect.succeed(fixtures.searches?.[word.toLowerCase()] ?? []),
     }),
   )
+}

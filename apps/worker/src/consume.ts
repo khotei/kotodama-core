@@ -23,6 +23,8 @@ export const consumeOnce = Effect.gen(function* () {
   yield* Effect.forEach(
     messages.filter((message) => !failed.has(message.handle)),
     (message) => queue.delete(message.handle),
+    // Independent idempotent deletes — fan them out rather than draining one-by-one by default.
+    { concurrency: 'unbounded' },
   )
   return messages.length
 })

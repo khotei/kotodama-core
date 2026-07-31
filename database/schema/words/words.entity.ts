@@ -1,7 +1,7 @@
 import { createInsertSchema, createSelectSchema } from 'drizzle-orm/effect-schema'
 import { Schema } from 'effect'
-import { Language } from '../language'
-import { BuildStagesEntity } from './build-stages.entity'
+import { Language } from '../primitives/language'
+import { WordBuildStagesEntity } from './word-build-stages.entity'
 import { wordsTable } from './words.table'
 import { FrequencyBand, SourceType, VisualKind } from './words.values'
 
@@ -64,7 +64,7 @@ export const TiersEntity = Schema.Struct({
 })
 export type TiersEntity = typeof TiersEntity.Type
 
-export const EtymologyStageEntity = Schema.Struct({
+export const EtymologyDescentEntity = Schema.Struct({
   when: Schema.String,
   form: Schema.String,
   // Free-text name ("Latin"), not the `Language` enum.
@@ -73,7 +73,7 @@ export const EtymologyStageEntity = Schema.Struct({
   // Soft ref to a `SourceEntity.index` — app-enforced, no DB FK.
   citation: Schema.optionalKey(Schema.Number),
 })
-export type EtymologyStageEntity = typeof EtymologyStageEntity.Type
+export type EtymologyDescentEntity = typeof EtymologyDescentEntity.Type
 
 export const EtymologyEntity = Schema.Struct({
   summary: Schema.String,
@@ -81,7 +81,7 @@ export const EtymologyEntity = Schema.Struct({
   // (a structured-output decode failure).
   firstAttested: Schema.Struct({ year: Schema.NullOr(Schema.Number), language: Schema.String }),
   origin: Schema.Struct({ from: Schema.String, to: Schema.String, gloss: Schema.String }),
-  descent: Schema.Array(EtymologyStageEntity),
+  descent: Schema.Array(EtymologyDescentEntity),
 })
 export type EtymologyEntity = typeof EtymologyEntity.Type
 
@@ -188,7 +188,7 @@ export const WordEntity = createSelectSchema(wordsTable, {
   // Bare override so `coreDefinition` reads non-null like the jsonb columns: the text() column is
   // nullable, and deriving it NullOr would let a succeeded row with a null coreDefinition satisfy
   // the ready leaf — breaking the CHECK invariant at decode.
-  stages: BuildStagesEntity,
+  stages: WordBuildStagesEntity,
   coreDefinition: Schema.String,
   lexical: LexicalEntity,
   pronunciation: PronunciationEntity,
@@ -221,7 +221,7 @@ export const WordEntityInsert = createInsertSchema(wordsTable, {
   // inherit the table default `en` — the write boundary must state the language.
   language: Language,
   // Always written (never cleared), so plain-required, not `NullOr` like the content columns.
-  stages: BuildStagesEntity,
+  stages: WordBuildStagesEntity,
   coreDefinition: Schema.NullOr(Schema.String),
   lexical: Schema.NullOr(LexicalEntity),
   pronunciation: Schema.NullOr(PronunciationEntity),
