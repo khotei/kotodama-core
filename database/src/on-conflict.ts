@@ -35,5 +35,6 @@ export function patchOnConflict<Tbl extends Table>(
       throw new Error(`patchOnConflict: '${key}' is not a column of '${getTableName(table)}'`)
     set[key] = sql`excluded.${sql.identifier(column.name)}`
   }
+
   return set
 }

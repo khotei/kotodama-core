@@ -62,9 +62,11 @@ function snapshotCause(raw: unknown, depth = 0): CauseSnapshot {
   if (Predicate.hasProperty(raw, '_tag') && typeof raw._tag === 'string') snapshot.tag = raw._tag
   if (Predicate.hasProperty(raw, 'message') && typeof raw.message === 'string')
     snapshot.message = raw.message
+
   const next: unknown = Predicate.hasProperty(raw, 'cause') ? raw.cause : undefined
   if (depth < MAX_CAUSE_DEPTH && next != null && next !== raw)
     snapshot.cause = snapshotCause(next, depth + 1)
+
   return snapshot
 }
 
@@ -72,16 +74,19 @@ function snapshotCause(raw: unknown, depth = 0): CauseSnapshot {
 function describeCause(raw: unknown): string {
   const seen: string[] = []
   let cursor: unknown = raw
+
   for (let depth = 0; depth <= MAX_CAUSE_DEPTH && cursor != null; depth++) {
     const message =
       Predicate.hasProperty(cursor, 'message') && typeof cursor.message === 'string'
         ? cursor.message.trim()
         : undefined
     if (message && !seen.includes(message)) seen.push(message)
+
     const next: unknown = Predicate.hasProperty(cursor, 'cause') ? cursor.cause : undefined
     if (next == null || next === cursor) break
     cursor = next
   }
+
   const text = seen.length > 0 ? seen.join(' ‹ ') : String(raw ?? 'unknown error')
   const line = text.replace(/\s+/g, ' ').trim()
   return line.length > MAX_MESSAGE_LENGTH ? `${line.slice(0, MAX_MESSAGE_LENGTH - 1)}…` : line
