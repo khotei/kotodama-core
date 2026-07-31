@@ -25,14 +25,14 @@ export const Paginated = <S extends Schema.Top>(items: S) =>
  */
 export const paginate = <A>(
   items: ReadonlyArray<A>,
-  page: { readonly page: number; readonly limit: number; readonly total: number },
+  { page, limit, total }: { readonly page: number; readonly limit: number; readonly total: number },
 ) => ({
   items,
   pagination: {
-    page: page.page,
-    limit: page.limit,
-    total: page.total,
-    pageCount: Math.ceil(page.total / page.limit),
+    page,
+    limit,
+    total,
+    pageCount: Math.ceil(total / limit),
   },
 })
 

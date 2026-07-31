@@ -25,7 +25,7 @@ export const WordsApiLive = HttpApiBuilder.group(KotodamaApi, 'words', (handlers
       // reads the row's own `status` and stages, no second query.
       findWord(ctx.params.language, ctx.params.word).pipe(
         Effect.map((word) => Option.getOrNull(collapseWordState(word))),
-        Effect.orDie,
+        Effect.catchTags({ EffectDrizzleQueryError: Effect.die, SchemaError: Effect.die }),
       ),
     )
     .handle('buildWord', (ctx) =>
@@ -58,6 +58,6 @@ export const WordsApiLive = HttpApiBuilder.group(KotodamaApi, 'words', (handlers
         const { q, status } = ctx.query
         // Counts read the same `wordSearchFilter` the list pages, so they always agree.
         return yield* selectWordCounts({ language, q, status })
-      }).pipe(Effect.orDie),
+      }).pipe(Effect.catchTags({ EffectDrizzleQueryError: Effect.die })),
     ),
 )
