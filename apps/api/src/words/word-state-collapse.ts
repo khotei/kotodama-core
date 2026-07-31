@@ -23,14 +23,14 @@ export function toStageProgress(stages: WordBuildStagesEntity): StageProgress[] 
       Order.Number,
       (stage: WordBuildStagesEntity[number]) => stageRank.get(stage.stage) ?? 0,
     ),
-  ).map((entry) =>
-    entry.error
+  ).map((stage) =>
+    stage.error
       ? {
-          stage: entry.stage,
-          status: entry.status,
-          error: { message: entry.error.message, type: entry.error.type },
+          stage: stage.stage,
+          status: stage.status,
+          error: { message: stage.error.message, type: stage.error.type },
         }
-      : { stage: entry.stage, status: entry.status },
+      : { stage: stage.stage, status: stage.status },
   )
 }
 
@@ -46,10 +46,10 @@ export function toStageProgress(stages: WordBuildStagesEntity): StageProgress[] 
  */
 export function collapseWordState(word: Option.Option<Word>): Option.Option<WordStateView> {
   if (Option.isNone(word)) return Option.none()
-  const value = word.value
+  const presentWord = word.value
   return Option.some(
-    value.status === enumAsyncJobStatus.succeeded
-      ? { status: value.status, word: value }
-      : { status: value.status, stages: toStageProgress(value.stages) },
+    presentWord.status === enumAsyncJobStatus.succeeded
+      ? { status: presentWord.status, word: presentWord }
+      : { status: presentWord.status, stages: toStageProgress(presentWord.stages) },
   )
 }

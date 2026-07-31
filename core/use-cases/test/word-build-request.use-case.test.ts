@@ -44,7 +44,7 @@ const readStages = (language: Language, word: string) =>
     Effect.map(
       Option.match({
         onNone: (): WordBuildStagesEntity => [],
-        onSome: (row) => row.stages,
+        onSome: (wordRow) => wordRow.stages,
       }),
     ),
   )

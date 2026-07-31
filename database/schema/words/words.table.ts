@@ -1,6 +1,6 @@
 import { type SQLWrapper, sql } from 'drizzle-orm'
 import { check, index, jsonb, snakeCase, text, unique } from 'drizzle-orm/pg-core'
-import { asyncJobStatus, enumAsyncJobStatus } from '../primitives/async-job-status'
+import { asyncJobStatusEnum, enumAsyncJobStatus } from '../primitives/async-job-status'
 import { enumLanguage, languageEnum } from '../primitives/language'
 import { identifierColumn, timestampColumns } from '../utils/columns'
 import type { WordBuildStagesEntity } from './word-build-stages.entity'
@@ -49,7 +49,7 @@ export const wordsTable = snakeCase.table(
     id: identifierColumn,
     word: text().notNull(),
     language: languageEnum().notNull().default(enumLanguage.en),
-    status: asyncJobStatus().notNull(),
+    status: asyncJobStatusEnum().notNull(),
     // Per-stage build progress on the aggregate itself (replaces a per-stage table): every
     // transition co-writes it with `status`. Defaults `[]` so the NOT NULL add is safe on existing
     // rows; the request seed writes all six `pending` immediately.

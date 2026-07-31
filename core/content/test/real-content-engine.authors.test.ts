@@ -14,7 +14,7 @@ import { RealContentEngineLive } from '../src/real-content-engine.service'
 /**
  * The `enrich_authors` text plan the AI step returns — `{ authorExamples, culturalGuide }` with
  * `authorImageUrl: null` on every author; the portrait step fills the keys in. Mirrors the engine's
- * `AuthorsPlanStruct`.
+ * `EnrichAuthorsPlan`.
  */
 const authorsPlanObject = (word: string) => ({
   authorExamples: [

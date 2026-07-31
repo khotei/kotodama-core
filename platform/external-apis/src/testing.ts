@@ -18,11 +18,11 @@ export function WikiClientTest(fixtures: WikiFixtures = {}): Layer.Layer<WikiCli
     WikiClient,
     WikiClient.of({
       summary: (_language, word) => {
-        const hit = fixtures.summaries?.[word.toLowerCase()]
+        const summary = fixtures.summaries?.[word.toLowerCase()]
         return Effect.succeed(
-          hit === undefined || hit.type === 'disambiguation'
+          summary === undefined || summary.type === 'disambiguation'
             ? Option.none<WikiSummary>()
-            : Option.some(hit),
+            : Option.some(summary),
         )
       },
       searchTitle: (_language, word, _limit) =>

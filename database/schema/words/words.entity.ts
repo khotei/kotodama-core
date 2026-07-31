@@ -64,7 +64,7 @@ export const TiersEntity = Schema.Struct({
 })
 export type TiersEntity = typeof TiersEntity.Type
 
-export const EtymologyWordBuildStageEntity = Schema.Struct({
+export const EtymologyDescentEntity = Schema.Struct({
   when: Schema.String,
   form: Schema.String,
   // Free-text name ("Latin"), not the `Language` enum.
@@ -73,7 +73,7 @@ export const EtymologyWordBuildStageEntity = Schema.Struct({
   // Soft ref to a `SourceEntity.index` — app-enforced, no DB FK.
   citation: Schema.optionalKey(Schema.Number),
 })
-export type EtymologyWordBuildStageEntity = typeof EtymologyWordBuildStageEntity.Type
+export type EtymologyDescentEntity = typeof EtymologyDescentEntity.Type
 
 export const EtymologyEntity = Schema.Struct({
   summary: Schema.String,
@@ -81,7 +81,7 @@ export const EtymologyEntity = Schema.Struct({
   // (a structured-output decode failure).
   firstAttested: Schema.Struct({ year: Schema.NullOr(Schema.Number), language: Schema.String }),
   origin: Schema.Struct({ from: Schema.String, to: Schema.String, gloss: Schema.String }),
-  descent: Schema.Array(EtymologyWordBuildStageEntity),
+  descent: Schema.Array(EtymologyDescentEntity),
 })
 export type EtymologyEntity = typeof EtymologyEntity.Type
 

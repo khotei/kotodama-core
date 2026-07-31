@@ -13,7 +13,7 @@ import { RealContentEngineLive } from '../src/real-content-engine.service'
 
 /**
  * The `enrich_visuals` plan the AI step returns — a `{ visuals }` object with `imageKey: null` on
- * every visual; the image step fills the keys in. Mirrors the engine's `VisualsPlanStruct`.
+ * every visual; the image step fills the keys in. Mirrors the engine's `EnrichVisualsPlan`.
  */
 const visualsPlanObject = (word: string) => ({
   visuals: {

@@ -6,8 +6,8 @@ import type {
   AuthorExampleEntity,
   BuildProvenanceEntity,
   CulturalGuideEntity,
+  EtymologyDescentEntity,
   EtymologyEntity,
-  EtymologyWordBuildStageEntity,
   FrequencyEntity,
   LexicalEntity,
   PronunciationEntity,
@@ -66,7 +66,7 @@ function makeTiers(): TiersEntity {
   }
 }
 
-function makeEtymologyStage(citation?: number): EtymologyWordBuildStageEntity {
+function makeEtymologyDescent(citation?: number): EtymologyDescentEntity {
   return {
     when: `${faker.number.int({ min: 800, max: 1900 })}`,
     form: faker.lorem.word(),
@@ -86,7 +86,7 @@ function makeEtymology(sourceCount: number): EtymologyEntity {
     origin: { from: faker.lorem.word(), to: faker.lorem.word(), gloss: faker.lorem.words(3) },
     // `citation` soft-refs a SourceEntity.index — app-enforced only, no FK.
     descent: Array.from({ length: 2 }, () =>
-      makeEtymologyStage(faker.number.int({ min: 0, max: Math.max(0, sourceCount - 1) })),
+      makeEtymologyDescent(faker.number.int({ min: 0, max: Math.max(0, sourceCount - 1) })),
     ),
   }
 }
@@ -164,8 +164,8 @@ function makeFrequency(): FrequencyEntity {
   return {
     band: faker.helpers.arrayElement(FREQUENCY_BANDS),
     trendNote: faker.lorem.sentence(),
-    series: Array.from({ length: 3 }, (_, i) => ({
-      year: 2020 + i,
+    series: Array.from({ length: 3 }, (_, index) => ({
+      year: 2020 + index,
       value: faker.number.float({ min: 0, max: 1, fractionDigits: 3 }),
     })),
     changeNote: faker.lorem.words(3),

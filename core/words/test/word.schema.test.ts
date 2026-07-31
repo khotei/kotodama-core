@@ -92,8 +92,8 @@ describe('Word union (decode from a words row)', () => {
       `malformed: a succeeded row with null ${key} fails to decode (invariant at decode)`,
       () =>
         Effect.gen(function* () {
-          const result = yield* Effect.exit(decodeWord({ ...readyRow(), [key]: null }))
-          expect(result._tag).toBe('Failure')
+          const exit = yield* Effect.exit(decodeWord({ ...readyRow(), [key]: null }))
+          expect(exit._tag).toBe('Failure')
         }),
     )
   }

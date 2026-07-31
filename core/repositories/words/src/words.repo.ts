@@ -71,16 +71,16 @@ export function upsertWords(
     const rows: WordRow[] = []
     // One statement per item — rows carrying different optional columns can't share one SET.
     // No transaction: a failing item leaves earlier ones saved.
-    for (const c of EffectArray.ensure(content)) {
+    for (const payload of EffectArray.ensure(content)) {
       rows.push(
         ...(yield* db
           .insert(wordsTable)
           // `status` is only required on the INSERT arm — a shape `.values()`' type can't express,
           // so assert past it; a status-less first insert fails at the engine.
-          .values(c as WordInsert)
+          .values(payload as WordInsert)
           .onConflictDoUpdate({
             target: [wordsTable.word, wordsTable.language],
-            set: patchOnConflict(wordsTable, c),
+            set: patchOnConflict(wordsTable, payload),
           })
           .returning()),
       )

@@ -16,7 +16,7 @@ export type AsyncJobStatus = typeof AsyncJobStatus.Type
 
 export const enumAsyncJobStatus = toEnum(ASYNC_JOB_STATUSES)
 
-export const asyncJobStatus = pgEnum('async_job_status', ASYNC_JOB_STATUSES)
+export const asyncJobStatusEnum = pgEnum('async_job_status', ASYNC_JOB_STATUSES)
 
 /**
  * A record with a value per `AsyncJobStatus`, each computed by `fn` — the parametric counterpart of

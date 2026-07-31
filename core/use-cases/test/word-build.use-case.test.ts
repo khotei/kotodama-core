@@ -50,7 +50,7 @@ const readStages = (language: Language, word: string) =>
     Effect.map(
       Option.match({
         onNone: (): WordBuildStagesEntity => [],
-        onSome: (row) => row.stages,
+        onSome: (wordRow) => wordRow.stages,
       }),
     ),
   )
@@ -139,13 +139,15 @@ it.layer(MockEngineLayer, { timeout: '120 seconds' })((it) => {
 
         yield* buildWord(EN, 'kaboom')
 
-        const status = byStage(yield* readStages(EN, 'kaboom'))
+        const statusByStage = byStage(yield* readStages(EN, 'kaboom'))
         // fetch_source runs first (it grounds the rest); the failing pass is recorded `failed`. The
         // enrich passes run concurrently, so the others' post-failure state is indeterminate (succeeded
         // or interrupted) and intentionally unasserted — what matters is the failure is recorded (so a
         // retry is admitted) and no word is promoted (AC-4/AC-5).
-        expect(status.get(enumWordBuildStage.fetch_source)).toBe(enumAsyncJobStatus.succeeded)
-        expect(status.get(enumWordBuildStage.enrich_visuals)).toBe(enumAsyncJobStatus.failed)
+        expect(statusByStage.get(enumWordBuildStage.fetch_source)).toBe(
+          enumAsyncJobStatus.succeeded,
+        )
+        expect(statusByStage.get(enumWordBuildStage.enrich_visuals)).toBe(enumAsyncJobStatus.failed)
 
         // The seeded row is flipped `failed` with content still NULL — never promoted (AC-5 negative), and
         // `failed` is buildable so a later re-request retries (T03b's failed-retry guard).

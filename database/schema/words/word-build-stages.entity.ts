@@ -15,12 +15,16 @@ export const WORD_BUILD_STAGES = [
   'enrich_visuals',
   'final_review',
 ] as const
+
 export type WordBuildStage = (typeof WORD_BUILD_STAGES)[number]
+
 export const enumWordBuildStage = toEnum(WORD_BUILD_STAGES)
 
 /** `not_found` is a failure *type*, not a lifecycle status. jsonb-nested union, so no `pgEnum`. */
 export const WORD_BUILD_ERROR_TYPES = ['not_found', 'timed_out', 'failed'] as const
+
 export type WordBuildErrorType = (typeof WORD_BUILD_ERROR_TYPES)[number]
+
 export const enumWordBuildErrorType = toEnum(WORD_BUILD_ERROR_TYPES)
 
 /**

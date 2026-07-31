@@ -68,12 +68,12 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
     it.effect('→ 200 application/json, an OpenAPI 3.1.0 doc, at any host (AC-3, AC-4)', () =>
       Effect.gen(function* () {
         const client = yield* HttpClient.HttpClient
-        const res = yield* client.get('/api/openapi.json')
+        const response = yield* client.get('/api/openapi.json')
 
-        expect(res.status).toBe(200)
-        expect(res.headers['content-type']).toContain('application/json')
+        expect(response.status).toBe(200)
+        expect(response.headers['content-type']).toContain('application/json')
 
-        const spec = (yield* res.json) as unknown as OpenApi.OpenAPISpec
+        const spec = (yield* response.json) as unknown as OpenApi.OpenAPISpec
         expect(spec.openapi).toBe('3.1.0')
         // Host-agnostic: the derived doc bakes in no `servers`/host, so a consumer targets it purely
         // by the base URL it fetched from (AC-4).

@@ -47,9 +47,9 @@ export const WordsApiLive = HttpApiBuilder.group(KotodamaApi, 'words', (handlers
         const { language } = ctx.params
         // `page`/`limit` are decode-defaulted by the query schema — always present here.
         const { q, status, page, limit } = ctx.query
-        const result = yield* searchWords({ language, q, status, page, limit })
-        const items: Word[] = yield* Effect.forEach(result.items, (row) => decodeWord(row))
-        return paginate(items, { page, limit, total: result.total })
+        const matches = yield* searchWords({ language, q, status, page, limit })
+        const items: Word[] = yield* Effect.forEach(matches.items, (row) => decodeWord(row))
+        return paginate(items, { page, limit, total: matches.total })
       }).pipe(Effect.catchTags({ EffectDrizzleQueryError: Effect.die, SchemaError: Effect.die })),
     )
     .handle('counts', (ctx) =>

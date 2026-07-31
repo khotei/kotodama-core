@@ -72,11 +72,11 @@ describe('AiServiceTest (fixtures)', () => {
   it.effect('generateObject yields the canned decoded object', () =>
     Effect.gen(function* () {
       const ai = yield* AiService
-      const value = yield* ai.generateObject(Person, 'make a person', {
+      const person = yield* ai.generateObject(Person, 'make a person', {
         model: 'gpt-5',
         reasoningEffort: 'low',
       })
-      expect(value).toEqual({ name: 'Ada', age: 36 })
+      expect(person).toEqual({ name: 'Ada', age: 36 })
     }).pipe(Effect.provide(AiServiceTest({ object: { name: 'Ada', age: 36 } }))),
   )
 

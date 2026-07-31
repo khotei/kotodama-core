@@ -47,9 +47,17 @@ describe('MockContentEngine — default policy', () => {
   it.effect('produce is deterministic — same (word, stage) yields identical content', () =>
     Effect.gen(function* () {
       const engine = yield* ContentEngine
-      const a = yield* engine.produce(enumWordBuildStage.fetch_source, enumLanguage.en, 'lacuna')
-      const b = yield* engine.produce(enumWordBuildStage.fetch_source, enumLanguage.en, 'lacuna')
-      expect(a).toEqual(b)
+      const first = yield* engine.produce(
+        enumWordBuildStage.fetch_source,
+        enumLanguage.en,
+        'lacuna',
+      )
+      const second = yield* engine.produce(
+        enumWordBuildStage.fetch_source,
+        enumLanguage.en,
+        'lacuna',
+      )
+      expect(first).toEqual(second)
     }).pipe(Effect.provide(MockContentEngine)),
   )
 
