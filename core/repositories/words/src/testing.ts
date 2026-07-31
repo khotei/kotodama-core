@@ -1,7 +1,8 @@
 import type { Language, WordBuildStagesEntity, WordInsert } from '@kotodama/database'
 import { enumAsyncJobStatus } from '@kotodama/database'
 import { makeWordInsert } from '@kotodama/database/factories'
-import { upsertWord } from './words.repo'
+import { Effect, Option } from 'effect'
+import { selectWord, upsertWord } from './words.repo'
 
 /** A non-`succeeded` `status` — the states an unready `words` row can carry (content NULL). */
 type UnreadyStatus = 'pending' | 'running' | 'failed'
@@ -27,4 +28,19 @@ export function seedUnreadyWord(
   stages: WordBuildStagesEntity = [],
 ) {
   return upsertWord(language, word, { status, stages })
+}
+
+/**
+ * Read a word's build stages off its `words` row — they ride the `words.stages` jsonb column, not a
+ * separate table, so an absent word yields no stages.
+ */
+export function readStages(language: Language, word: string) {
+  return selectWord(language, word).pipe(
+    Effect.map(
+      Option.match({
+        onNone: (): WordBuildStagesEntity => [],
+        onSome: (wordRow) => wordRow.stages,
+      }),
+    ),
+  )
 }

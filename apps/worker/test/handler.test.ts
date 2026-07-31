@@ -1,40 +1,18 @@
 import { expect, it } from '@effect/vitest'
-import {
-  MockContentEngine,
-  WordGenerationService,
-  WordGenerationServiceLive,
-} from '@kotodama/core/content'
 import { seedUnreadyWord } from '@kotodama/core/repositories/testing'
-import { WordBuildMessageFromJson } from '@kotodama/core/words'
 import { enumLanguage } from '@kotodama/database'
 import { resetDb, TestDatabaseLive } from '@kotodama/database/testing'
 import type { SQSEvent, SQSRecord } from 'aws-lambda'
-import { Effect, Layer, Schema } from 'effect'
+import { Effect, Layer } from 'effect'
 import { sqsBatchHandler } from '../src/handler'
+import { BOOM, DefectGenerationLive, encode } from './worker-test-utils'
 
 const EN = enumLanguage.en
-const encode = Schema.encodeSync(WordBuildMessageFromJson)
 
 // The handler reads only `messageId` + `body`; the rest of the SQS envelope is irrelevant here.
 const record = (messageId: string, body: string): SQSRecord =>
   ({ messageId, body }) as unknown as SQSRecord
 const event = (records: ReadonlyArray<SQSRecord>): SQSEvent => ({ Records: [...records] })
-
-// The word whose generation *dies* (an unrecoverable defect, the way `createWord`'s `orDie` on a
-// malformed assembly would) — so the handler's non-success envelope mapping is exercised without a
-// malformed-content fixture. Same defect decorator as process-batch.test.ts, transparent for every
-// non-BOOM word.
-const BOOM = 'boom'
-const DefectGenerationLive = Layer.effect(
-  WordGenerationService,
-  Effect.gen(function* () {
-    const base = yield* WordGenerationService
-    return WordGenerationService.of({
-      generate: (language, word) =>
-        word === BOOM ? Effect.die(new Error('malformed assembly')) : base.generate(language, word),
-    })
-  }),
-).pipe(Layer.provide(WordGenerationServiceLive.pipe(Layer.provide(MockContentEngine))))
 
 // The handler owns only the SQS envelope: map processBatch's failedIds → batchItemFailures keyed on the
 // inbound messageId. Item-failure isolation itself (`matchCause`, foreign-skip) is owned by

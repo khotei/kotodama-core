@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@effect/vitest'
 import { AuthorExampleEntity, CulturalGuideEntity, enumLanguage } from '@kotodama/database'
-import { AiError, AiService } from '@kotodama/platform/ai'
+import { AiServiceTest } from '@kotodama/platform/ai/testing'
 import { WikiClientTest } from '@kotodama/platform/external-apis/testing'
 import {
   bucketObjects,
@@ -43,28 +43,13 @@ const authorsPlanObject = (word: string) => ({
 
 const PNG_BYTES = new Uint8Array([0x89, 0x50, 0x4e, 0x47])
 
-/**
- * A bespoke {@link AiService} fake — `generateObject` returns the authors plan and `generateImage`
- * returns image bytes (or fails when `image` is undefined), so the text and portrait steps see
- * different values.
- */
-const aiTest = (object: unknown, image: Uint8Array | undefined): Layer.Layer<AiService> =>
-  Layer.succeed(
-    AiService,
-    AiService.of({
-      generateObject: (_schema, _prompt, _opts) => Effect.succeed(object as never),
-      generateImage: (_prompt, _opts) =>
-        image === undefined
-          ? Effect.fail(AiError.fromCause('generateImage', new Error('no image')))
-          : Effect.succeed(image),
-    }),
-  )
-
-// The engine over canned AI; `ImagesStore` is left on the requirements channel — the outer
-// `it.layer(StorageLocalStackLive)` provides the real S3-backed storage shared across the file.
+// The engine over canned AI — `generateObject` returns the authors plan, `generateImage` the bytes
+// (omit `image` ⇒ that method fails), so the text and portrait steps see different values.
+// `ImagesStore` is left on the requirements channel — the outer `it.layer(StorageLocalStackLive)`
+// provides the real S3-backed storage shared across the file.
 const engineLayer = (object: unknown, image: Uint8Array | undefined) =>
   RealContentEngineLive.pipe(
-    Layer.provide(aiTest(object, image)),
+    Layer.provide(AiServiceTest({ object, image })),
     Layer.provide(WikiClientTest({ summaries: {} })),
   )
 

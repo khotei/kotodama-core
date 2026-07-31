@@ -9,7 +9,7 @@ import {
   withBuildBudget,
 } from '@kotodama/core/content'
 import { selectWord, selectWords } from '@kotodama/core/repositories'
-import { seedUnreadyWord } from '@kotodama/core/repositories/testing'
+import { readStages, seedUnreadyWord } from '@kotodama/core/repositories/testing'
 import {
   enumAsyncJobStatus,
   enumFrequencyBand,
@@ -17,7 +17,6 @@ import {
   enumVisualKind,
   enumWordBuildErrorType,
   enumWordBuildStage,
-  type Language,
   WORD_BUILD_STAGES,
   type WordBuildStage,
   type WordBuildStagesEntity,
@@ -43,17 +42,6 @@ const PENDING_STAGES: WordBuildStagesEntity = WORD_BUILD_STAGES.map((stage) => (
 }))
 const seedPendingWord = (word: string) =>
   seedUnreadyWord(EN, word, enumAsyncJobStatus.pending, PENDING_STAGES)
-
-// Stages now ride the `words` row (`words.stages`) — read them off `selectWord` (empty if absent).
-const readStages = (language: Language, word: string) =>
-  selectWord(language, word).pipe(
-    Effect.map(
-      Option.match({
-        onNone: (): WordBuildStagesEntity => [],
-        onSome: (wordRow) => wordRow.stages,
-      }),
-    ),
-  )
 
 // ── Stage machine (mock engine) ──────────────────────────────────────────────────────────────────
 

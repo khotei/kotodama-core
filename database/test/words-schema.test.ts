@@ -1,7 +1,7 @@
 import { expect, it } from '@effect/vitest'
 import { faker } from '@faker-js/faker'
 import { getTableColumns, getTableName, sql, type Table } from 'drizzle-orm'
-import { Effect, Schema } from 'effect'
+import { Effect, Result, Schema } from 'effect'
 import { makeWordInsert } from '../src/factories'
 import {
   DB,
@@ -11,7 +11,7 @@ import {
   WordEntityInsert,
   wordsTable,
 } from '../src/index'
-import { resetDb, TestDatabaseLive } from '../src/testing'
+import { resetDb, returningOne, TestDatabaseLive } from '../src/testing'
 
 // Runs inside the shared `it.layer` runtime (an `afterEach` would spin a second container).
 faker.seed(20260702)
@@ -32,7 +32,7 @@ const contentColumns = nullableColumnsExcept(wordsTable, 'frequency')
 // Run an insert or a decode and report its outcome, so a test reads as a plain sentence
 // (`expect(yield* fails(...)).toBe(true)`) instead of Result-tag plumbing.
 const succeeds = (effect: Effect.Effect<unknown, unknown>) =>
-  Effect.result(effect).pipe(Effect.map((outcome) => outcome._tag === 'Success'))
+  Effect.result(effect).pipe(Effect.map(Result.isSuccess))
 const fails = (effect: Effect.Effect<unknown, unknown>) =>
   succeeds(effect).pipe(Effect.map((ok) => !ok))
 
@@ -43,11 +43,12 @@ it.layer(TestDatabaseLive, { timeout: '120 seconds' })((it) => {
       const db = yield* DB
 
       // A pending row with NULL content is legal — status <> 'succeeded' escapes the CHECK.
-      const [row] = yield* db
-        .insert(wordsTable)
-        .values({ word: 'lacuna', language: EN, status: enumAsyncJobStatus.pending })
-        .returning()
-      if (!row) throw new Error('insert returned no row')
+      const row = yield* returningOne(
+        db
+          .insert(wordsTable)
+          .values({ word: 'lacuna', language: EN, status: enumAsyncJobStatus.pending })
+          .returning(),
+      )
 
       expect(row.status).toBe(enumAsyncJobStatus.pending)
       expect(row.coreDefinition).toBeNull()
@@ -91,13 +92,18 @@ it.layer(TestDatabaseLive, { timeout: '120 seconds' })((it) => {
       Effect.gen(function* () {
         yield* resetDb
         const db = yield* DB
-        const [ready] = yield* db
-          .insert(wordsTable)
-          .values(
-            makeWordInsert({ word: 'lacuna', language: EN, status: enumAsyncJobStatus.succeeded }),
-          )
-          .returning()
-        if (!ready) throw new Error('insert returned no row')
+        const ready = yield* returningOne(
+          db
+            .insert(wordsTable)
+            .values(
+              makeWordInsert({
+                word: 'lacuna',
+                language: EN,
+                status: enumAsyncJobStatus.succeeded,
+              }),
+            )
+            .returning(),
+        )
         expect(
           yield* succeeds(Schema.decodeUnknownEffect(WordEntity)(ready)),
           'a full ready row reads',

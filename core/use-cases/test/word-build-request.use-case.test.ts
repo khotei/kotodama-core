@@ -1,13 +1,12 @@
 import { expect, it } from '@effect/vitest'
 import { searchWords, selectWord } from '@kotodama/core/repositories'
-import { seedReadyWord, seedUnreadyWord } from '@kotodama/core/repositories/testing'
+import { readStages, seedReadyWord, seedUnreadyWord } from '@kotodama/core/repositories/testing'
 import { WordBuildMessageFromJson, WordVerdict } from '@kotodama/core/words'
 import {
   enumAsyncJobStatus,
   enumLanguage,
   enumWordBuildErrorType,
   enumWordBuildStage,
-  type Language,
   WORD_BUILD_STAGES,
   type WordBuildStagesEntity,
 } from '@kotodama/database'
@@ -36,18 +35,6 @@ const TestLayer = QueueLocalStackLive.pipe(
 const EN = enumLanguage.en
 const WORD = 'lacuna'
 const PIPELINE_LENGTH = WORD_BUILD_STAGES.length
-
-// Stages now ride the `words` row (`words.stages`), so a test reads them off `selectWord`; an absent
-// word yields no stages (the old `selectWordBuildStages` returned an empty set for the same case).
-const readStages = (language: Language, word: string) =>
-  selectWord(language, word).pipe(
-    Effect.map(
-      Option.match({
-        onNone: (): WordBuildStagesEntity => [],
-        onSome: (wordRow) => wordRow.stages,
-      }),
-    ),
-  )
 
 // The LocalStack queue persists across this file's tests (one container per file); `drainQueue`
 // receive-and-deletes everything, so call it at the top of each test (the SQS analogue of `resetDb`)

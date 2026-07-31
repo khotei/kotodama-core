@@ -3,7 +3,7 @@ import { faker } from '@faker-js/faker'
 import { Effect } from 'effect'
 import { makeWordInsert } from '../src/factories'
 import { DB, enumLanguage, enumVisualKind, wordsTable } from '../src/index'
-import { resetDb, TestDatabaseLive } from '../src/testing'
+import { resetDb, returningOne, TestDatabaseLive } from '../src/testing'
 
 // `resetDb` runs inside the shared `it.layer` runtime (an `afterEach` would spin up a second
 // container). See @.claude/rules/testing.md.
@@ -15,11 +15,12 @@ it.layer(TestDatabaseLive, { timeout: '120 seconds' })((it) => {
       yield* resetDb
       const db = yield* DB
 
-      const [word] = yield* db
-        .insert(wordsTable)
-        .values(makeWordInsert({ word: 'lacuna', language: enumLanguage.en }))
-        .returning()
-      if (!word) throw new Error('insert returned no row')
+      const word = yield* returningOne(
+        db
+          .insert(wordsTable)
+          .values(makeWordInsert({ word: 'lacuna', language: enumLanguage.en }))
+          .returning(),
+      )
 
       expect(word).toMatchObject({ word: 'lacuna', language: enumLanguage.en, status: 'succeeded' })
       expect(typeof word.id).toBe('string')
@@ -57,11 +58,12 @@ it.layer(TestDatabaseLive, { timeout: '120 seconds' })((it) => {
       yield* resetDb
       const db = yield* DB
 
-      const [word] = yield* db
-        .insert(wordsTable)
-        .values(makeWordInsert({ coreDefinition: 'a deliberate gap in a text' }))
-        .returning()
-      if (!word) throw new Error('insert returned no row')
+      const word = yield* returningOne(
+        db
+          .insert(wordsTable)
+          .values(makeWordInsert({ coreDefinition: 'a deliberate gap in a text' }))
+          .returning(),
+      )
 
       expect(word.coreDefinition).toBe('a deliberate gap in a text')
       expect(typeof word.tiers?.quick.body).toBe('string')
@@ -82,11 +84,12 @@ it.layer(TestDatabaseLive, { timeout: '120 seconds' })((it) => {
       yield* resetDb
       const db = yield* DB
 
-      const [word] = yield* db
-        .insert(wordsTable)
-        .values({ word: 'lacuna', language: enumLanguage.en, status: 'pending' })
-        .returning()
-      if (!word) throw new Error('insert returned no row')
+      const word = yield* returningOne(
+        db
+          .insert(wordsTable)
+          .values({ word: 'lacuna', language: enumLanguage.en, status: 'pending' })
+          .returning(),
+      )
 
       expect(word.status).toBe('pending')
       expect(word.coreDefinition).toBeNull()
