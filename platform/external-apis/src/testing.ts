@@ -13,8 +13,8 @@ export interface WikiFixtures {
 }
 
 /** Mirrors the production client's absence semantics, incl. disambiguation → `Option.none`. */
-export const WikiClientTest = (fixtures: WikiFixtures = {}): Layer.Layer<WikiClient> =>
-  Layer.succeed(
+export function WikiClientTest(fixtures: WikiFixtures = {}): Layer.Layer<WikiClient> {
+  return Layer.succeed(
     WikiClient,
     WikiClient.of({
       summary: (_language, word) => {
@@ -29,3 +29,4 @@ export const WikiClientTest = (fixtures: WikiFixtures = {}): Layer.Layer<WikiCli
         Effect.succeed(fixtures.searches?.[word.toLowerCase()] ?? []),
     }),
   )
+}

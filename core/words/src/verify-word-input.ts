@@ -15,8 +15,9 @@ const MAX_WORDS = 4
 
 // Kept terse on purpose: a yes/no gate at `reasoningEffort: 'minimal'` performs best on a short,
 // unambiguous instruction.
-const verdictPrompt = (word: string): string =>
-  `Is "${word}" a real word or a short, established lexical collocation (idiom, set phrase, compound term) that a dictionary would have an entry for? Answer isValid=false for gibberish, random characters, or pasted sentences/text. Answer isValid=true only for a genuine dictionary-worthy headword or phrase.`
+function verdictPrompt(word: string): string {
+  return `Is "${word}" a real word or a short, established lexical collocation (idiom, set phrase, compound term) that a dictionary would have an entry for? Answer isValid=false for gibberish, random characters, or pasted sentences/text. Answer isValid=true only for a genuine dictionary-worthy headword or phrase.`
+}
 
 /**
  * The create-path gibberish gate, three stages cheaper-first: normalize (`parseWordInput` — the

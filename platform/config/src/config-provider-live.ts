@@ -11,7 +11,7 @@ import { ConfigProvider, Effect, type Layer } from 'effect'
 // `bun run --filter … test` runs from the package dir, not the root).
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..')
 
-const readRootFile = (name: string): string => {
+function readRootFile(name: string): string {
   const path = join(repoRoot, name)
   return existsSync(path) ? readFileSync(path, 'utf8') : ''
 }

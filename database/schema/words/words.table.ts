@@ -25,11 +25,12 @@ import type {
  * and any column left off the list — `frequency` — may be NULL even when succeeded. Hides the SQL
  * material-implication (`status <> 'succeeded' OR …`) behind the sentence it means.
  */
-const requireWhenSucceeded = (status: SQLWrapper, present: readonly SQLWrapper[]) =>
-  sql`${status} <> ${enumAsyncJobStatus.succeeded} OR (${sql.join(
+function requireWhenSucceeded(status: SQLWrapper, present: readonly SQLWrapper[]) {
+  return sql`${status} <> ${enumAsyncJobStatus.succeeded} OR (${sql.join(
     present.map((column) => sql`${column} IS NOT NULL`),
     sql` AND `,
   )})`
+}
 
 /**
  * A lifecycle table: content columns are nullable (a row exists from the `pending` seed, long

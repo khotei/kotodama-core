@@ -22,10 +22,10 @@ const STORAGE_ENVELOPE: readonly string[] = ['id', 'createdAt', 'updatedAt']
  * so its "no data" arrives as `null` and **clears** — model "absent = keep" with
  * `Schema.optionalKey`, never a passed `null`.
  */
-export const patchOnConflict = <Tbl extends Table>(
+export function patchOnConflict<Tbl extends Table>(
   table: Tbl,
   row: Partial<Record<ColumnKeys<Tbl>, unknown>>,
-): OnConflictSet<Tbl> => {
+): OnConflictSet<Tbl> {
   const columns = getTableColumns(table)
   const set: OnConflictSet<Tbl> = {}
   for (const key of Object.keys(row) as ColumnKeys<Tbl>[]) {

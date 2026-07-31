@@ -43,7 +43,7 @@ const MAX_CAUSE_DEPTH = 3
 
 const MAX_MESSAGE_LENGTH = 300
 
-const isRetryableHttp = (cause: unknown): boolean => {
+function isRetryableHttp(cause: unknown): boolean {
   if (Predicate.hasProperty(cause, 'response')) {
     const response = (cause as { readonly response?: unknown }).response
     if (Predicate.hasProperty(response, 'status') && typeof response.status === 'number') {
@@ -57,7 +57,7 @@ const isRetryableHttp = (cause: unknown): boolean => {
 
 // Absent fields are omitted (not set to `undefined`) so the snapshot survives a
 // JSON.stringify/parse round-trip unchanged.
-const snapshotCause = (raw: unknown, depth = 0): CauseSnapshot => {
+function snapshotCause(raw: unknown, depth = 0): CauseSnapshot {
   const snapshot: { tag?: string; message?: string; cause?: CauseSnapshot } = {}
   if (Predicate.hasProperty(raw, '_tag') && typeof raw._tag === 'string') snapshot.tag = raw._tag
   if (Predicate.hasProperty(raw, 'message') && typeof raw.message === 'string')
@@ -69,7 +69,7 @@ const snapshotCause = (raw: unknown, depth = 0): CauseSnapshot => {
 }
 
 // Becomes the user-facing failure reason downstream (→ the DB row + /state).
-const describeCause = (raw: unknown): string => {
+function describeCause(raw: unknown): string {
   const seen: string[] = []
   let cursor: unknown = raw
   for (let depth = 0; depth <= MAX_CAUSE_DEPTH && cursor != null; depth++) {

@@ -13,35 +13,40 @@ export const PaginationView = Schema.Struct({
 })
 export type PaginationView = typeof PaginationView.Type
 
-export const Paginated = <S extends Schema.Top>(items: S) =>
-  Schema.Struct({
+export function Paginated<S extends Schema.Top>(items: S) {
+  return Schema.Struct({
     items: Schema.Array(items),
     pagination: PaginationView,
   })
+}
 
 /**
  * Build a {@link Paginated} value from a repo's `{ total }` page-read plus the request `page`/`limit`
  * — the sole author of `pageCount`, so a handler never re-derives `Math.ceil(total / limit)`.
  */
-export const paginate = <A>(
+export function paginate<A>(
   items: ReadonlyArray<A>,
   { page, limit, total }: { readonly page: number; readonly limit: number; readonly total: number },
-) => ({
-  items,
-  pagination: {
-    page,
-    limit,
-    total,
-    pageCount: Math.ceil(total / limit),
-  },
-})
+) {
+  return {
+    items,
+    pagination: {
+      page,
+      limit,
+      total,
+      pageCount: Math.ceil(total / limit),
+    },
+  }
+}
 
-export const pageQuery = (options: { defaultLimit: number; maxLimit: number }) => ({
-  page: Schema.Int.check(Schema.isGreaterThanOrEqualTo(1)).pipe(
-    Schema.withDecodingDefaultKey(Effect.succeed(1)),
-  ),
-  limit: Schema.Int.check(
-    Schema.isGreaterThanOrEqualTo(1),
-    Schema.isLessThanOrEqualTo(options.maxLimit),
-  ).pipe(Schema.withDecodingDefaultKey(Effect.succeed(options.defaultLimit))),
-})
+export function pageQuery(options: { defaultLimit: number; maxLimit: number }) {
+  return {
+    page: Schema.Int.check(Schema.isGreaterThanOrEqualTo(1)).pipe(
+      Schema.withDecodingDefaultKey(Effect.succeed(1)),
+    ),
+    limit: Schema.Int.check(
+      Schema.isGreaterThanOrEqualTo(1),
+      Schema.isLessThanOrEqualTo(options.maxLimit),
+    ).pipe(Schema.withDecodingDefaultKey(Effect.succeed(options.defaultLimit))),
+  }
+}

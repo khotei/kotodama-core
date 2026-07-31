@@ -6,15 +6,18 @@ import { type WordSearchQuery, wordSearchFilter } from './words-search.repo'
 
 export type WordCounts = { readonly total: number } & Readonly<Record<AsyncJobStatus, number>>
 
-const countFilter = (statusCol: SQLWrapper, status: AsyncJobStatus) =>
-  sql<number>`count(*) filter (where ${statusCol} = ${status})`.mapWith(Number)
+function countFilter(statusCol: SQLWrapper, status: AsyncJobStatus) {
+  return sql<number>`count(*) filter (where ${statusCol} = ${status})`.mapWith(Number)
+}
 
 const EMPTY_COUNTS: WordCounts = { total: 0, ...byAsyncJobStatus(() => 0) }
 
-const countBuckets = (statusCol: SQLWrapper) => ({
-  total: sql<number>`count(*)`.mapWith(Number),
-  ...byAsyncJobStatus((status) => countFilter(statusCol, status)),
-})
+function countBuckets(statusCol: SQLWrapper) {
+  return {
+    total: sql<number>`count(*)`.mapWith(Number),
+    ...byAsyncJobStatus((status) => countFilter(statusCol, status)),
+  }
+}
 
 /**
  * Reads the exact `wordSearchFilter` the list uses, so the counts equal what the list can page —

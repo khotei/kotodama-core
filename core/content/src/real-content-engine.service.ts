@@ -92,19 +92,21 @@ const PROVENANCE: BuildProvenanceEntity = {
   stageModels: PROVENANCE_STAGE_MODELS,
 }
 
-const textFailure = (error: AiError): ContentEngineError =>
-  new ContentEngineError({ type: 'failed', message: error.message, cause: error.cause })
+function textFailure(error: AiError): ContentEngineError {
+  return new ContentEngineError({ type: 'failed', message: error.message, cause: error.cause })
+}
 
 // Keeps `cause` JSON-serializable for the `async_word_jobs.error` jsonb column: an AiError's cause
 // is already a snapshot, but a StorageError's is a LIVE S3 rejection — dropped for `{ tag, key }`.
-const mediaFailure = (error: AiError | StorageError): ContentEngineError =>
-  error._tag === 'AiError'
+function mediaFailure(error: AiError | StorageError): ContentEngineError {
+  return error._tag === 'AiError'
     ? textFailure(error)
     : new ContentEngineError({
         type: 'failed',
         message: `image write failed (${error.key})`,
         cause: { tag: 'StorageError', key: error.key },
       })
+}
 
 /**
  * The real `ContentEngine` over `AiService` + `WikiClient` + `ImagesStore`. Wall-clock timeouts

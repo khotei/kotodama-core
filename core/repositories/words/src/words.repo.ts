@@ -15,11 +15,6 @@ type Arrayable<T> = T | readonly T[]
 export type WordUpsert = Pick<WordInsert, 'word' | 'language'> &
   Partial<Omit<WordInsert, 'word' | 'language'>>
 
-type UpsertWords = {
-  (content: WordUpsert): Effect.Effect<WordRow, EffectDrizzleQueryError, DB>
-  (content: readonly WordUpsert[]): Effect.Effect<readonly WordRow[], EffectDrizzleQueryError, DB>
-}
-
 // A plain unordered filter; `searchWords` (words-search.repo) owns ordered + paged reads.
 export type WordQuery = {
   readonly id?: Arrayable<string>
@@ -61,9 +56,16 @@ export const selectWord = Effect.fnUntraced(function* (language: Language, word:
  * may overwrite is the gates' policy, and the DB `CHECK` makes a succeeded half-word
  * unrepresentable no matter what a caller passes.
  */
-// Overloaded type can't be implemented by an annotated arrow (union return), so assert the bridge.
-export const upsertWords = ((content: Arrayable<WordUpsert>) =>
-  Effect.gen(function* () {
+export function upsertWords(
+  content: WordUpsert,
+): Effect.Effect<WordRow, EffectDrizzleQueryError, DB>
+export function upsertWords(
+  content: readonly WordUpsert[],
+): Effect.Effect<readonly WordRow[], EffectDrizzleQueryError, DB>
+export function upsertWords(
+  content: Arrayable<WordUpsert>,
+): Effect.Effect<readonly WordRow[] | WordRow, EffectDrizzleQueryError, DB> {
+  return Effect.gen(function* () {
     const db = yield* DB
 
     const rows: WordRow[] = []
@@ -90,14 +92,17 @@ export const upsertWords = ((content: Arrayable<WordUpsert>) =>
     if (!first) return yield* Effect.die(new Error('upsertWords: upsert returned no row'))
 
     return first
-  })) as UpsertWords
+  })
+}
 
 /**
  * Single-word convenience over {@link upsertWords} — the identity parameters always win over any
  * `word`/`language` keys inside `contentPatch`.
  */
-export const upsertWord = (
+export function upsertWord(
   language: Language,
   word: string,
   contentPatch: Omit<WordUpsert, 'word' | 'language'>,
-) => upsertWords({ ...contentPatch, word, language })
+) {
+  return upsertWords({ ...contentPatch, word, language })
+}

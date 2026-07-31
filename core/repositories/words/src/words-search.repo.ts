@@ -25,14 +25,15 @@ export type WordSearchResult = {
  * and the ready-branch gloss (`core_definition`, NULL on a building row ⇒ ready-only by
  * construction). Keep it in exactly one file.
  */
-export const wordSearchFilter = (query: Pick<WordSearchQuery, 'language' | 'q' | 'status'>) =>
-  and(
+export function wordSearchFilter(query: Pick<WordSearchQuery, 'language' | 'q' | 'status'>) {
+  return and(
     eq(wordsTable.language, query.language),
     query.q
       ? or(ilike(wordsTable.word, `%${query.q}%`), ilike(wordsTable.coreDefinition, `%${query.q}%`))
       : undefined,
     query.status ? eq(wordsTable.status, query.status) : undefined,
   )
+}
 
 // `nulls last` matches the index DDL — plain `DESC` (= NULLS FIRST) mismatches the pathkeys and
 // forces a full Sort. `created_at` is NOT NULL, so it's a semantic no-op kept purely for the index.

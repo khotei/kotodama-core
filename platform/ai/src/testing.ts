@@ -8,8 +8,8 @@ export interface AiFixtures {
   readonly image?: Uint8Array
 }
 
-export const AiServiceTest = (fixtures: AiFixtures = {}): Layer.Layer<AiService> =>
-  Layer.succeed(
+export function AiServiceTest(fixtures: AiFixtures = {}): Layer.Layer<AiService> {
+  return Layer.succeed(
     AiService,
     AiService.of({
       generateObject: <A>(_schema: unknown, _prompt: string, _opts: unknown) =>
@@ -22,3 +22,4 @@ export const AiServiceTest = (fixtures: AiFixtures = {}): Layer.Layer<AiService>
           : Effect.succeed(fixtures.image),
     }),
   )
+}

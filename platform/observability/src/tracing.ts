@@ -15,8 +15,8 @@ import { Effect, Layer, Option } from 'effect'
  * Carries `deployment.environment` (+ `service.version` when `SERVICE_VERSION` is set) on the trace
  * resource so a backend can split local from prod and pin a regression to a release.
  */
-export const TracingLive = (serviceName: string) =>
-  Layer.unwrap(
+export function TracingLive(serviceName: string) {
+  return Layer.unwrap(
     Effect.gen(function* () {
       const deployEnv = yield* DeployEnv
       const endpoint = yield* OtelExporterEndpoint
@@ -40,3 +40,4 @@ export const TracingLive = (serviceName: string) =>
       }))
     }),
   )
+}

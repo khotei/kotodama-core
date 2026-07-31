@@ -50,8 +50,8 @@ export const defaultContentPolicy: ContentPolicy = (word, stage) => {
   }
 }
 
-const makeService = (policy: ContentPolicy) =>
-  ContentEngine.of({
+function makeService(policy: ContentPolicy) {
+  return ContentEngine.of({
     produce: (stage, language, word) =>
       Effect.gen(function* () {
         const plan = policy(word, stage)
@@ -68,11 +68,14 @@ const makeService = (policy: ContentPolicy) =>
       }),
     provenance: MOCK_PROVENANCE,
   })
+}
 
 /** A `ContentEngine` layer over an injectable {@link ContentPolicy} (defaults to {@link defaultContentPolicy}). */
-export const makeMockContentEngine = (
+export function makeMockContentEngine(
   policy: ContentPolicy = defaultContentPolicy,
-): Layer.Layer<ContentEngine> => Layer.succeed(ContentEngine, makeService(policy))
+): Layer.Layer<ContentEngine> {
+  return Layer.succeed(ContentEngine, makeService(policy))
+}
 
 /** The default mock `ContentEngine` — produces realistic content, honoring the reserved demo words. */
 export const MockContentEngine: Layer.Layer<ContentEngine> = makeMockContentEngine()

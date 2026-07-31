@@ -15,11 +15,11 @@ const ALREADY_EXISTS = new Set(['BucketAlreadyOwnedByYou', 'BucketAlreadyExists'
  * branches on "exists?". The call is deliberately bare: in `us-east-1` sending a
  * `LocationConstraint` raises `InvalidLocationConstraint`.
  */
-export const ensureBucket = (
+export function ensureBucket(
   client: S3Client,
   name: string,
-): Effect.Effect<void, BucketProvisionError> =>
-  Effect.tryPromise({
+): Effect.Effect<void, BucketProvisionError> {
+  return Effect.tryPromise({
     try: () => client.send(new CreateBucketCommand({ Bucket: name })),
     catch: (cause) => new BucketProvisionError({ name, cause }),
   }).pipe(
@@ -29,3 +29,4 @@ export const ensureBucket = (
     ),
     Effect.asVoid,
   )
+}

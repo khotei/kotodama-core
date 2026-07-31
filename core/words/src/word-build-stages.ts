@@ -9,5 +9,6 @@ import {
  * succeeded promote. The single author of the uniform `words.stages` payload; the failure cases
  * (a per-stage error partition) are built where the flow knows them.
  */
-export const stagesAll = (status: AsyncJobStatus): WordBuildStagesEntity =>
-  WORD_BUILD_STAGES.map((stage) => ({ stage, status }))
+export function stagesAll(status: AsyncJobStatus): WordBuildStagesEntity {
+  return WORD_BUILD_STAGES.map((stage) => ({ stage, status }))
+}

@@ -15,12 +15,13 @@ const REGION = 'us-east-1'
 const QUEUE_NAME = awsResources.jobsQueue.name
 
 // LocalStack signs every request even though it ignores the credentials, so the SDK still needs some.
-const sqs = (endpoint: string) =>
-  new SQSClient({
+function sqs(endpoint: string) {
+  return new SQSClient({
     region: REGION,
     endpoint,
     credentials: { accessKeyId: 'test', secretAccessKey: 'test' },
   })
+}
 
 class QueueLocalStackContainer extends Context.Service<QueueLocalStackContainer>()(
   '@kotodama/platform/queue/testing/QueueLocalStackContainer',
@@ -83,12 +84,13 @@ export const QueueLocalStackLive = JobsQueueLive.pipe(
 )
 
 /** A short-lived harness SDK client (distinct from the `JobsQueueLive` under test) for raw SQS primitives. */
-export const withSqs = <A, E>(use: (client: SQSClient) => Effect.Effect<A, E>) =>
-  Effect.gen(function* () {
+export function withSqs<A, E>(use: (client: SQSClient) => Effect.Effect<A, E>) {
+  return Effect.gen(function* () {
     const container = yield* QueueLocalStackContainer
     const client = sqs(container.getConnectionUri())
     return yield* use(client).pipe(Effect.ensuring(Effect.sync(() => client.destroy())))
   })
+}
 
 /**
  * Receive-and-delete every visible message (SQS caps a receive at 10 and may return fewer, so loop

@@ -7,20 +7,24 @@ import { upsertWord } from './words.repo'
 type UnreadyStatus = 'pending' | 'running' | 'failed'
 
 /** Seed a ready (`succeeded`, full-content) row via the real write path. */
-export const seedReadyWord = (
+export function seedReadyWord(
   language: Language,
   word: string,
   overrides: Partial<WordInsert> = {},
-) => upsertWord(language, word, makeWordInsert({ word, language, ...overrides }))
+) {
+  return upsertWord(language, word, makeWordInsert({ word, language, ...overrides }))
+}
 
 /**
  * Seed a content-NULL building row — what makes a building word appear in list/counts (they read
  * the `words` table directly); legal because the CHECK only requires content when `succeeded`. Pass
  * `stages` to model a specific stepper (default `[]` — the column's own default).
  */
-export const seedUnreadyWord = (
+export function seedUnreadyWord(
   language: Language,
   word: string,
   status: UnreadyStatus = enumAsyncJobStatus.pending,
   stages: WordBuildStagesEntity = [],
-) => upsertWord(language, word, { status, stages })
+) {
+  return upsertWord(language, word, { status, stages })
+}

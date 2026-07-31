@@ -18,7 +18,7 @@ const LETTER = /\p{L}/u
  * is normalized. Deliberately carries NO length/word-count policy: that ceiling is the verifier's
  * pre-filter, not the normalizer's.
  */
-export const normalizeWordInput = (raw: string): WordInput => {
+export function normalizeWordInput(raw: string): WordInput {
   const word = raw.trim().replace(/\s+/g, ' ')
   if (word.length === 0 || !LETTER.test(word)) return { _tag: 'invalid' }
   return { _tag: 'word', word }

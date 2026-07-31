@@ -24,5 +24,6 @@ export const asyncJobStatus = pgEnum('async_job_status', ASYNC_JOB_STATUSES)
  * key-map preserves the key type, so the result is `Record<AsyncJobStatus, V>` with no cast: one
  * author for "a bucket per status", and a new status grows every such record by construction.
  */
-export const byAsyncJobStatus = <V>(fn: (status: AsyncJobStatus) => V): Record<AsyncJobStatus, V> =>
-  EffectRecord.map(enumAsyncJobStatus, fn)
+export function byAsyncJobStatus<V>(fn: (status: AsyncJobStatus) => V): Record<AsyncJobStatus, V> {
+  return EffectRecord.map(enumAsyncJobStatus, fn)
+}

@@ -44,10 +44,10 @@ export const WordGenerationServiceLive: Layer.Layer<WordGenerationService, never
  * generation only: `createWord` commits after `generate` returns, outside this race, so the budget
  * can never strand a committed word.
  */
-export const withBuildBudget = (
+export function withBuildBudget(
   budget: Duration.Duration,
-): Layer.Layer<WordGenerationService, never, WordGenerationService> =>
-  Layer.effect(
+): Layer.Layer<WordGenerationService, never, WordGenerationService> {
+  return Layer.effect(
     WordGenerationService,
     Effect.gen(function* () {
       const base = yield* WordGenerationService
@@ -56,3 +56,4 @@ export const withBuildBudget = (
       return WordGenerationService.of({ generate })
     }),
   )
+}

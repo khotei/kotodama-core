@@ -98,8 +98,10 @@ export const IMAGE_CONCURRENCY = 2
 export const NO_TEXT_DIRECTIVE =
   ' The image must be a pure illustration: absolutely no text, letters, words, captions, numbers, or signage anywhere in it.'
 
-export const imageOptionsFor = (kind: ImageRole): ImageOptions => ({
-  model: kind === enumVisualKind.hero ? HERO_IMAGE_MODEL : SECONDARY_IMAGE_MODEL,
-  size: IMAGE_SIZE,
-  quality: IMAGE_QUALITY,
-})
+export function imageOptionsFor(kind: ImageRole): ImageOptions {
+  return {
+    model: kind === enumVisualKind.hero ? HERO_IMAGE_MODEL : SECONDARY_IMAGE_MODEL,
+    size: IMAGE_SIZE,
+    quality: IMAGE_QUALITY,
+  }
+}

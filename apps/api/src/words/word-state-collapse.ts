@@ -16,8 +16,8 @@ const stageRank = new Map(WORD_BUILD_STAGES.map((stage, index) => [stage, index]
  * FE-facing error (present iff that stage failed; `cause` dropped). Shared by {@link
  * collapseWordState} and the `buildWord` handler, whose freshly-seeded build IS the running view.
  */
-export const toStageProgress = (stages: WordBuildStagesEntity): StageProgress[] =>
-  EffectArray.sort(
+export function toStageProgress(stages: WordBuildStagesEntity): StageProgress[] {
+  return EffectArray.sort(
     stages,
     Order.mapInput(
       Order.Number,
@@ -32,6 +32,7 @@ export const toStageProgress = (stages: WordBuildStagesEntity): StageProgress[] 
         }
       : { stage: entry.stage, status: entry.status },
   )
+}
 
 /**
  * The single author of the state derivation for a word read. Pure — no I/O, unit-testable without a
@@ -43,7 +44,7 @@ export const toStageProgress = (stages: WordBuildStagesEntity): StageProgress[] 
  * word, every other status carries the stepper read off the same row's `stages`. No status is
  * coerced — a value the view can't hold fails to typecheck here rather than being silently relabelled.
  */
-export const collapseWordState = (word: Option.Option<Word>): Option.Option<WordStateView> => {
+export function collapseWordState(word: Option.Option<Word>): Option.Option<WordStateView> {
   if (Option.isNone(word)) return Option.none()
   const value = word.value
   return Option.some(

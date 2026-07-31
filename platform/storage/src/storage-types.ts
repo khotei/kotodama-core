@@ -25,10 +25,11 @@ export interface AuthorKeyInput {
 }
 
 // The `.png` suffix is fixed — `@kotodama/platform/ai`'s `generateImage` always emits PNG bytes.
-export const imageKey = ({ language, word, kind, index }: ImageKeyInput): string => {
+export function imageKey({ language, word, kind, index }: ImageKeyInput): string {
   const leaf = index === undefined ? kind : `${kind}-${index}`
   return `visuals/${language}/${word}/${leaf}.png`
 }
 
-export const authorKey = ({ language, word, index }: AuthorKeyInput): string =>
-  `authors/${language}/${word}/${index}.png`
+export function authorKey({ language, word, index }: AuthorKeyInput): string {
+  return `authors/${language}/${word}/${index}.png`
+}

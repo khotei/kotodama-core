@@ -20,5 +20,6 @@ export class WordNotReadyError extends Schema.TaggedErrorClass<WordNotReadyError
  * the union's discriminant, so anything short of a complete ready word is a `WordNotReadyError`.
  * A corrupt `succeeded` row can't reach here — it already died at `findWord`'s decode.
  */
-export const ensureReadyWord = (word: Word) =>
-  decodeReadyWord(word).pipe(Effect.mapError(() => new WordNotReadyError()))
+export function ensureReadyWord(word: Word) {
+  return decodeReadyWord(word).pipe(Effect.mapError(() => new WordNotReadyError()))
+}
