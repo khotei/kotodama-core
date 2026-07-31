@@ -1,5 +1,9 @@
 import { expect, it } from '@effect/vitest'
-import { MockContentEngine, WordGenerationServiceLive } from '@kotodama/core/content'
+import {
+  MockContentEngine,
+  WordGenerationService,
+  WordGenerationServiceLive,
+} from '@kotodama/core/content'
 import { seedUnreadyWord } from '@kotodama/core/repositories/testing'
 import { WordBuildMessageFromJson } from '@kotodama/core/words'
 import { enumLanguage } from '@kotodama/database'
@@ -16,16 +20,28 @@ const record = (messageId: string, body: string): SQSRecord =>
   ({ messageId, body }) as unknown as SQSRecord
 const event = (records: ReadonlyArray<SQSRecord>): SQSEvent => ({ Records: [...records] })
 
-// The handler's own job is the SQS envelope: map processBatch's failedIds → batchItemFailures keyed on
-// messageId. A non-empty (redrive) envelope needs a build to fail its Effect — only a real DB fault does
-// that, exercised end-to-end in consume.test.ts — so here we assert the happy envelope: a fully-built
-// batch reports no failures (AWS deletes the whole batch). `buildWord` runs for real over the mock engine
-// + a test DB (it is a plain function, no service to stub). The mock engine is wrapped in
-// WordGenerationServiceLive — buildWord's generation seam is now the service, not ContentEngine directly.
-const TestLayer = Layer.mergeAll(
-  WordGenerationServiceLive.pipe(Layer.provide(MockContentEngine)),
-  TestDatabaseLive,
-)
+// The word whose generation *dies* (an unrecoverable defect, the way `createWord`'s `orDie` on a
+// malformed assembly would) — so the handler's non-success envelope mapping is exercised without a
+// malformed-content fixture. Same defect decorator as process-batch.test.ts, transparent for every
+// non-BOOM word.
+const BOOM = 'boom'
+const DefectGenerationLive = Layer.effect(
+  WordGenerationService,
+  Effect.gen(function* () {
+    const base = yield* WordGenerationService
+    return WordGenerationService.of({
+      generate: (language, word) =>
+        word === BOOM ? Effect.die(new Error('malformed assembly')) : base.generate(language, word),
+    })
+  }),
+).pipe(Layer.provide(WordGenerationServiceLive.pipe(Layer.provide(MockContentEngine))))
+
+// The handler owns only the SQS envelope: map processBatch's failedIds → batchItemFailures keyed on the
+// inbound messageId. Item-failure isolation itself (`matchCause`, foreign-skip) is owned by
+// process-batch.test.ts; here we assert just the translation, on both a fully-built batch (empty
+// failures) and a batch with one dying build (its messageId returns as the sole `itemIdentifier`).
+// `buildWord` runs for real over the mock engine + a test DB (a plain function, no service to stub).
+const TestLayer = Layer.mergeAll(DefectGenerationLive, TestDatabaseLive)
 
 it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
   it.effect('all records build → empty batchItemFailures (AWS deletes the whole batch)', () =>
@@ -44,5 +60,25 @@ it.layer(TestLayer, { timeout: '120 seconds' })((it) => {
       )
       expect(response.batchItemFailures).toEqual([])
     }),
+  )
+
+  it.effect(
+    'a dying build → its messageId is the sole itemIdentifier, m1 still deletes (AC-13)',
+    () =>
+      Effect.gen(function* () {
+        yield* resetDb
+        // Seed only the buildable word; BOOM is left unseeded — its generation dies before any promote,
+        // exactly as in process-batch.test.ts.
+        yield* seedUnreadyWord(EN, 'lacuna')
+        const response = yield* sqsBatchHandler(
+          event([
+            record('m1', encode({ language: EN, word: 'lacuna' })),
+            record('m2', encode({ language: EN, word: BOOM })),
+          ]),
+        )
+        // The envelope keys the failed item on the inbound messageId: m1 built (AWS deletes it), only
+        // m2 redrives — proving the failedId → itemIdentifier mapping, not just an empty batch.
+        expect(response.batchItemFailures).toEqual([{ itemIdentifier: 'm2' }])
+      }),
   )
 })
